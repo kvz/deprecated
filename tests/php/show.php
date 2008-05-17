@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 
-require_once realpath(dirname(__FILE__)."/../../code/php/functions/phptSections.php");
+require_once realpath(dirname(__FILE__)."/../../code/php/functions/phptSections.inc.php");
 
 // Check file
 if (!($filepath = $argv[1])) {
