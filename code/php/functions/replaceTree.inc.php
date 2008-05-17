@@ -24,5 +24,4 @@ function replaceTree($search="", $replace="", $array=false, $keys_too=false)
     }
     return $newArr;
 }
-
 ?>

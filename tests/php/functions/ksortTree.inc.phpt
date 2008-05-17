@@ -2,7 +2,7 @@
 --FILE--
 <?php
 require_once str_replace(array("/tests/", ".inc.phpt.php"), array("/code/", ".inc.php"), __FILE__);
-
+// Input //
 $array = array(
     "c" => array(
         "d" => 4,
@@ -26,11 +26,13 @@ $array = array(
     )
 );
 
+// Execute //
 ksortTree($array);
 
+// Show //
 print_r($array);
 ?>
---EXPECTF--
+--EXPECT--
 Array
 (
     [a] => Array
