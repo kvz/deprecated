@@ -29,7 +29,7 @@ chmod($tempfile, 0777);
 
 $x = exec("/usr/bin/php -q ".$tempfile, $o, $r);
 echo implode("\n", $o);
-
+echo "\n";
 unlink($tempfile);
 
 //print_r($sections); 
