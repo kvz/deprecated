@@ -11,29 +11,34 @@
  * @version   SVN: Release: $Id$
  * @link      http://kevin.vanzonneveld.net/
  * 
- * @param unknown_type $array
- * @param unknown_type $delimiter
- * @param unknown_type $baseval
+ * @param array   $array
+ * @param string  $delimiter
+ * @param boolean $baseval
  * 
  * @return array
  */
 function explodeTree($array, $delimiter = '_', $baseval = false)
 {
     if(!is_array($array)) return false;
-    $splitRE = '/' . preg_quote($delimiter, '/') . '/';
+    $splitRE   = '/' . preg_quote($delimiter, '/') . '/';
     $returnArr = array();
     foreach ($array as $key => $val) {
         // Get parent parts and the current leaf
-        $parts = preg_split($splitRE, $key, -1, PREG_SPLIT_NO_EMPTY);
+        $parts    = preg_split($splitRE, $key, -1, PREG_SPLIT_NO_EMPTY);
         $leafPart = array_pop($parts);
 
-        // Build parent structure (might be slow for really deep and large structures)
+        // Build parent structure 
+        // Might be slow for really deep and large structures
         $parentArr = &$returnArr;
         foreach ($parts as $part) {
             if (!isset($parentArr[$part])) {
                 $parentArr[$part] = array();
             } elseif (!is_array($parentArr[$part])) {
-                $parentArr[$part] = $baseval ? array('__base_val' => $parentArr[$part]) : array();
+                if ($baseval) {
+                    $parentArr[$part] = array('__base_val' => $parentArr[$part]);
+                } else {
+                    $parentArr[$part] = array(); 
+                }
             }
             $parentArr = &$parentArr[$part];
         }

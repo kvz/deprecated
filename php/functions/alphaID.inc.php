@@ -1,6 +1,6 @@
 <?php
 /**
- * Translates a number to a short alhanumeric version:
+ * Translates a number to a short alhanumeric version
  *
  * Translated any number up to 9007199254740992
  * to a shorter version in letters e.g.:
@@ -48,46 +48,46 @@
  * @link      http://kevin.vanzonneveld.net/
  * 
  * @param mixed   $in     String or long input to translate     
- * @param boolean $toNum  Reverses translation when true
+ * @param boolean $to_num  Reverses translation when true
  * @param mixed   $pad_up Number or boolean padds the result up to a specified length
  * 
  * @return mixed string or long
  */
-function alphaID($in, $toNum=false, $pad_up=false)
+function alphaID($in, $to_num=false, $pad_up=false) 
 {
-
     $index = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    $base = strlen($index);
+    $base  = strlen($index);
 
-    if ($toNum){
-        // digital number  <<--  alphabet letter code
-        $in = strrev($in);
+    if ($to_num) {
+        // Digital number  <<--  alphabet letter code
+        $in  = strrev($in);
         $out = 0;
-        $len = strlen( $in ) - 1;
-        for ( $t = 0; $t <= $len; $t++ ) {
-            $out = $out + strpos( $index, substr( $in, $t, 1 ) ) * bcpow ( $base, $len - $t );
+        $len = strlen($in) - 1;
+        for ($t = 0; $t <= $len; $t++) {
+            $bcpow = bcpow($base, $len - $t);
+            $out   = $out + strpos($index, substr($in, $t, 1)) * $bcpow;
         }
 
         if (is_numeric($pad_up)) {
             $pad_up--;
-            if($pad_up > 0){
+            if ($pad_up > 0) {
                 $out -= pow($base, $pad_up);
             }
         }
     } else { 
-        // digital number  -->>  alphabet letter code
+        // Digital number  -->>  alphabet letter code
         if (is_numeric($pad_up)) {
             $pad_up--;
-            if($pad_up > 0){
+            if ($pad_up > 0) {
                 $in += pow($base, $pad_up);
             }
         }
 
         $out = "";
-        for ( $t = floor( log10( $in ) / log10( $base ) ); $t >= 0; $t-- ) {
-            $a = floor( $in / bcpow ( $base, $t ) );
-            $out = $out . substr( $index, $a, 1 );
-            $in = $in - ( $a * bcpow ( $base, $t ) );
+        for ($t = floor(log10($in) / log10($base)); $t >= 0; $t--) {
+            $a   = floor($in / bcpow($base, $t));
+            $out = $out . substr($index, $a, 1);
+            $in  = $in - ($a * bcpow($base, $t));
         }
         $out = strrev($out); // reverse
     }
