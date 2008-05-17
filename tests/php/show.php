@@ -65,16 +65,17 @@ if (!($exec = $sections["FILE"])) {
     die("Nothing to execute");
 }
 
-array_shift($exec);
-array_pop($exec);
+$tempfile = $filepath.".php";
 
-$tempfile = $tmpfname = tempnam("/tmp", "testshow");
 $handle = fopen($tempfile, "w");
-fwrite($handle, "writing to tempfile");
+fwrite($handle, $exec);
 fclose($handle);
 chmod($tempfile, 0777);
 
+$x = exec("/usr/bin/php -q ".$tempfile, $o, $r);
+echo implode("\n", $o);
 
+unlink($tempfile);
 
 //print_r($sections); 
 ?>

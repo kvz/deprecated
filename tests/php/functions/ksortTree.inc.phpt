@@ -1,7 +1,7 @@
 --TEST--
 --FILE--
 <?php
-require_once str_replace(".inc.phpt.php", ".inc.php", __FILE__);
+require_once str_replace(array("/tests/", ".inc.phpt.php"), array("/code/", ".inc.php"), __FILE__);
 
 $array = array(
     "c" => array(
@@ -28,7 +28,7 @@ $array = array(
 
 ksortTree($array);
 
-print_r($array["a"]);
+print_r($array);
 ?>
 --EXPECTF--
 Array
@@ -41,6 +41,7 @@ Array
             [d] => 4
             [e] => 5
         )
+
     [b] => Array
         (
             [a] => 1
@@ -48,6 +49,7 @@ Array
             [c] => 3
             [d] => 4
         )
+
     [c] => Array
         (
             [a] => 1
@@ -56,4 +58,5 @@ Array
             [d] => 4
             [e] => 5
         )
+
 )
