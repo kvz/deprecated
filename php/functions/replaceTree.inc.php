@@ -2,12 +2,12 @@
 /**
  * Recursive alternative to str_replace that supports replacing keys as well
  *
- * @param unknown_type $search
- * @param unknown_type $replace
- * @param unknown_type $array
- * @param unknown_type $keys_too
+ * @param string  $search
+ * @param string  $replace
+ * @param array   $array
+ * @param boolean $keys_too
  * 
- * @return unknown
+ * @return array
  */
 function replaceTree($search="", $replace="", $array=false, $keys_too=false)
 { 
@@ -24,4 +24,5 @@ function replaceTree($search="", $replace="", $array=false, $keys_too=false)
     }
     return $newArr;
 }
+
 ?>
