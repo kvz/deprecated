@@ -1,0 +1,5 @@
+<?php
+
+// Restful Rails - Tests
+
+?>
