@@ -27,8 +27,12 @@ if [ "${UBUNTU_FOUND}" = 0 ]; then
 fi
 	
 # Backup sources.list	
-sudo echo "Backing up /etc/apt/sources.list to /etc/apt/sources.list.bak"
-sudo cp -af /etc/apt/sources.list{,.bak}
+if [ ! -f /etc/apt/sources.list ]; then
+	sudo echo "File /etc/apt/sources.list not found. Cannot backup file."
+else
+	sudo echo "Backing up /etc/apt/sources.list to /etc/apt/sources.list.bak"
+	sudo cp -af /etc/apt/sources.list{,.bak}
+fi
 
 # Write sources.list
 sudo echo "Writing new /etc/apt/sources.list"
@@ -36,3 +40,8 @@ sudo echo "deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR} main 
 deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-updates main restricted universe multiverse
 deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-backports main restricted universe multiverse
 deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-security main restricted universe multiverse" | sudo tee /etc/apt/sources.list
+
+# Update package list
+sudo echo "Updating package list..."
+sudo aptitude -y update > /dev/null
+sudo echo "Sources are now full and up to date!"
