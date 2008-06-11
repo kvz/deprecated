@@ -7,7 +7,7 @@
 //
 // View the README for documentation/examples
 
-require_once 'curl.php';
+require_once 'curl.php'; // http://github.com/shuber/curl
 require_once 'restful_rails_response.php';
 
 class RestfulRails {
