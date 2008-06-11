@@ -1,4 +1,7 @@
 2008-06-11 - Sean Huber (shuber@huberry.com)
+	* Requests with 404 responses are not type casted and return false with an error
+
+2008-06-11 - Sean Huber (shuber@huberry.com)
 	* Added url to http://github.com/shuber/curl
 
 2008-06-10 - Sean Huber (shuber@huberry.com)

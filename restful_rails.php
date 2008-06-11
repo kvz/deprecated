@@ -87,11 +87,16 @@ class RestfulRails {
 		$url = $this->request_prefix.$url.$this->request_suffix;
 		$response = ($method == 'get') ? $this->curl->get($url, $vars) : $this->curl->post($url, $vars);
 		if ($response) {
-			try {
-				$type_casted_response = call_user_func($this->response_types[$this->response_type]['callback'], $response);
-			} catch (Exception $e) {
-				$type_casted_response = false;
-				$this->error = $e->getMessage();
+			if ($response->headers['Status-Code'] == '404') {
+				$this->error = 'Request to "'.$url.'" responded with a 404 - Not Found';
+				return false;
+			} else {
+				try {
+					$type_casted_response = call_user_func($this->response_types[$this->response_type]['callback'], $response);
+				} catch (Exception $e) {
+					$type_casted_response = false;
+					$this->error = $e->getMessage();
+				}
 			}
 			return $type_casted_response;
 		} else {
