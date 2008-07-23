@@ -112,8 +112,8 @@ function testcommand_handle(){
 }
 
 #/**
-# * Tests if a command exists, and returns 1 or "".
-# * Also saved command location in CMD_XXX
+# * Tests if a command exists, and returns it's location or an error string.
+# * Also saved command location in CMD_XXX.
 # *
 # * @param string $1 Command name
 # * @param string $2 Package name
