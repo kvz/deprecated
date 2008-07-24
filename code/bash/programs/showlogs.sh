@@ -1,6 +1,13 @@
 #!/bin/bash
+
+
+# Config
+###############################################################
 OUTPUT_DEBUG=1
 
+
+# Functions
+###############################################################
 #/**
 # * Converts a string to uppercase
 # * 
@@ -154,6 +161,9 @@ function installcommand() {
     fi
 }
 
+
+# Check for program requirements
+###############################################################
 testcommand_handle "bash" "bash" "EMERG" "NOINSTALL"
 testcommand_handle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
 testcommand_handle "egrep" "pcregrep"
@@ -163,4 +173,7 @@ testcommand_handle "uniq"
 testcommand_handle "awk"
 testcommand_handle "lsof"
 
+
+# Run
+###############################################################
 ${CMD_LSOF} |${CMD_EGREP} '\.log$' |${CMD_AWK} '{print $NF}' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \"\" && echo \""$0":\" && logtail " $0}' #|bash
