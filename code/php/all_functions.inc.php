@@ -1,13 +1,14 @@
 <?php
-$dir = realpath(dirname(__FILE__)."/functions");
+$dir   = realpath(dirname(__FILE__)."/functions");
+$files = glob($dir."/*.inc.php");
 // Check all files in the functions directory
-foreach (glob($dir) as $filepath) {
+foreach ($files as $file) {
     // Valid include file?
-    if (is_file($filepath) && substr($filepath, -7) == ".inc.php") {
+    if (file_exists($file)) {
         // Function already exists?
-        $function = basename($filepath, ".inc.php"); 
+        $function = basename($file, ".inc.php"); 
         if (!function_exists($function)) {
-            include_once $filepath;
+            include_once $file;
         }
     }
 }    
