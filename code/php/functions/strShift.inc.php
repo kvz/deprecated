@@ -7,9 +7,9 @@
  * @param string $delimiter
  * @param string &$string
  * 
- * @return array
+ * @return string
  */
-function takeOne($delimiter, &$string)
+function strShift($delimiter, &$string)
 {
     // Explode into parts
     $parts  = explode($delimiter, $string);
