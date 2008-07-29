@@ -10,7 +10,7 @@
  * 
  * @return mixed boolean or string
  */
-function strBetween($haystack, $left, $right, $include_needles=false, $case_sensitive=true)
+function str_between($haystack, $left, $right, $include_needles=false, $case_sensitive=true)
 {
     // Set parameters
     $left      = preg_quote($left);

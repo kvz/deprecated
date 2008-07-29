@@ -9,7 +9,7 @@
  * 
  * @return string
  */
-function strShift($delimiter, &$string)
+function str_shift($delimiter, &$string)
 {
     // Explode into parts
     $parts  = explode($delimiter, $string);
