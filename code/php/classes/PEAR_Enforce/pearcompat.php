@@ -13,7 +13,7 @@ switch ($action) {
         $lines = file($file);
         $line  = $lines[$id-1];
         
-        $Token = new Token($line);
+        $Token = new TokenSimple($line);
         
         echo "Showing Tokens [$line]\n\n";
         
@@ -39,6 +39,9 @@ switch ($action) {
             case 4:
                 echo $CodeRow->getCodeRow()."\n";
                 print_r($CodeRow->getTokenized())."\n";
+                break;
+            case 5:
+                $CodeRow->insertAt(4, "x", -2);
                 break;
         }
         
@@ -75,6 +78,16 @@ switch ($action) {
         
         $PEAR_Enforce->enforce();
         echo $PEAR_Enforce->report($action);
+        
+        if (is_numeric($id)) {
+            if (!isset($PEAR_Enforce->wasModifiedBy[$id])) {
+                echo "Line $id was not modified by any fixer\n";
+            } else {
+                echo "Line $id was not modified by:\n";
+                print_r($PEAR_Enforce->wasModifiedBy[$id]);
+            }
+        }
+        
         break;
 }
 ?>

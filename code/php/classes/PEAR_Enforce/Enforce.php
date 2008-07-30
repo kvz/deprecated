@@ -54,10 +54,9 @@ Class PEAR_Enforce {
     private $_cntProblemsFixed = 0;
     
     private $_rowProblems = array();
+    public $wasModifiedBy = array();
     private $_fixedLog = array();
     private $_reportLog = "";
-    private $_debugLog = "";
-    private $_debugRows = array(853);
 
     private $_fileOriginal = false;
     private $_fileImproved = false;
@@ -322,9 +321,9 @@ Class PEAR_Enforce {
      * @return string
      */
     private function _preFormat($source) {
-        $source = trim($source);
-        $source = str_replace("\t", "    ", $source);
         $source = str_replace("\r", "", $source);
+        $source = str_replace("\t", "    ", $source);
+        $source = trim($source);
         return $source;
     }
     
@@ -336,10 +335,6 @@ Class PEAR_Enforce {
      * @return string
      */
     private function _postFormat($source) {
-        
-        // debugging
-        return $source;
-        
         // Newlines
         $source = str_replace($this->_postFormatAddNewline, "\n", $source);
 
@@ -465,11 +460,6 @@ Class PEAR_Enforce {
                     list($pattern, $fixCodes) = $this->_determineFixCodes($fixMessage);
                     $this->_rowProblems[$row] = array_merge($this->_rowProblems[$row], $fixCodes);
                     
-                    if (in_array($row, $this->_debugRows)) {
-                        $src = $this->_CodeRows[$row]->getCodeRow();
-                        $this->_debugLog .= "$row> ".$src."-\n";
-                    }
-                    
                     $this->_cntProblemsTotal++;
                     foreach($fixCodes as $fixCode) {
                         $this->_reportLog .= " ".str_pad($fixCode, $this->_fixCodesMaxLen, " ", STR_PAD_LEFT)." ";
@@ -491,11 +481,6 @@ Class PEAR_Enforce {
                             
                         }
                         $this->_reportLog .= "\n";
-                        
-                        if (in_array($row, $this->_debugRows)) {
-                            $src = $this->_CodeRows[$row]->getCodeRow();
-                            $this->_debugLog .= "$row> ".$src."-\n";
-                        }
                     }
                 }
             }
@@ -600,7 +585,7 @@ Class PEAR_Enforce {
             case "IND":
                 // Line indented incorrectly; expected 12 spaces, found 16
                 
-                $CodeRow->setIndent($needed);
+                $CodeRow->setIndent($expected);
                 break;
             case "MIS_SPC_AFT_CMA":
                 // No space found after comma in function call
@@ -666,10 +651,15 @@ Class PEAR_Enforce {
                 break;
         }
         
+        $this->wasModifiedBy[$row][] = $fixCode;
+        
         // Default case returns false, so all matched cases don't have to.
         if ($debug) {
             $this->_fixedLog[$fixCode][$row]["debug"] = $debug;
         }
+        
+        $this->_fixedLog[$fixCode][$row]["match"] = implode(", ", $matches);
+        
         return true;
     }
 
@@ -804,7 +794,6 @@ Class PEAR_Enforce {
         $report .= "Detected ".$this->_cntProblemsTotal." problems"."\n";
         $report .= "Fixed    ".$this->_cntProblemsFixed." problems"."\n";
         $report .= "Saved to ".$this->_fileImproved." (".filesize($this->_fileImproved).")"."\n";
-        $report .= "debug:   ".$this->_debugLog."\n";
         
         return $report;
     }

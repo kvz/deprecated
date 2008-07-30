@@ -42,14 +42,14 @@ define('T_REGULAR_EXPRESSION', 1034);
  */
 Class Token {
     
-    protected $_tokenized = array();
-    protected $_row = 1;
-    protected $_col  = 1;
-    protected $_colCorrectionBegin = 0;
-    protected $_colCorrectionEnd = 0;
-    protected $_addTags = true;
-    protected $_addedTagBegin = false;
-    protected $_addedTagEnd = false;
+    private $_tokenized = array();
+    private $_row = 1;
+    private $_col  = 1;
+    private $_colCorrectionBegin = 0;
+    private $_colCorrectionEnd = 0;
+    private $_addTags = true;
+    private $_addedTagBegin = false;
+    private $_addedTagEnd = false;
     
     /**
      * Takes a token produced from <code>token_get_all()</code> and produces a
@@ -77,12 +77,6 @@ Class Token {
                 $newToken['type']    = token_name($token[0]);
             }
         }
-        
-        list($line, $col, $len) = $this->_updateRowCol($newToken['content']);
-        
-        $newToken['row'] = $line;
-        $newToken['col'] = $col;
-        $newToken['len'] = $len; 
         
         return $newToken;
 
@@ -548,11 +542,11 @@ Class Token {
         }//end for
 
         
+        /*
+            If we added tags at runtime, we need to avoid
+            enclosing them in our token
+        */            
         foreach ($finalTokens as $i=>$token) {  
-            /*
-                If we added tags at runtime, we need to avoid
-                enclosing them in our token
-            */            
             if ($this->_addedTagBegin && $token['type'] == 'T_OPEN_TAG') {
                 unset($finalTokens[$i]);
             } elseif ($this->_addedTagClose && $token['type'] == 'T_CLOSE_TAG') {
@@ -562,6 +556,18 @@ Class Token {
                     $finalTokens[$i]["content"] = substr($token["content"], 0, strlen($token["content"])-2);
                 }
             }
+        }
+
+        /*
+            Cols & Rows would be nice
+        */            
+        
+        foreach ($finalTokens as $i=>$token) {
+            list($line, $col, $len) = $this->_updateRowCol($token['content']);
+            
+            $finalTokens[$i]['row'] = $line;
+            $finalTokens[$i]['col'] = $col;
+            $finalTokens[$i]['len'] = $len; 
         }
         
         return $finalTokens;
