@@ -1,149 +1,9 @@
-#!/usr/bin/php -q
 <?php
-Class CodeRow {
-    private $_codeRow = '';
-    private $_length = 0;
-    
-    public function CodeRow($codeRow) {
-        $this->_codeRow = $codeRow;
-        $this->_changed();
-    }
-    
-    private function _changed(){
-        $this->_length = strlen($this->_codeRow);
-    }
-    
-    public function getCodeRow() {
-        return $this->_codeRow;
-    }
-    
-    
-    public function regplace($search, $replace) {
-        $this->_codeRow = preg_replace('#'. $search.'#', $replace, $this->_codeRow);
-        $this->_changed();
-        return true;
-    }
 
-    public function replace($search, $replace) {
-        $this->_codeRow = str_replace($search, $replace, $this->_codeRow);
-        $this->_changed();
-        return true;
-    }
+// Autoloader borrowed from PHP_CodeSniffer, see function for credits
+spl_autoload_register(array("PEAR_Enforce", "autoload"));
 
-    
-    public function setIndent($spaces) {
-        $current = $this->getIndent();
-        $needed  = $spaces - $current;
-        
-        if ($needed > 0) {
-            $this->_codeRow = str_repeat(" ", $needed).$this->_codeRow;
-        } elseif($needed < 0) {
-            $this->deleteAt(1, abs($needed));
-        }
-        
-        $this->_changed();
-        return true;
-    }
-    
-    /**
-     * Automatically switches to backspaceAt when howmany is negative
-     *
-     * @param integer $at
-     * @param string  $chars
-     * @param integer $howmany
-     * 
-     * @return boolean
-     */
-    public function insertAt($at, $chars=" ", $howmany=1) {
-        if ($howmany < 0) {
-            return $this->backspaceAt($at, abs($howmany));
-        }
-        
-        $t = $this->_codeRow;
-        // Compensate
-        $at--;
-        $this->_codeRow = substr($t, 0, $at) . str_repeat($chars, $howmany) . substr($t, $at, strlen($t));
-        
-        $this->_changed();
-        return true;
-    }
-    
-    public function deleteAt($at, $howmany=1) {
-        $t = $this->_codeRow;
-        // Compensate
-        $at--;
-        $this->_codeRow = substr($t, 0, $at) . substr($t, $at+$howmany, strlen($t));
-        
-        $this->_changed();
-        return true;
-    }
-    
-    public function backspaceAt($at, $howmany=1) {
-        $t = $this->_codeRow;
-        // Compensate
-        $at--;
-        $this->_codeRow = substr($t, 0, $at-$howmany) . substr($t, $at, strlen($t));
-        
-        $this->_changed();
-        return true;
-    }
-
-    public function getEqualSignPos(){
-        $illegal = array("'", '"');
-        $escape = '\\';
-        $off = array();
-        $p = "";
-        
-        for ($i=0; $i<$this->_length; $i++) {
-            // Current char
-            $c = substr($this->_codeRow, $i, 1);
-            
-            // Previous char
-            if ($i> 0) {
-                $p = substr($this->_codeRow, $i-1, 1);
-            }
-
-            // Dont allow the Equal sign to be inside a string
-            // Keep escapes in mind \' != '
-            if (in_array($c, $illegal) && $p != $escape) {
-                $off[$c] = ($off[$c]?false:true);
-            }
-            
-            // It's not inside a string
-            if ($c == "=" && !in_array(true, $off)) {
-                // Compensate
-                return $i+1;
-            }
-        }
-        
-        return 0;
-    }
-    
-    public function getOpeningBracePos(){
-        // Compensate
-        return strpos($this->_codeRow, "{")+1;
-    }
-
-    public function getClosingBracePos(){
-        // Compensate
-        return strrpos($this->_codeRow, "}")+1;
-    }
-        
-    public function getIndentation($extra = 0){
-        return str_repeat(" ", $this->getIndent($extra));
-    }
-    
-    public function getIndent($extra = 0) {
-        for ($i = 0; $i < $this->_length; $i++) {
-            if (substr($this->_codeRow, $i, 1) != " " && substr($this->_codeRow, $i, 1) != "\t") {
-                return $i + $extra;
-            }
-        }
-        return false;
-    }    
-}
-
-Class PHPCS_Comply {
+Class PEAR_Enforce {
 
     /**
      * System is unusable
@@ -185,18 +45,19 @@ Class PHPCS_Comply {
      */
     const LOG_DEBUG = 7;
     
-    private $_problems = 0;
-    private $_problems_fixed = 0;
-    private $_report_log = "";
-    private $_fixCodeMaxLen = 0;
-    private $_fixed_show = array();
-    private $_definitions = array();
-    private $_file_original = false;
-    private $_file_improved = false;
-    private $_rowProblems = array();
     private $_CodeRows = false;
+    
+    private $_cntProblemsTotal = 0;
+    private $_cntProblemsFixed = 0;
+    private $_reportLog = "";
+    private $_fixCodesMaxLen = 0;
+    private $_fixedLog = array();
+    private $_definitions = array();
+    private $_fileOriginal = false;
+    private $_fileImproved = false;
+    private $_rowProblems = array();
     private $_postFormatAddNewline  = "<@!NEWLINE!@>";
-    private $_postFormatBackSpaceCB = "<@!BACKSPACE,}!@>";
+    private $_postFormatBackSpaceCB = "<@!BACKSPACE,[T_OPEN_CURLY_BRACKET]!@>";
     
     
     public $cmd_phpcs = "/usr/bin/phpcs";
@@ -249,7 +110,8 @@ Class PHPCS_Comply {
         }
         return $longest;
     }
-    
+
+        
     /**
      * Execute a shell command and returns an array with 
      * first element: success, second element: output
@@ -272,10 +134,15 @@ Class PHPCS_Comply {
      * == Specific Private Functions 
      */
     
+
+    
+    /**
+     * Returns a fixCode's pattern
+     *
+     * @param string $fixCode
+     */
     private function _getPattern($fixCode) {
-        //print_r($this->_definitions);
-        
-        foreach($this->_definitions as $pattern=>$fixCodes) {
+        foreach ($this->_definitions as $pattern=>$fixCodes) {
             if (array_search($fixCode, $fixCodes) !== false){
                 return $pattern;
             }
@@ -283,6 +150,12 @@ Class PHPCS_Comply {
         return false;        
     }
     
+    /**
+     * Mapping of different output patterns of PHPCS to 'fixCodes',
+     * adding flexibility to the fix-architecture.
+     *
+     * @param array $add_definitions
+     */
     private function _setDefinitions($add_definitions=false) {
         if (!$add_definitions) $add_definitions = array();
 
@@ -382,9 +255,16 @@ Class PHPCS_Comply {
         }
         
         $this->_definitions = $prepared;
-        $this->_fixCodeMaxLen = $this->_valMaxLen2D($this->_definitions);
+        $this->_fixCodesMaxLen = $this->_valMaxLen2D($this->_definitions);
     }
     
+    /**
+     * Takes a custom pattern and returns a valid perl regex
+     *
+     * @param string $pattern
+     * 
+     * @return string
+     */
     private function _patternPrepare($pattern) {
         $pattern = preg_quote($pattern);
         $pattern = str_replace('%c', '(\w[\w\d_]+)', $pattern);
@@ -396,9 +276,15 @@ Class PHPCS_Comply {
         return $pattern;
     }    
     
-    private function _log($str, $level=PHPCS_Comply::LOG_INFO) {
+    /**
+     * Logs messages. Anything from and above LOG_CRIT will kill the app. 
+     *
+     * @param string  $str
+     * @param integer $level
+     */
+    private function _log($str, $level=PEAR_Enforce::LOG_INFO) {
         echo $str."\n";
-        if ($level <= PHPCS_Comply::LOG_CRIT) {
+        if ($level <= PEAR_Enforce::LOG_CRIT) {
             die();
         }
     }
@@ -411,7 +297,7 @@ Class PHPCS_Comply {
      * @return string
      */
     private function _preFormat($source) {
-        return str_replace("\t", "    ", $source);
+        return trim(str_replace("\t", "    ", $source));
     }
     
     /**
@@ -437,37 +323,37 @@ Class PHPCS_Comply {
         
         $file = realpath($file);
         
-        if ($file == $this->_file_original) {
-            $this->_log("File '$file' already loaded", PHPCS_Comply::LOG_DEBUG);
+        if ($file == $this->_fileOriginal) {
+            $this->_log("File '$file' already loaded", PEAR_Enforce::LOG_DEBUG);
             return true;
         }
         
         if (!file_exists($file)) {
-            $this->_log("File '$file' does not exist", PHPCS_Comply::LOG_CRIT);
+            $this->_log("File '$file' does not exist", PEAR_Enforce::LOG_CRIT);
             return false;
         }
         
         if (substr($file, -4) != ".php") {
-            $this->_log("File '$file' does not end in .php", PHPCS_Comply::LOG_CRIT);
+            $this->_log("File '$file' does not end in .php", PEAR_Enforce::LOG_CRIT);
             return false;
         }
         
-        $this->_file_original = $file; 
-        $this->_file_improved = str_replace(".php", ".comply.php", $this->_file_original);
+        $this->_fileOriginal = $file; 
+        $this->_fileImproved = str_replace(".php", ".enforce.php", $this->_fileOriginal);
         
-        if ($this->_file_original == $this->_file_improved) {
-            $this->_log("Both original and improved file locations ended up being identical: '".$this->_file_original."'", PHPCS_Comply::LOG_CRIT);
+        if ($this->_fileOriginal == $this->_fileImproved) {
+            $this->_log("Both original and improved file locations ended up being identical: '".$this->_fileOriginal."'", PEAR_Enforce::LOG_CRIT);
             return false;
         }
         
-        $source = file_get_contents($this->_file_original);
+        $source = file_get_contents($this->_fileOriginal);
         
         if ($preformat) {
             $source = $this->_preFormat($source);
         }
         
-        if (!file_put_contents($this->_file_improved, $source)) {
-            $this->_log("Cannot write to file '".$this->_file_improved."'", PHPCS_Comply::LOG_CRIT);
+        if (!file_put_contents($this->_fileImproved, $source)) {
+            $this->_log("Cannot write to file '".$this->_fileImproved."'", PEAR_Enforce::LOG_CRIT);
             return false;
         }
         
@@ -476,7 +362,7 @@ Class PHPCS_Comply {
     
     private function _determineFixCodes($fixMessage) {
         if (!is_array($this->_definitions) || count($this->_definitions) < 5) {
-            log("What happened to my fixcode definitions?!", PHPCS_Comply::LOG_EMERG);
+            log("What happened to my fixcode definitions?!", PEAR_Enforce::LOG_EMERG);
             return false;
         }
         
@@ -495,21 +381,21 @@ Class PHPCS_Comply {
     private function _runPHPCS($file) {
         
         if (!file_exists($this->cmd_phpcs)) {
-            log("Please: aptitude install php-pear && pear install PHP_Codesniffer", PHPCS_Comply::LOG_CRIT);
+            log("Please: aptitude install php-pear && pear install PHP_Codesniffer", PEAR_Enforce::LOG_CRIT);
             return false;
         }
         
         $results = array();
         
         $cmd = $this->cmd_phpcs." --standard=PEAR --report=csv ".$file;
-        list($success, $codeRows) = $this->_exe($cmd);
+        list($success, $lines) = $this->_exe($cmd);
         
-        foreach ($codeRows as $i=>$codeRow) {
-            $src = trim(str_replace('"', '', $this->_str_shift(",", $codeRow)));
-            $row = trim(str_replace('"', '', $this->_str_shift(",", $codeRow)));
-            $col = trim(str_replace('"', '', $this->_str_shift(",", $codeRow)));
-            $lvl = trim(str_replace('"', '', $this->_str_shift(",", $codeRow)));
-            $fixMessage = trim($codeRow);
+        foreach ($lines as $i=>$line) {
+            $src = trim(str_replace('"', '', $this->_str_shift(",", $line)));
+            $row = trim(str_replace('"', '', $this->_str_shift(",", $line)));
+            $col = trim(str_replace('"', '', $this->_str_shift(",", $line)));
+            $lvl = trim(str_replace('"', '', $this->_str_shift(",", $line)));
+            $fixMessage = trim($line);
             
             if ($src == "File") continue;
             
@@ -520,11 +406,11 @@ Class PHPCS_Comply {
     }
     
     private function _improveCode($results) {
-        $this->_report_log = "";
-        $this->_fixed_results = array();
+        $this->_reportLog = "";
+        $fixedResults = array();
         
         $this->_CodeRows = array();
-        $lines = file($this->_file_improved);
+        $lines = file($this->_fileImproved);
         foreach($lines as $i=>$codeRow) {
             // Compensate
             $this->_CodeRows[$i+1] = new CodeRow($codeRow);
@@ -538,37 +424,37 @@ Class PHPCS_Comply {
                     list($pattern, $fixCodes) = $this->_determineFixCodes($fixMessage);
                     $this->_rowProblems[$row] = array_merge($this->_rowProblems[$row], $fixCodes);
                     
-                    $this->_problems++;
+                    $this->_cntProblemsTotal++;
                     foreach($fixCodes as $fixCode) {
-                        $this->_report_log .= " ".str_pad($fixCode, $this->_fixCodeMaxLen, " ", STR_PAD_LEFT)." ";
-                        $this->_report_log .= str_pad($lvl, 7, " ", STR_PAD_RIGHT)." ";
-                        $this->_report_log .= str_pad($row, 4, " ", STR_PAD_LEFT)." ";
-                        $this->_report_log .= str_pad($col, 3, " ", STR_PAD_LEFT)." ";
+                        $this->_reportLog .= " ".str_pad($fixCode, $this->_fixCodesMaxLen, " ", STR_PAD_LEFT)." ";
+                        $this->_reportLog .= str_pad($lvl, 7, " ", STR_PAD_RIGHT)." ";
+                        $this->_reportLog .= str_pad($row, 4, " ", STR_PAD_LEFT)." ";
+                        $this->_reportLog .= str_pad($col, 3, " ", STR_PAD_LEFT)." ";
                         $before = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
                         if ($this->_fixProblem($fixMessage, $fixCode, $pattern, $row, $col)) {
-                            $this->_problems_fixed++;
-                            $this->_fixed_show[$fixCode][$row]["assig"] = $fixMessage; 
-                            $this->_fixed_show[$fixCode][$row]["befor"] = $before;
-                            $this->_fixed_show[$fixCode][$row]["after"] = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
-                            $this->_report_log .= str_pad("FIXED", 7, " ", STR_PAD_LEFT)." ";
-                            $this->_report_log .= $fixMessage;
+                            $this->_cntProblemsFixed++;
+                            $this->_fixedLog[$fixCode][$row]["assig"] = $fixMessage; 
+                            $this->_fixedLog[$fixCode][$row]["befor"] = $before;
+                            $this->_fixedLog[$fixCode][$row]["after"] = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
+                            $this->_reportLog .= str_pad("FIXED", 7, " ", STR_PAD_LEFT)." ";
+                            $this->_reportLog .= $fixMessage;
                         } else {
-                            $this->_report_log .= str_pad("UNFIXED", 7, " ", STR_PAD_LEFT)." ";
-                            $this->_report_log .= $fixMessage;
+                            $this->_reportLog .= str_pad("UNFIXED", 7, " ", STR_PAD_LEFT)." ";
+                            $this->_reportLog .= $fixMessage;
                             
                         }
-                        $this->_report_log .= "\n";
+                        $this->_reportLog .= "\n";
                     }
                 }
             }
         }
         
-        $this->_fixed_results[$file]  = "";
+        $fixedResults[$file]  = "";
         foreach($this->_CodeRows as $CodeRow) {
-            $this->_fixed_results[$file] .= $CodeRow->getCodeRow();
+            $fixedResults[$file] .= $CodeRow->getCodeRow();
         }
         
-        return $this->_fixed_results;
+        return $fixedResults;
     }
     
     /**
@@ -596,17 +482,23 @@ Class PHPCS_Comply {
             $matches[$i-1] = $match[0];
         }
         
-        
-         
         switch ($fixCode) {
+            case "MIS_LNG_TAG":
+                // Short PHP opening tag used. Found \"<?\" Expected \"<?php\".
+                $CodeRow->replace('<?', '<?php', 'T_OPEN_TAG');
+                break;
+            case "MIS_UPC_CNS":
+                // Constants must be uppercase; expected IS_NUMERIC but found is_numeric
+                list($expected, $found) = $matches;
+                $CodeRow->replace($found, $expected, 'T_STRING');
+                break;
             case "MIS_ALN":
                 // Equals sign not aligned correctly
-                
                 list($expected, $found) = $matches;
                 $needed = $expected - $found;
                 
                 // Insert will actually backspace on negative amount
-                $CodeRow->insertAt($CodeRow->getEqualSignPos(), " ", $needed);
+                $CodeRow->insertAt($CodeRow->getPosEqual(), " ", $needed);
                 
                 break;
             case "IND":
@@ -621,28 +513,28 @@ Class PHPCS_Comply {
             case "MIS_SPC_AFT_CMA":
                 $CodeRow->regplace(',([^ ])', ', $1');
                 break;
-			case "MIS_SPC_BFR_OPN_BRC":
-				// Expected \"if (...) {\n\"; found \"...){\n\"
-				// ){
-				$CodeRow->insertAt($CodeRow->getOpeningBracePos(), " ");
-				break;
-			case "MIS_NWL_ARN_CLS_BRC":
-				// Closing brace must be on a line by itself
-				$CodeRow->insertAt($CodeRow->getClosingBracePos(), 
-				    $this->_postFormatAddNewline . $CodeRow->getIndentation());
-				break;
-			case "MIS_NWL_AFT_OPN_BRC":
-				// Not the same as MIS_NWL_ARN_OPN_BRC, which will put the brace itself
-				// on a newline (for functions)
-				// "Expected \"if (...) {\n\"; found \"...){\
-				// {!\n
+            case "MIS_SPC_BFR_OPN_BRC":
+                // Expected \"if (...) {\n\"; found \"...){\n\"
+                // ){
+                $CodeRow->insertAt($CodeRow->getOpeningBracePos(), " ");
+                break;
+            case "MIS_NWL_ARN_CLS_BRC":
+                // Closing brace must be on a line by itself
+                $CodeRow->insertAt($CodeRow->getClosingBracePos(), 
+                    $this->_postFormatAddNewline . $CodeRow->getIndentation());
+                break;
+            case "MIS_NWL_AFT_OPN_BRC":
+                // Not the same as MIS_NWL_ARN_OPN_BRC, which will put the brace itself
+                // on a newline (for functions)
+                // "Expected \"if (...) {\n\"; found \"...){\
+                // {!\n
                 $CodeRow->insertAt($CodeRow->getOpeningBracePos()+1, 
                     $this->_postFormatAddNewline . $CodeRow->getIndentation(4));
-				break;
+                break;
             case "MIS_NWL_ARN_OPN_BRC":
                 // Opening function brace should be on a new line
-				$CodeRow->insertAt($CodeRow->getOpeningBracePos(), 
-				    $this->_postFormatAddNewline . $CodeRow->getIndentation());
+                $CodeRow->insertAt($CodeRow->getOpeningBracePos(), 
+                    $this->_postFormatAddNewline . $CodeRow->getIndentation());
                 break;
             case "FND_SWS_BFR_ELS":
                 // Expected \"} else {\n\"; found \"}\n    else{\n\"
@@ -650,7 +542,7 @@ Class PHPCS_Comply {
                 
                 break;
             case "FND_SPC_PTH":
-				// Space surrounding parentheses
+                // Space surrounding parentheses
                 list($spc_loc, $pth_typ) = $matches;
                 $a = $b = $pth = "";
                 
@@ -672,7 +564,7 @@ Class PHPCS_Comply {
         
         // Default case returns false, so all matched cases don't have to.
         if ($debug) {
-            $this->_fixed_show[$fixCode][$row]["debug"] = $debug;
+            $this->_fixedLog[$fixCode][$row]["debug"] = $debug;
         }
         return true;
     }
@@ -688,9 +580,9 @@ Class PHPCS_Comply {
      *
      * @param string $file
      * 
-     * @return PHPCS_Comply
+     * @return PEAR_Enforce
      */
-    public function PHPCS_Comply($file = false) {        
+    public function PEAR_Enforce($file = false) {        
         
         $this->_setDefinitions();
         if ($file) {
@@ -700,34 +592,67 @@ Class PHPCS_Comply {
         }
         return true;
     }
-        
+
+    
+    /**
+     * Autoload static method for loading classes and interfaces.
+     * Code from the PHP_CodeSniffer package by Greg Sherwood and 
+     * Marc McIntyre
+     *
+     * @param string $className The name of the class or interface.
+     *
+     * @return void
+     */
+    static public function autoload($className)
+    {
+        $parent     = 'PEAR_Enforce';
+        $parent     = '';
+        $parent_len = strlen($parent);
+        if (substr($className, 0, $parent_len) == $parent) {
+            $newClassName = substr($className, $parent_len);
+        } else {
+            $newClassName = $className;
+        }
+
+        $path = str_replace('_', '/', $newClassName).'.php';
+
+        if (is_file(dirname(__FILE__).'/'.$path) === true) {
+            // Check standard file locations based on class name.
+            include dirname(__FILE__).'/'.$path;
+        } else {
+            // Everything else.
+            @include $path;
+        }
+
+    }//end autoload()    
+    
     /**
      * Combines private functions to convert loaded codefile and store the 
-     * improved version in $this->_file_improved
+     * improved version in $this->_fileImproved
      *
      * @return boolean
      */
-    public function comply() {
-        if (!$this->_file_original) {
-            $this->_log("Please load a file first, this can be done by using the constructor.", PHPCS_Comply::LOG_CRIT);
+    public function enforce() {
+        if (!$this->_fileOriginal) {
+            $this->_log("Please load a file first, this can be done by using the constructor.", PEAR_Enforce::LOG_CRIT);
             return false;
         }
         
-        if (!file_exists($this->_file_original)) {
-            $this->_log("File '".$this->_file_original."' does not exist", PHPCS_Comply::LOG_CRIT);
+        if (!file_exists($this->_fileOriginal)) {
+            $this->_log("File '".$this->_fileOriginal."' does not exist", PEAR_Enforce::LOG_CRIT);
             return false;
         }
-        if (!file_exists($this->_file_improved)) {
-            $this->_log("File '".$this->_file_improved."' should have been created automatically, but does not exist", PHPCS_Comply::LOG_CRIT);
+        if (!file_exists($this->_fileImproved)) {
+            $this->_log("File '".$this->_fileImproved."' should have been created automatically, but does not exist", PEAR_Enforce::LOG_CRIT);
             return false;
         }
         
-        $results = $this->_runPHPCS($this->_file_original);
+        $results = $this->_runPHPCS($this->_fileOriginal);
         $imroved = $this->_postFormat($this->_improveCode($results));
         
 
-        if (!file_put_contents($this->_file_improved, $imroved)) {
-            $this->_log("Cannot write to file '".$this->_file_improved."'", PHPCS_Comply::LOG_CRIT);
+        if (!file_put_contents($this->_fileImproved, $imroved)) {
+            $this->_log("Cannot write to file '".$this->_fileImproved."'", PEAR_Enforce::LOG_CRIT);
             return false;
         }
         
@@ -750,69 +675,32 @@ Class PHPCS_Comply {
             $report .= "Results for $which fix, pattern: \n    ".$pattern.""."\n"."\n";
             
             $row = false;
+            $found = false;
             foreach($this->_rowProblems as $row=>$fixCodes) {
                 if (in_array($which, $fixCodes)) {
+                    $found = true;
                     break;
                 }
             }
             
-            if ($row) {
+            if ($found) {
                 $report .= "Example at line $row: \n    ".$this->_CodeRows[$row]->getCodeRow()."\n"."\n"; 
+            } else {
+                $report .= "No examples found in current source"."\n"."\n";
             }
             
-            $report .= print_r($this->_fixed_show[$which], true);
+            $report .= print_r($this->_fixedLog[$which], true);
         } else {
             $report .= "All fixes"."\n";
-            $report .= $this->_report_log;
+            $report .= $this->_reportLog;
         }
 
         $report .= "\n"."\n";
-        $report .= "Detected ".$this->_problems." problems"."\n";
-        $report .= "Fixed    ".$this->_problems_fixed." problems"."\n";
-        $report .= "Saved to ".$this->_file_improved.""."\n";
+        $report .= "Detected ".$this->_cntProblemsTotal." problems"."\n";
+        $report .= "Fixed    ".$this->_cntProblemsFixed." problems"."\n";
+        $report .= "Saved to ".$this->_fileImproved.""."\n";
         
         return $report;
     }
 }
-
-
-if ($argv[2] == "test") {
-    
-    
-    if (!$argv[3]) {
-        $test = 1; 
-    } else {
-        $test = $argv[3];
-    }
-    
-    echo "Running Test [$test]\n\n";
-    
-    $CodeRow = new CodeRow("abcdefghijklmnopqrstuvwxyz'=' = 12345");
-    
-    switch ($test) {
-        case 1:
-            $CodeRow->setIndent(12);
-            break;
-        case 2:
-            $CodeRow->deleteAt(4, -2);
-            break;
-        case 3:
-            $CodeRow->insertAt(4, "x", -2);
-            break;
-        case 4:
-            
-            break;
-    }
-    
-    
-    echo $CodeRow->getCodeRow()."\n";
-    echo $CodeRow->getEqualSignPos()."\n";
-    
-    
-} else {
-    $PHPCS_Comply = new PHPCS_Comply($argv[1]);
-    $PHPCS_Comply->comply();
-    echo $PHPCS_Comply->report($argv[2]);
-}
-
 ?>
