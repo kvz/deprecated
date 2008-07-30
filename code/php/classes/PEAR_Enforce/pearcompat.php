@@ -15,6 +15,8 @@ switch ($action) {
         
         $Token = new Token($line);
         
+        echo "Showing Tokens [$line]\n\n";
+        
         print_r($Token->getTokenized())."\n";
         
         break;

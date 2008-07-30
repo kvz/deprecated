@@ -62,7 +62,7 @@ Class Token {
      *
      * @return array The new token.
      */
-    private function _standardiseToken($token)
+    protected function _standardiseToken($token)
     {
         if (is_array($token) === false) {
             $newToken = $this->_resolveSimpleToken($token);
@@ -78,7 +78,7 @@ Class Token {
             }
         }
         
-        list($line, $col, $len) = $this->_update_row_and_column_positions($newToken['content']);
+        list($line, $col, $len) = $this->_updateRowCol($newToken['content']);
         
         $newToken['row'] = $line;
         $newToken['col'] = $col;
@@ -88,7 +88,21 @@ Class Token {
 
     }//end _standardiseToken()
 
-
+    
+    protected function _surroundTags($code) {
+        if ($this->_addTags) {
+            if (strpos($code, "<?") === false) {
+                $code = "<?".$code;
+                $this->_addedTagBegin = true;
+            }
+            if (strpos($code, "?>") === false) {
+                $code = $code."?>";
+                $this->_addedTagClose = true;
+            }
+        }
+        return $code;
+    }
+    
     /**
      * Converts T_STRING tokens into more usable token names.
      *
@@ -100,7 +114,7 @@ Class Token {
      *
      * @return array The new token.
      */
-    private function _resolveTstringToken(array $token)
+    protected function _resolveTstringToken(array $token)
     {
         $newToken = array();
         switch (strtolower($token[1])) {
@@ -143,7 +157,7 @@ Class Token {
      *
      * @return array The new token in array format.
      */
-    private function _resolveSimpleToken($token)
+    protected function _resolveSimpleToken($token)
     {
         $newToken = array();
 
@@ -230,29 +244,9 @@ Class Token {
 
     }//end _resolveSimpleToken()
     
-    /**
-     * Enter description here...
-     *
-     * @param unknown_type $string
-     * @return Token
-     */
-    public function Token($string, $addTags=true) {
-        $code = $string;
-        
+    public function Token($code, $addTags=true) {
         $this->_addTags = $addTags;
-        
-        if ($this->_addTags) {
-            // Tokenize
-            if (strpos($code, "<?") === false) {
-                $code = "<?".$code;
-                $this->_addedTagBegin = true;
-            }
-            if (strpos($code, "?>") === false) {
-                $code = $code."?>";
-                $this->_addedTagClose = true;
-            }
-        }
-        
+        $code = $this->_surroundTags($code);
         $this->_tokenized = $this->_tokenizeString($code, '\n');
     }
     
@@ -271,8 +265,17 @@ Class Token {
         }
         return $cont;
     }
+
     
-    private function _update_row_and_column_positions($c) {
+    public function getTypes() {
+        $cont = array();
+        foreach ($this->_tokenized as $i=>$token) {
+            $cont[] = $token["type"];
+        }
+        return $cont;
+    }    
+    
+    protected function _updateRowCol($c) {
         // Update line count
         $numNewLines = substr_count($c, "\n");
         if (1 <= $numNewLines) {
@@ -309,7 +312,7 @@ Class Token {
      *
      * @return array
      */
-    private function _tokenizeString($string, $eolChar='\n')
+    protected function _tokenizeString($string, $eolChar='\n')
     {
         $tokens      = @token_get_all($string);
         $finalTokens = array();

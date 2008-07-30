@@ -13,8 +13,13 @@ Class CodeRow {
     private function _changed(){
         $this->_length = strlen($this->_codeRow);
                 
-        $this->_Token = new Token($this->_codeRow);
+        $this->_Token = new TokenSimple($this->_codeRow);
         $this->_tokenized = $this->_Token->getTokenized();
+        
+    }
+    
+    public function getTokenTypes(){
+        return $this->_Token->getTypes();
     }
     
     public function getCodeRow() {
@@ -53,13 +58,48 @@ Class CodeRow {
         // Allow for token type to be a string; Put inside array anyway
         if (is_string($onlyTokenTypes)) $onlyTokenTypes = array($onlyTokenTypes);
         
-        if (count($onlyTokenTypes)) {
+        // Semantics (e.g. reverse the meaning of tokens when prefixed with a: !)
+        if (!count($onlyTokenTypes)) {
+            $singleLine = true;
+        } else {
+            $singleLine = false;
+            $notTokenTypes = array();
+            
+            $killOnly = false;
+            foreach ($onlyTokenTypes as $i=>$onlyTokenType) {
+                if (substr($onlyTokenType, 0, 1) == "!") {
+                    $notTokenTypes[$i] = substr($onlyTokenType, 1, strlen($onlyTokenType));
+                    
+                    // Delete only if NOT is set
+                    $killOnly = true;
+                } 
+            }
+            if ($killOnly) {
+                $onlyTokenTypes = array();
+            }
+        }
+        
+        
+        if ($singleLine) {
+            // Replace on entire string
+            $this->_codeRow = $this->_replace($search, $replace, $this->_codeRow, $use_regex);
+        } else {
+            // Please note that e.g. whitespace and comma are separate
+            // tokens. This means replacing ' ,' with ',' will not work when
+            // using $notTokenTypes or $onlyTokenTypes
+            
             // Only replace within certain token types
             foreach ($this->_tokenized as $i=>$token) {
-                // Replace local version of token
-                if (in_array($token["type"], $onlyTokenTypes)) {
-                    $this->_tokenized[$i] = $this->_replace($search, $replace, $this->_tokenized[$i], $use_regex);
+                
+                if (count($notTokenTypes) && in_array($token["type"], $notTokenTypes)) {
+                    continue;
                 }
+                if (count($onlyTokenTypes) && !in_array($token["type"], $onlyTokenTypes)) {
+                    continue;
+                }
+                
+                // Replace this token (a local version)
+                $this->_tokenized[$i]["content"] = $this->_replace($search, $replace, $this->_tokenized[$i]["content"], $use_regex);
             }
             
             // Save back to token object
@@ -67,9 +107,6 @@ Class CodeRow {
             
             // Retrieve content from renewed token
             $this->_codeRow = $this->_Token->getContent();
-        } else {
-            // Replace on entire string
-            $this->_codeRow = $this->_replace($search, $replace, $this->_codeRow, $use_regex);
         }
         
         $this->_changed();

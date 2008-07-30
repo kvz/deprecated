@@ -434,6 +434,7 @@ Class PEAR_Enforce {
                         if ($this->_fixProblem($fixMessage, $fixCode, $pattern, $row, $col)) {
                             $this->_cntProblemsFixed++;
                             $this->_fixedLog[$fixCode][$row]["assig"] = $fixMessage; 
+                            $this->_fixedLog[$fixCode][$row]["types"] = implode(", ", $this->_CodeRows[$row]->getTokenTypes());
                             $this->_fixedLog[$fixCode][$row]["befor"] = $before;
                             $this->_fixedLog[$fixCode][$row]["after"] = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
                             $this->_reportLog .= str_pad("FIXED", 7, " ", STR_PAD_LEFT)." ";
@@ -482,67 +483,84 @@ Class PEAR_Enforce {
             $matches[$i-1] = $match[0];
         }
         
+        list($expected, $found) = $matches;
+        $needed = @($expected - $found);
+        
         switch ($fixCode) {
+            
+            case "IVD_PSC":
+                // Perl-style comments are not allowed. Use \"// Comment.\" or \"/* comment */\" instead.
+                
+                $CodeRow->regplace('\#(\s*)', '// ', 'T_COMMENT');
+                break;
             case "MIS_LNG_TAG":
                 // Short PHP opening tag used. Found \"<?\" Expected \"<?php\".
+                
                 $CodeRow->replace('<?', '<?php', 'T_OPEN_TAG');
                 break;
             case "MIS_UPC_CNS":
                 // Constants must be uppercase; expected IS_NUMERIC but found is_numeric
-                list($expected, $found) = $matches;
+                
                 $CodeRow->replace($found, $expected, 'T_STRING');
                 break;
             case "MIS_ALN":
                 // Equals sign not aligned correctly
-                list($expected, $found) = $matches;
-                $needed = $expected - $found;
                 
                 // Insert will actually backspace on negative amount
                 $CodeRow->insertAt($CodeRow->getPosEqual(), " ", $needed);
-                
                 break;
             case "IND":
-                $CodeRow->setIndent($matches[1]);
-                break;
-            case "FND_SWS_BFR_CMA":
-                // @todo Running 
-                // /home/kevin/workspace/plutonia-kvzlib/code/php/programs/pearcompat.php ./storage.php FND_SWS_BFR_CMA
-                // messes up quotes 
-                ///////////////////////$CodeRow->regplace('([^"\'])(.*?)[\s+],(.*?)([^"\'])', '$1$2,$3$4');
+                // Line indented incorrectly; expected 12 spaces, found 16
+                
+                $CodeRow->setIndent($needed);
                 break;
             case "MIS_SPC_AFT_CMA":
+                // No space found after comma in function call
+                
                 $CodeRow->regplace(',([^ ])', ', $1');
                 break;
             case "MIS_SPC_BFR_OPN_BRC":
                 // Expected \"if (...) {\n\"; found \"...){\n\"
+                
                 // ){
                 $CodeRow->insertAt($CodeRow->getOpeningBracePos(), " ");
                 break;
             case "MIS_NWL_ARN_CLS_BRC":
                 // Closing brace must be on a line by itself
+                
                 $CodeRow->insertAt($CodeRow->getClosingBracePos(), 
                     $this->_postFormatAddNewline . $CodeRow->getIndentation());
                 break;
             case "MIS_NWL_AFT_OPN_BRC":
+                // "Expected \"if (...) {\n\"; found \"...){\
+                
                 // Not the same as MIS_NWL_ARN_OPN_BRC, which will put the brace itself
                 // on a newline (for functions)
-                // "Expected \"if (...) {\n\"; found \"...){\
                 // {!\n
                 $CodeRow->insertAt($CodeRow->getOpeningBracePos()+1, 
                     $this->_postFormatAddNewline . $CodeRow->getIndentation(4));
                 break;
             case "MIS_NWL_ARN_OPN_BRC":
                 // Opening function brace should be on a new line
+                
                 $CodeRow->insertAt($CodeRow->getOpeningBracePos(), 
                     $this->_postFormatAddNewline . $CodeRow->getIndentation());
                 break;
+            case "FND_SWS_BFR_CMA":
+                // Space found before comma in function call
+                
+                //
+                $CodeRow->regplace('(\s+),', ',', 'T_ALLOTHER');
+                
+                break;
             case "FND_SWS_BFR_ELS":
                 // Expected \"} else {\n\"; found \"}\n    else{\n\"
-                $CodeRow->replace('else{', $this->_postFormatBackSpaceCB. ' else {');
                 
+                $CodeRow->replace('else{', $this->_postFormatBackSpaceCB. ' else {', 'T_ALLOTHER');
                 break;
             case "FND_SPC_PTH":
                 // Space surrounding parentheses
+                
                 list($spc_loc, $pth_typ) = $matches;
                 $a = $b = $pth = "";
                 
@@ -555,7 +573,7 @@ Class PEAR_Enforce {
                     $b = $spc;
                 }
                 
-                $CodeRow->regplace($a.$pth.$b, '$1');
+                $CodeRow->regplace($a.$pth.$b, '$1', 'T_ALLOTHER');
                 break;
             default:
                 return false;
