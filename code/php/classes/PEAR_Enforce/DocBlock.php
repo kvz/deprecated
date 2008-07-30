@@ -78,6 +78,12 @@ class DocBlock {
         $this->setRow("author", "Kevin");
         return $this->generate();
     }
+
+    public function generateClass($str="") {
+        $this->setRow("author", "Kevin");
+        return $this->generate();
+    }
+    
     
     /**
      * Enter description here...

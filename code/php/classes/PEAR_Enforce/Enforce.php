@@ -45,18 +45,24 @@ Class PEAR_Enforce {
      */
     const LOG_DEBUG = 7;
     
+    private $_definitions = array();
+    private $_fixCodesMaxLen = 0;
+
     private $_CodeRows = false;
     
     private $_cntProblemsTotal = 0;
     private $_cntProblemsFixed = 0;
-    private $_reportLog = "";
-    private $_fixCodesMaxLen = 0;
+    
+    private $_rowProblems = array();
     private $_fixedLog = array();
-    private $_definitions = array();
+    private $_reportLog = "";
+    private $_debugLog = "";
+    private $_debugRows = array(853);
+
     private $_fileOriginal = false;
     private $_fileImproved = false;
-    private $_rowProblems = array();
-    private $_postFormatAddNewline  = "<NEWLINE>";
+
+    private $_postFormatAddNewline  = "<NEWLINE>";  // Should be Concatenated so this script can also be run on itself.
     private $_postFormatBackSpaceCB = "<BACKSPACE,T_CURLY_BRACKET>";
     
     
@@ -180,6 +186,8 @@ Class PEAR_Enforce {
          * DSC  Doc Style Comments
          * ANC  Allowed Normal Comments
          * PSC  Perl Style Comments
+         * CMT  Comment
+         * TAG  Tag
          *
          * BRC  Brace
          * PTH  Parenthesis
@@ -214,8 +222,8 @@ Class PEAR_Enforce {
         
         $predefined['Space %c %c parenthesis of function call prohibited'][] = 'FND_SPC_PTH';
         
-        $predefined['Equals sign not aligned correctly; expected %d space%z but found %d space%z'][]                     = 'MIS_ALN';
-        $predefined['Equals sign not aligned with surrounding assignments; expected %d space%z but found %d space%z'][]  = 'MIS_ALN';
+        $predefined['Equals sign not aligned correctly; expected %d space%z but found %d space%z'][]                     = 'MIS_ALN_EQL';
+        $predefined['Equals sign not aligned with surrounding assignments; expected %d space%z but found %d space%z'][]  = 'MIS_ALN_EQL';
         
         // Small alignment
         $predefined['Space found before comma in function call'][]           = 'FND_SWS_BFR_CMA';
@@ -228,7 +236,8 @@ Class PEAR_Enforce {
         //$predefined['Expected \"} else {\n\"; found \"}\n        else{\n\"'][] = 'FND_SWS_BFR_ELS';     // Two things wrong with same pattern!
         //$predefined['Expected \"} else {\n\"; found \"}\n        else{\n\"'][] = 'MIS_SPC_BFR_OPN_BRC'; // Two things wrong with same pattern!
         
-
+                    
+        $predefined['Expected \"foreach (...) {\n\"; found \"...) {\n\"'][] = 'MIS_SPC_BFR_OPN_PTH';
         $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_NWL_AFT_OPN_BRC'; // Two things wrong with same pattern!
         $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_SPC_BFR_OPN_BRC'; // Two things wrong with same pattern!
         $predefined['Expected \"%c (...) {\n\"; found \"...){\n\"'][]       = 'MIS_SPC_BFR_OPN_BRC';
@@ -240,17 +249,26 @@ Class PEAR_Enforce {
         // Newlines
         $predefined['Closing brace must be on a line by itself'][]      = 'MIS_NWL_ARN_CLS_BRC';
         $predefined['Opening function brace should be on a new line'][] = 'MIS_NWL_ARN_OPN_BRC';
+        $predefined['Opening brace of a Class must be on the line after the definition'][] = 'MIS_NWL_ARN_OPN_BRC';
 
         // Comments
         $predefined['You must use \"/**\" style comments for a %c comment'][]                                   = 'IVD_DSC';
         $predefined['Perl-style comments are not allowed. Use \"// Comment.\" or \"/* comment */\" instead.'][] = 'IVD_PSC';
         $predefined['Missing %c doc comment'][]                                                                 = 'MIS_DSC';
+        $predefined['Missing comment for param \"$%c\" at position %d'][]                                       = 'MIS_PRM_CMT';
+        $predefined['The comments for parameters $%c (%d) and $%c (%d) do not align'][]                         = 'MIS_CMT_TAG';
+        $predefined['Missing @%c tag in %c comment'][]                                                          = 'MIS_ALN_PRM_CMT';
+        
         
         // Language
         $predefined['Short PHP opening tag used. Found \"<?\" Expected \"<?php\".'][]       = 'MIS_LNG_TAG';
         $predefined['Constants must be uppercase; expected %c but found %c'][]              = 'MIS_UPC_CNS';
         $predefined['\"%c\" is a statement, not a function; no parentheses are required'][] = 'FND_PTH_ARN_STM';
         $predefined['File is being unconditionally included; use \"require\" instead'][]    = 'FND_IVD_STM';
+        
+        // Not going to fix. Ever.
+        $predefined['Protected method name \"%c::%c\" must not be prefixed with an underscore'][] = 'NEVER_FIX';
+        //$predefined[''][] = 'NEVER_FIX';
         
         
         
@@ -304,7 +322,10 @@ Class PEAR_Enforce {
      * @return string
      */
     private function _preFormat($source) {
-        return trim(str_replace("\t", "    ", $source));
+        $source = trim($source);
+        $source = str_replace("\t", "    ", $source);
+        $source = str_replace("\r", "", $source);
+        return $source;
     }
     
     /**
@@ -315,6 +336,10 @@ Class PEAR_Enforce {
      * @return string
      */
     private function _postFormat($source) {
+        
+        // debugging
+        return $source;
+        
         // Newlines
         $source = str_replace($this->_postFormatAddNewline, "\n", $source);
 
@@ -371,6 +396,13 @@ Class PEAR_Enforce {
             $this->_log("Cannot write to file '".$this->_fileImproved."'", PEAR_Enforce::LOG_CRIT);
             return false;
         }
+
+        $this->_CodeRows = array();
+        $lines = file($this->_fileImproved);
+        foreach($lines as $i=>$codeRow) {
+            // Compensate
+            $this->_CodeRows[$i+1] = new CodeRow($codeRow);
+        }
         
         return true;
     }
@@ -422,14 +454,8 @@ Class PEAR_Enforce {
     
     private function _improveCode($results) {
         $this->_reportLog = "";
-        $fixedResults = array();
-        
-        $this->_CodeRows = array();
-        $lines = file($this->_fileImproved);
-        foreach($lines as $i=>$codeRow) {
-            // Compensate
-            $this->_CodeRows[$i+1] = new CodeRow($codeRow);
-        }
+        $this->_debugLog = "";
+        $fixedResults = "";
         
         foreach($results as $row=>$cols) {
             $this->_rowProblems[$row] = array();
@@ -438,6 +464,11 @@ Class PEAR_Enforce {
                     extract($report);
                     list($pattern, $fixCodes) = $this->_determineFixCodes($fixMessage);
                     $this->_rowProblems[$row] = array_merge($this->_rowProblems[$row], $fixCodes);
+                    
+                    if (in_array($row, $this->_debugRows)) {
+                        $src = $this->_CodeRows[$row]->getCodeRow();
+                        $this->_debugLog .= "$row> ".$src."-\n";
+                    }
                     
                     $this->_cntProblemsTotal++;
                     foreach($fixCodes as $fixCode) {
@@ -460,23 +491,27 @@ Class PEAR_Enforce {
                             
                         }
                         $this->_reportLog .= "\n";
+                        
+                        if (in_array($row, $this->_debugRows)) {
+                            $src = $this->_CodeRows[$row]->getCodeRow();
+                            $this->_debugLog .= "$row> ".$src."-\n";
+                        }
                     }
                 }
             }
         }
         
-        $fixedResults[$file]  = "";
-        foreach($this->_CodeRows as $CodeRow) {
-            $fixedResults[$file] .= $CodeRow->getCodeRow();
+        $fixedResults  = "";
+        foreach($this->_CodeRows as $row=>$CodeRow) {
+            $fixedResults .= $CodeRow->getCodeRow();
         }
         
-        return implode("\n", $fixedResults);
+        return $fixedResults;
     }
     
     /**
      * Fix a spefic problem as reported by PHPCS
      *
-     * @param array   $codeRows
      * @param string  $fixMessage
      * @param string  $fixCode
      * @param string  $pattern
@@ -521,6 +556,9 @@ Class PEAR_Enforce {
                 if ($expected == "function") {
                     $CodeRow->insertAt($CodeRow->getIndent(+1), 
                         $DocBlock->generateFunction($CodeRow->getCodeRow()));
+                } else if ($expected == "class") {
+                    $CodeRow->insertAt($CodeRow->getIndent(+1), 
+                        $DocBlock->generateClass($CodeRow->getCodeRow()));
                 } elseif ($expected == "file") {
                     $CodeRow->insertAt(1, 
                         $DocBlock->generateFile());
@@ -544,7 +582,7 @@ Class PEAR_Enforce {
                 
                 $CodeRow->replace($found, $expected, 'T_ALLOTHER');
                 break;
-            case "MIS_ALN":
+            case "MIS_ALN_EQL":
                 // Equals sign not aligned correctly
                 // Equals sign not aligned with surrounding assignments; expected 3 spaces but found 1 space
                 
@@ -766,6 +804,7 @@ Class PEAR_Enforce {
         $report .= "Detected ".$this->_cntProblemsTotal." problems"."\n";
         $report .= "Fixed    ".$this->_cntProblemsFixed." problems"."\n";
         $report .= "Saved to ".$this->_fileImproved." (".filesize($this->_fileImproved).")"."\n";
+        $report .= "debug:   ".$this->_debugLog."\n";
         
         return $report;
     }

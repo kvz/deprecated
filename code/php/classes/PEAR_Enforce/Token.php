@@ -42,14 +42,14 @@ define('T_REGULAR_EXPRESSION', 1034);
  */
 Class Token {
     
-    private $_tokenized = array();
-    private $_row = 1;
-    private $_col  = 1;
-    private $_colCorrectionBegin = 0;
-    private $_colCorrectionEnd = 0;
-    private $_addTags = true;
-    private $_addedTagBegin = false;
-    private $_addedTagEnd = false;
+    protected $_tokenized = array();
+    protected $_row = 1;
+    protected $_col  = 1;
+    protected $_colCorrectionBegin = 0;
+    protected $_colCorrectionEnd = 0;
+    protected $_addTags = true;
+    protected $_addedTagBegin = false;
+    protected $_addedTagEnd = false;
     
     /**
      * Takes a token produced from <code>token_get_all()</code> and produces a
@@ -87,7 +87,6 @@ Class Token {
         return $newToken;
 
     }//end _standardiseToken()
-
     
     protected function _surroundTags($code) {
         if ($this->_addTags) {
@@ -144,7 +143,6 @@ Class Token {
         return $newToken;
 
     }//end _resolveTstringToken()
-
 
     /**
      * Converts simple tokens into a format that conforms to complex tokens
@@ -354,19 +352,6 @@ Class Token {
             $token        = $tokens[$stackPtr];
             $tokenIsArray = is_array($token);
 
-            
-            /*
-                If we added tags at runtime, we need to avoid
-                enclosing them in our token
-            */            
-            if ($this->_addedTagBegin && $token[0] == T_OPEN_TAG) {
-                continue;
-            }
-    
-            if ($this->_addedTagClose && $token[0] == T_CLOSE_TAG) {
-                continue;
-            }
-            
             /*
                 If we are using \r\n newline characters, the \r and \n are sometimes
                 split over two tokens. This normally occurs after comments. We need
@@ -562,6 +547,23 @@ Class Token {
             }//end if
         }//end for
 
+        
+        foreach ($finalTokens as $i=>$token) {  
+            /*
+                If we added tags at runtime, we need to avoid
+                enclosing them in our token
+            */            
+            if ($this->_addedTagBegin && $token['type'] == 'T_OPEN_TAG') {
+                unset($finalTokens[$i]);
+            } elseif ($this->_addedTagClose && $token['type'] == 'T_CLOSE_TAG') {
+                unset($finalTokens[$i]);
+            } elseif ($this->_addedTagClose && $token['type'] == 'T_DOUBLE_QUOTED_STRING') {
+                if (substr($token["content"],-2) == "?>") {
+                    $finalTokens[$i]["content"] = substr($token["content"], 0, strlen($token["content"])-2);
+                }
+            }
+        }
+        
         return $finalTokens;
 
     }//end _tokenizeString()
