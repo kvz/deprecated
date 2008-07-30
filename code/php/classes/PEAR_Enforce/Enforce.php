@@ -492,11 +492,11 @@ Class PEAR_Enforce {
 
                 $DocBlock = new DocBlock();
                 $DocBlock->setIndent($CodeRow->getIndentation());
+                $DocBlock->setNewLineChar($this->_postFormatAddNewline);
                 
+                $CodeRow->insertAt($CodeRow->getIndent(+1), 
+                    $DocBlock->generateFunction($CodeRow->getCodeRow()));
                 
-                echo $DocBlock->generateFunction($CodeRow->getCodeRow());
-                echo "\n";
-                        
                 break;
             case "IVD_PSC":
                 // Perl-style comments are not allowed. Use \"// Comment.\" or \"/* comment */\" instead.
@@ -533,12 +533,12 @@ Class PEAR_Enforce {
                 // Expected \"if (...) {\n\"; found \"...){\n\"
                 
                 // ){
-                $CodeRow->insertAt($CodeRow->getOpeningBracePos(), " ");
+                $CodeRow->insertAt($CodeRow->getPosBraceOpen(), " ");
                 break;
             case "MIS_NWL_ARN_CLS_BRC":
                 // Closing brace must be on a line by itself
                 
-                $CodeRow->insertAt($CodeRow->getClosingBracePos(), 
+                $CodeRow->insertAt($CodeRow->getPosBraceClose(), 
                     $this->_postFormatAddNewline . $CodeRow->getIndentation());
                 break;
             case "MIS_NWL_AFT_OPN_BRC":
@@ -547,13 +547,13 @@ Class PEAR_Enforce {
                 // Not the same as MIS_NWL_ARN_OPN_BRC, which will put the brace itself
                 // on a newline (for functions)
                 // {!\n
-                $CodeRow->insertAt($CodeRow->getOpeningBracePos()+1, 
+                $CodeRow->insertAt($CodeRow->getPosBraceOpen()+1, 
                     $this->_postFormatAddNewline . $CodeRow->getIndentation(4));
                 break;
             case "MIS_NWL_ARN_OPN_BRC":
                 // Opening function brace should be on a new line
                 
-                $CodeRow->insertAt($CodeRow->getOpeningBracePos(), 
+                $CodeRow->insertAt($CodeRow->getPosBraceOpen(), 
                     $this->_postFormatAddNewline . $CodeRow->getIndentation());
                 break;
             case "FND_SWS_BFR_CMA":

@@ -202,13 +202,23 @@ Class CodeRow {
         
         return 0;
     }
+
+    public function getPosToken($tokenType) {
+        foreach ($this->_tokenized as $i=>$token) {
+             if ($token["type"] == $tokenType) {
+                 return $token["col"];
+             }
+        }
+        
+        return 0;
+    }
     
-    public function getOpeningBracePos() {
+    public function getPosBraceOpen() {
         // Compensate
         return strpos($this->_codeRow, "{")+1;
     }
 
-    public function getClosingBracePos() {
+    public function getPosBraceClose() {
         // Compensate
         return strrpos($this->_codeRow, "}")+1;
     }

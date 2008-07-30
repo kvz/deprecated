@@ -12,14 +12,24 @@ class DocBlock {
     private $_indentation = '';
     private $_docBlock = '';
     private $_maxWidth = '70';
-    private $_varTypes = array("string", "integer", "boolean", "array");
+    private $_varTypes = array(
+        "string" => array("T_STRING"), 
+        "integer", 
+        "boolean" => array("T_FALSE", "T_TRUE"), 
+        "array"
+    );
     private $_newLineBefore = array("return");
-    private $_newLineAfter = array("header");
+    private $_newLineAfter  = array("header");
+    private $_newLineChar = "\n";
     
     public  $errors = array();
     
     public function DocBlock () {
         
+    }
+    
+    public function setNewLineChar($newLineChar="\n") {
+         $this->_newLineChar = $newLineChar;
     }
     
     /**
@@ -40,8 +50,10 @@ class DocBlock {
         return $longest;
     }    
     
-    public function setRow($table, $name, $type=false, $description=false) {
-        $this->_tables[$table][$name] = compact("name", "type", "description");
+    public function setRow($table, $name, $type="", $description="") {
+        $this->_tables[$table][$name]["name"] = trim($name);
+        $this->_tables[$table][$name]["type"] = trim($type);
+        $this->_tables[$table][$name]["description"] = trim($description);
         return true;
     }
     
@@ -62,11 +74,39 @@ class DocBlock {
         return $this->_params;
     }
     
+    /**
+     * Enter description here...
+     *
+     * @param unknown_type $codeFunction
+     * 
+     * @return unknown
+     */
     public function generateFunction($codeFunction) {
         
         $Token = new Token($codeFunction);
         
-        return print_r($Token->getVariables(), true);
+        $this->setHeader("Enter description here...");
+        
+        $vars = $Token->getVariables();
+        foreach ($vars as $var=>$valueData) {
+            $know_type = "unknown_type";
+            
+            if (is_array($valueData)) {
+                foreach($this->_varTypes as $type=>$possibilities) {
+                    if (is_array($possibilities) && in_array($valueData["type"], $possibilities)) {
+                        $know_type = $type;
+                        break;
+                    }
+                }
+                
+                $know_type = "Kevin_please_translate:".$valueData["type"];
+            }
+            
+            $this->setRow("param", $var, $know_type, "");
+        }
+        
+        $this->setRow("return", "unknown");
+        
         return $this->generate();
     }
     
@@ -102,6 +142,8 @@ class DocBlock {
             
             foreach($cells as $cellName=>$value) {
                 $l = $maxColumnLengths[$cellName];
+                if (!trim($value) && !$l) continue;
+                
                 $str .= str_pad($value, $l, " ", STR_PAD_RIGHT)." ";
             }
             $this->_addLine($str);
@@ -118,7 +160,7 @@ class DocBlock {
             $this->_addLine("");
         }
         
-        $headerLines = explode("\n", wordwrap($header, $maxWidth, "\n", true));
+        $headerLines = explode($this->_newLineChar, wordwrap($header, $maxWidth, $this->_newLineChar, true));
         foreach($headerLines as $headerLine) {
             $this->_addLine($headerLine);
         }
@@ -152,11 +194,11 @@ class DocBlock {
         $in = $this->_indentation;
         
         if ($type == "head") {
-            $this->_docBlock .= $in."/**"."\n";
+            $this->_docBlock .= $in."/**".$this->_newLineChar;
         } elseif ($type == "tail") {
-            $this->_docBlock .= $in." */"."\n";
+            $this->_docBlock .= $in." */".$this->_newLineChar;
         } else {
-            $this->_docBlock .= $in." * $str"."\n";
+            $this->_docBlock .= $in." * $str".$this->_newLineChar;
         }
     }
 }
