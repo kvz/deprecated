@@ -487,7 +487,17 @@ Class PEAR_Enforce {
         $needed = @($expected - $found);
         
         switch ($fixCode) {
-            
+            case "MIS_DSC":
+                // Missing function doc comment
+
+                $DocBlock = new DocBlock();
+                $DocBlock->setIndent($CodeRow->getIndentation());
+                
+                
+                echo $DocBlock->generateFunction($CodeRow->getCodeRow());
+                echo "\n";
+                        
+                break;
             case "IVD_PSC":
                 // Perl-style comments are not allowed. Use \"// Comment.\" or \"/* comment */\" instead.
                 

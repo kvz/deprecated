@@ -265,8 +265,37 @@ Class Token {
         }
         return $cont;
     }
-
     
+    public function getVariables() {
+        $cont = array();
+        
+        // Delete whitespace first to simplify further processing
+        $tokens = $this->_tokenized;
+        foreach($tokens as $i=>$token) {
+            if ($token["type"] == "T_WHITESPACE") {
+                unset($tokens[$i]);
+            }
+        }
+        
+        if ($tokens[0]["type"] != "T_FUNCTION") {
+            return array();
+        }
+        
+        foreach ($tokens as $i=>$token) {
+            if ($token["type"] == "T_VARIABLE") {
+                // Store variable as key
+                $cont[$token["content"]] = "";
+                
+                // See if we can also store a default value
+                if ($tokens[$i+1]["type"] == "T_EQUAL" && $tokens[$i+2]) {
+                    $cont[$token["content"]]["type"]    = $tokens[$i+2]["type"];
+                    $cont[$token["content"]]["content"] = $tokens[$i+2]["content"];
+                }
+            }
+        }
+        return $cont;
+    }        
+        
     public function getTypes() {
         $cont = array();
         foreach ($this->_tokenized as $i=>$token) {

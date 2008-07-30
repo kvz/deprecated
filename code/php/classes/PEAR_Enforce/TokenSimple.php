@@ -23,6 +23,7 @@ class TokenSimple extends Token {
         }
         return $cont;
     }        
+
     
     public function getTokenized() {
         return $this->_tokenized;

@@ -62,7 +62,11 @@ class DocBlock {
         return $this->_params;
     }
     
-    public function generateFunction($codeMethod) {
+    public function generateFunction($codeFunction) {
+        
+        $Token = new Token($codeFunction);
+        
+        return print_r($Token->getVariables(), true);
         return $this->generate();
     }
     
