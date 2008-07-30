@@ -512,14 +512,21 @@ Class PEAR_Enforce {
                 // You must use \"/**\" style comments for a function comment
                 
             case "MIS_DSC":
-                // Missing function doc comment
+                // Missing function/doc comment
 
                 $DocBlock = new DocBlock();
                 $DocBlock->setIndent($CodeRow->getIndentation());
                 $DocBlock->setNewLineChar($this->_postFormatAddNewline);
                 
-                $CodeRow->insertAt($CodeRow->getIndent(+1), 
-                    $DocBlock->generateFunction($CodeRow->getCodeRow()));
+                if ($expected == "function") {
+                    $CodeRow->insertAt($CodeRow->getIndent(+1), 
+                        $DocBlock->generateFunction($CodeRow->getCodeRow()));
+                } elseif ($expected == "file") {
+                    $CodeRow->insertAt(1, 
+                        $DocBlock->generateFile());
+                } else {
+                    die("\nwhat is a $expected\n:".__FILE__);
+                }
                 
                 break;
             case "IVD_PSC":

@@ -74,6 +74,11 @@ class DocBlock {
         return $this->_params;
     }
     
+    public function generateFile($str="") {
+        $this->setRow("author", "Kevin");
+        return $this->generate();
+    }
+    
     /**
      * Enter description here...
      *
