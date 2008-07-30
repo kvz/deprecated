@@ -56,8 +56,8 @@ Class PEAR_Enforce {
     private $_fileOriginal = false;
     private $_fileImproved = false;
     private $_rowProblems = array();
-    private $_postFormatAddNewline  = "<@!NEWLINE!@>";
-    private $_postFormatBackSpaceCB = "<@!BACKSPACE,[T_OPEN_CURLY_BRACKET]!@>";
+    private $_postFormatAddNewline  = "<NEWLINE>";
+    private $_postFormatBackSpaceCB = "<BACKSPACE,T_CURLY_BRACKET>";
     
     
     public $cmd_phpcs = "/usr/bin/phpcs";
@@ -212,6 +212,8 @@ Class PEAR_Enforce {
         $predefined['Break statement indented incorrectly; expected %d space%z, found %d'][] = 'IND';
         $predefined['Closing brace indented incorrectly; expected %d space%z, found %d'][]   = 'IND';
         
+        $predefined['Space %c %c parenthesis of function call prohibited'][] = 'FND_SPC_PTH';
+        
         $predefined['Equals sign not aligned correctly; expected %d space%z but found %d space%z'][]                     = 'MIS_ALN';
         $predefined['Equals sign not aligned with surrounding assignments; expected %d space%z but found %d space%z'][]  = 'MIS_ALN';
         
@@ -220,7 +222,12 @@ Class PEAR_Enforce {
         $predefined['Expected \"} else {\n\"; found \"}\n    else{\n\"'][]   = 'FND_SWS_BFR_ELS';
         $predefined['Expected \"} elseif (...) {\n\"; found \"...) {\n\"'][] = 'FND_SWS_BFR_ELI';
         
-        $predefined['Space %c %c parenthesis of function call prohibited'][] = 'FND_SPC_PTH';
+        
+        $predefined['Expected \"} else {\n\"; found \"}\n%s else{\n\"'][] = 'FND_SWS_BFR_ELS';     // Two things wrong with same pattern!
+        $predefined['Expected \"} else {\n\"; found \"}\n%s else{\n\"'][] = 'MIS_SPC_BFR_OPN_BRC'; // Two things wrong with same pattern!
+        //$predefined['Expected \"} else {\n\"; found \"}\n        else{\n\"'][] = 'FND_SWS_BFR_ELS';     // Two things wrong with same pattern!
+        //$predefined['Expected \"} else {\n\"; found \"}\n        else{\n\"'][] = 'MIS_SPC_BFR_OPN_BRC'; // Two things wrong with same pattern!
+        
 
         $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_NWL_AFT_OPN_BRC'; // Two things wrong with same pattern!
         $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_SPC_BFR_OPN_BRC'; // Two things wrong with same pattern!
@@ -308,7 +315,15 @@ Class PEAR_Enforce {
      * @return string
      */
     private function _postFormat($source) {
-        return str_replace($this->_postFormatAddNewline, "\n", $source);
+        // Newlines
+        $source = str_replace($this->_postFormatAddNewline, "\n", $source);
+
+        // Backspace until curly brace found
+        $f = preg_quote($this->_postFormatBackSpaceCB);
+        $p = '\}([\s]+)('.$f.')';
+        $source = preg_replace('#'.$p.'#s', '}', $source);
+        
+        return $source;
     }    
     
     /**
@@ -431,11 +446,11 @@ Class PEAR_Enforce {
                         $this->_reportLog .= str_pad($row, 4, " ", STR_PAD_LEFT)." ";
                         $this->_reportLog .= str_pad($col, 3, " ", STR_PAD_LEFT)." ";
                         $before = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
+                        $this->_fixedLog[$fixCode][$row]["assig"] = $fixMessage; 
+                        $this->_fixedLog[$fixCode][$row]["types"] = implode(", ", $this->_CodeRows[$row]->getTokenTypes());
+                        $this->_fixedLog[$fixCode][$row]["befor"] = $before;
                         if ($this->_fixProblem($fixMessage, $fixCode, $pattern, $row, $col)) {
                             $this->_cntProblemsFixed++;
-                            $this->_fixedLog[$fixCode][$row]["assig"] = $fixMessage; 
-                            $this->_fixedLog[$fixCode][$row]["types"] = implode(", ", $this->_CodeRows[$row]->getTokenTypes());
-                            $this->_fixedLog[$fixCode][$row]["befor"] = $before;
                             $this->_fixedLog[$fixCode][$row]["after"] = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
                             $this->_reportLog .= str_pad("FIXED", 7, " ", STR_PAD_LEFT)." ";
                             $this->_reportLog .= $fixMessage;
@@ -455,7 +470,7 @@ Class PEAR_Enforce {
             $fixedResults[$file] .= $CodeRow->getCodeRow();
         }
         
-        return $fixedResults;
+        return implode("\n", $fixedResults);
     }
     
     /**
@@ -487,6 +502,15 @@ Class PEAR_Enforce {
         $needed = @($expected - $found);
         
         switch ($fixCode) {
+            case "TOO_LNG":
+                // "Line exceeds 85 characters; contains 96 characters
+                
+                $CodeRow->wrap($this->_postFormatAddNewline, 85, $CodeRow->getIndentation(+4));
+                
+                break;
+            case "IVD_DSC":
+                // You must use \"/**\" style comments for a function comment
+                
             case "MIS_DSC":
                 // Missing function doc comment
 
@@ -511,13 +535,22 @@ Class PEAR_Enforce {
             case "MIS_UPC_CNS":
                 // Constants must be uppercase; expected IS_NUMERIC but found is_numeric
                 
-                $CodeRow->replace($found, $expected, 'T_STRING');
+                $CodeRow->replace($found, $expected, 'T_ALLOTHER');
                 break;
             case "MIS_ALN":
                 // Equals sign not aligned correctly
+                // Equals sign not aligned with surrounding assignments; expected 3 spaces but found 1 space
                 
+                
+                // Before Equal
                 // Insert will actually backspace on negative amount
-                $CodeRow->insertAt($CodeRow->getPosEqual(), " ", $needed);
+                $posEq = $CodeRow->getPosEqual();
+                $CodeRow->insertAt($posEq, " ", $needed);
+                
+                
+                // After Equal
+                $CodeRow->regplace('=([^ ])', '= $1', 'T_ALLOTHER');
+                
                 break;
             case "IND":
                 // Line indented incorrectly; expected 12 spaces, found 16
@@ -527,7 +560,7 @@ Class PEAR_Enforce {
             case "MIS_SPC_AFT_CMA":
                 // No space found after comma in function call
                 
-                $CodeRow->regplace(',([^ ])', ', $1');
+                $CodeRow->regplace(',([^ ])', ', $1', 'T_ALLOTHER');
                 break;
             case "MIS_SPC_BFR_OPN_BRC":
                 // Expected \"if (...) {\n\"; found \"...){\n\"
@@ -559,9 +592,7 @@ Class PEAR_Enforce {
             case "FND_SWS_BFR_CMA":
                 // Space found before comma in function call
                 
-                //
                 $CodeRow->regplace('(\s+),', ',', 'T_ALLOTHER');
-                
                 break;
             case "FND_SWS_BFR_ELS":
                 // Expected \"} else {\n\"; found \"}\n    else{\n\"
@@ -675,11 +706,12 @@ Class PEAR_Enforce {
             return false;
         }
         
-        $results = $this->_runPHPCS($this->_fileOriginal);
-        $imroved = $this->_postFormat($this->_improveCode($results));
+        $results   = $this->_runPHPCS($this->_fileOriginal);
+        $improved  = $this->_improveCode($results);
+        $formatted = $this->_postFormat($improved);
         
 
-        if (!file_put_contents($this->_fileImproved, $imroved)) {
+        if (!file_put_contents($this->_fileImproved, $formatted)) {
             $this->_log("Cannot write to file '".$this->_fileImproved."'", PEAR_Enforce::LOG_CRIT);
             return false;
         }
@@ -726,7 +758,7 @@ Class PEAR_Enforce {
         $report .= "\n"."\n";
         $report .= "Detected ".$this->_cntProblemsTotal." problems"."\n";
         $report .= "Fixed    ".$this->_cntProblemsFixed." problems"."\n";
-        $report .= "Saved to ".$this->_fileImproved.""."\n";
+        $report .= "Saved to ".$this->_fileImproved." (".filesize($this->_fileImproved).")"."\n";
         
         return $report;
     }

@@ -13,10 +13,10 @@ class DocBlock {
     private $_docBlock = '';
     private $_maxWidth = '70';
     private $_varTypes = array(
-        "string" => array("T_STRING"), 
-        "integer", 
+        "string"  => array("T_CONSTANT_ENCAPSED_STRING"), 
+        "integer" => array(), 
         "boolean" => array("T_FALSE", "T_TRUE"), 
-        "array"
+        "array"   => array()
     );
     private $_newLineBefore = array("return");
     private $_newLineAfter  = array("header");
@@ -93,13 +93,13 @@ class DocBlock {
             
             if (is_array($valueData)) {
                 foreach($this->_varTypes as $type=>$possibilities) {
+                    if ($know_type != "unknown_type") continue;
                     if (is_array($possibilities) && in_array($valueData["type"], $possibilities)) {
                         $know_type = $type;
-                        break;
                     }
                 }
                 
-                $know_type = "Kevin_please_translate:".$valueData["type"];
+                $know_type = "Kevin_please_translate: ".$valueData["type"];
             }
             
             $this->setRow("param", $var, $know_type, "");

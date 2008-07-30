@@ -18,6 +18,68 @@ Class CodeRow {
         
     }
     
+        
+    public function wrap($newLineChar, $at=85, $indentation="") {
+        // Some reserve (e.g. for added dot to glue)
+        $at = $at -3;
+        
+        $wrapCode   = "#{NWL+IND}#";
+        $wrapPoints = $this->_wrapPoints($wrapCode);
+        $wrapPoints = array_reverse($wrapPoints, true);
+        
+        foreach($wrapPoints as $col=>$data) {
+            if ($col > $at) continue; // Still too big!
+            
+            list($search, $replace) = $data;
+            
+            $anotherRun = (strlen(substr($this->_codeRow, $at, strlen($this->_codeRow))) > $at);
+            
+            $this->deleteAt($col, strlen($search));
+            $this->insertAt($col, $replace);
+            break;
+        }
+        
+        $this->replace($wrapCode, $newLineChar.$indentation);
+        
+        if ($anotherRun) {
+            $this->wrap($newLineChar, $at, $indentation);        
+        }
+        
+        $this->_changed();
+        return true;
+    }
+    
+    private function _wrapPoints($wrapCode="#{NWL+IND}#") {
+        
+        $wrapWhere = array();
+        $wrapChars["T_CONSTANT_ENCAPSED_STRING"] = array(' ');
+        $wrapChars["T_ALLOTHER"] = array(', ');
+        
+        foreach ($this->_tokenized as $i=>$token) {
+            extract($token);
+            $indx = 0;
+            
+            if (isset($wrapChars[$type]) && is_array($wrapChars[$type])) {
+                // What's a good point to wrap this token?
+                foreach ($wrapChars[$type] as $wrapChar) {
+                    // Find which quote was used
+                    if ($type == "T_CONSTANT_ENCAPSED_STRING") {
+                        $quote = substr(trim($content), 0, 1);
+                        $splitChar = array($wrapChar, " ".$quote." . ".$wrapCode.$quote);
+                    } else {
+                        $splitChar = array($wrapChar, ", ".$wrapCode);
+                    }
+                    
+                    while(($indx = strpos($content, $wrapChar, $indx+1)) !== false) {
+                        $wrapWhere[$col+$indx] = $splitChar;
+                    }
+                }
+            }
+        }
+        
+        return $wrapWhere;
+    }
+    
     public function getTokenTypes(){
         return $this->_Token->getTypes();
     }
@@ -189,18 +251,37 @@ Class CodeRow {
         return true;
     }
     
+    public function getCharAt($at, $howmany=1) {
+        // Compensate
+        $at++;
+        return substr($this->codeRow, $at, $howmany); 
+    }
+    
     public function getTokenized() {
         return $this->_tokenized;
     }
     
-    public function getPosEqual() {
+    public function getPosCodeChar($char, $reverse = false) {
         foreach ($this->_tokenized as $i=>$token) {
-             if ($token["type"] == 'T_EQUAL') {
-                 return $token["col"];
-             }
+            extract($token);
+            if ($type == 'T_ALLOTHER') {
+                if ($reverse) {
+                    if (($indx = strrpos($this->_codeRow, $char)) !== false) {
+                        return $indx + $col;
+                    }
+                } else {
+                    if (($indx = strpos($this->_codeRow, $char)) !== false) {
+                        return $indx + $col;
+                    }
+                }
+            }
         }
         
         return 0;
+    }
+    
+    public function getPosEqual() {
+        return $this->getPosCodeChar('=');
     }
 
     public function getPosToken($tokenType) {
@@ -214,13 +295,11 @@ Class CodeRow {
     }
     
     public function getPosBraceOpen() {
-        // Compensate
-        return strpos($this->_codeRow, "{")+1;
+        return $this->getPosCodeChar('{');
     }
 
     public function getPosBraceClose() {
-        // Compensate
-        return strrpos($this->_codeRow, "}")+1;
+        return $this->getPosCodeChar('}', true);
     }
         
     public function getIndentation($extra = 0){
