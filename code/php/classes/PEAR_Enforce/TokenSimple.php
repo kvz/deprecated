@@ -4,7 +4,7 @@
  * a couple of different token types
  *
  */
-class TokenSimple extends Token {
+Class TokenSimple extends Token {
     public function TokenSimple($code, $addTags=true, $onlyRecognize=false, $othersAreCalled="T_ALLOTHER") {
         $this->_addTags = $addTags;
         $code = $this->_surroundTags($code);
@@ -47,20 +47,26 @@ class TokenSimple extends Token {
         */
         
         $newTokenized = array();
-        $recognizedPrev = -1;
+        $typePrev = -1;
         foreach ($this->_tokenized as $i=>$token) {
+            
             $recognized = in_array($token["type"], $onlyRecognize);
-            if ($recognized != $recognizedPrev) {
+            
+            // Adjust type to generalize
+            if ($recognized) {
+                $typeCur = $token["type"];
+            } else {
+                $typeCur = $othersAreCalled;
+            }
+            
+            if ($typeCur != $typePrev) {
                 // Change: Create new
                 $store = &$newTokenized[];
                 
                 // Clone the first token of this kind
                 $store = $token;
                 
-                // Adjust type to generalize
-                if ($recognized == false) {
-                    $store["type"] = $othersAreCalled;
-                }                
+                $store["type"] = $typeCur;
             } else {
                 // Add new token to last one of same kind
                 // ($store still points to last element in array)
@@ -68,7 +74,7 @@ class TokenSimple extends Token {
                 $store["len"]     += $token["len"];
             }
             
-            $recognizedPrev = $recognized;
+            $typePrev = $typeCur;
         }
         
         return $newTokenized;

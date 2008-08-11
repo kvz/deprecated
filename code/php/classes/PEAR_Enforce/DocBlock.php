@@ -125,6 +125,7 @@ class DocBlock {
         $longest = array();
         foreach ($array as $name=>$params) {
             foreach($params as $key=>$value) {
+                if (!isset($longest[$key])) $longest[$key] = null;
                 $len = strlen($value);
                 if($len > $longest[$key]) {
                     $longest[$key] = $len;

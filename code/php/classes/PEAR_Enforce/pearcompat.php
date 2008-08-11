@@ -1,5 +1,6 @@
 #!/usr/bin/php -q
 <?php
+error_reporting(E_ALL);
 require_once "Enforce.php";
 
 $file   = (!isset($argv[1])) ? "" : $argv[1];

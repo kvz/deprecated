@@ -42,14 +42,14 @@ define('T_REGULAR_EXPRESSION', 1034);
  */
 Class Token {
     
-    private $_tokenized = array();
-    private $_row = 1;
-    private $_col  = 1;
-    private $_colCorrectionBegin = 0;
-    private $_colCorrectionEnd = 0;
-    private $_addTags = true;
-    private $_addedTagBegin = false;
-    private $_addedTagEnd = false;
+    protected $_tokenized = array();
+    protected $_row = 1;
+    protected $_col  = 1;
+    protected $_colCorrectionBegin = 0;
+    protected $_colCorrectionEnd = 0;
+    protected $_addTags = true;
+    protected $_addedTagBegin = false;
+    protected $_addedTagClose = false;
     
     /**
      * Takes a token produced from <code>token_get_all()</code> and produces a
@@ -269,7 +269,7 @@ Class Token {
             }
         }
         
-        if ($tokens[0]["type"] != "T_FUNCTION") {
+        if (isset($tokens[0]) && $tokens[0]["type"] != "T_FUNCTION") {
             return array();
         }
         
@@ -279,7 +279,7 @@ Class Token {
                 $cont[$token["content"]] = "";
                 
                 // See if we can also store a default value
-                if ($tokens[$i+1]["type"] == "T_EQUAL" && $tokens[$i+2]) {
+                if (isset($tokens[$i+1]) && $tokens[$i+1]["type"] == "T_EQUAL" && isset($tokens[$i+2])) {
                     $cont[$token["content"]]["type"]    = $tokens[$i+2]["type"];
                     $cont[$token["content"]]["content"] = $tokens[$i+2]["content"];
                 }

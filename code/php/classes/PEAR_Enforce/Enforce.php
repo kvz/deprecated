@@ -54,7 +54,7 @@ Class PEAR_Enforce {
     private $_cntProblemsFixed = 0;
     
     private $_rowProblems = array();
-    public $wasModifiedBy = array();
+    public  $wasModifiedBy = array();
     private $_fixedLog = array();
     private $_reportLog = "";
 
@@ -230,15 +230,21 @@ Class PEAR_Enforce {
         $predefined['Expected \"} elseif (...) {\n\"; found \"...) {\n\"'][] = 'FND_SWS_BFR_ELI';
         
         
-        $predefined['Expected \"} else {\n\"; found \"}\n%s else{\n\"'][] = 'FND_SWS_BFR_ELS';     // Two things wrong with same pattern!
-        $predefined['Expected \"} else {\n\"; found \"}\n%s else{\n\"'][] = 'MIS_SPC_BFR_OPN_BRC'; // Two things wrong with same pattern!
+        $predefined['Expected \"} else {\n\"; found \"}\n%s else{\n\"'][] = 'FND_SWS_BFR_ELS';     // 2 things wrong with same pattern!
+        $predefined['Expected \"} else {\n\"; found \"}\n%s else{\n\"'][] = 'MIS_SPC_BFR_OPN_BRC'; // 2 things wrong with same pattern!
         //$predefined['Expected \"} else {\n\"; found \"}\n        else{\n\"'][] = 'FND_SWS_BFR_ELS';     // Two things wrong with same pattern!
         //$predefined['Expected \"} else {\n\"; found \"}\n        else{\n\"'][] = 'MIS_SPC_BFR_OPN_BRC'; // Two things wrong with same pattern!
         
                     
         $predefined['Expected \"foreach (...) {\n\"; found \"...) {\n\"'][] = 'MIS_SPC_BFR_OPN_PTH';
-        $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_NWL_AFT_OPN_BRC'; // Two things wrong with same pattern!
-        $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_SPC_BFR_OPN_BRC'; // Two things wrong with same pattern!
+        $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_NWL_AFT_OPN_BRC'; // 3 things wrong with same pattern!
+        $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_SPC_BFR_OPN_BRC'; // 3 things wrong with same pattern!
+        $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_SPC_BFR_OPN_PTH'; // 3 things wrong with same pattern!
+        
+        $predefined['Expected \"if (...) {\n\"; found \"...) {\n"'][]       = 'MIS_SPC_BFR_OPN_PTH';
+        
+        
+        
         $predefined['Expected \"%c (...) {\n\"; found \"...){\n\"'][]       = 'MIS_SPC_BFR_OPN_BRC';
         $predefined['Expected \"for (...) {\n\"; found \"...){\n\"'][]      = 'MIS_SPC_BFR_OPN_BRC';
         $predefined['Expected \"} elseif (...) {\n\"; found \"...){\n\"'][] = 'MIS_SPC_BFR_OPN_BRC';
@@ -447,6 +453,26 @@ Class PEAR_Enforce {
         return $results;        
     }
     
+    public function showReportRow($fixCode, $fixMessage, $fixed, $lvl, $row, $col) {
+        $buf  = "";
+        $buf .= " ".str_pad($fixCode, $this->_fixCodesMaxLen, " ", STR_PAD_LEFT)." ";
+        $buf .= str_pad($lvl, 7, " ", STR_PAD_RIGHT)." ";
+        $buf .= str_pad($row, 4, " ", STR_PAD_LEFT)." ";
+        $buf .= str_pad($col, 3, " ", STR_PAD_LEFT)." ";
+
+        if ($fixed) {
+            $buf .= str_pad("FIXED", 7, " ", STR_PAD_LEFT)." ";
+        } else {
+            $buf .= str_pad("UNFIXED", 7, " ", STR_PAD_LEFT)." ";
+        }
+        
+        $buf .= $fixMessage;
+
+        $buf .= "\n";
+        
+        return $buf;
+    }
+    
     private function _improveCode($results) {
         $this->_reportLog = "";
         $this->_debugLog = "";
@@ -462,25 +488,17 @@ Class PEAR_Enforce {
                     
                     $this->_cntProblemsTotal++;
                     foreach($fixCodes as $fixCode) {
-                        $this->_reportLog .= " ".str_pad($fixCode, $this->_fixCodesMaxLen, " ", STR_PAD_LEFT)." ";
-                        $this->_reportLog .= str_pad($lvl, 7, " ", STR_PAD_RIGHT)." ";
-                        $this->_reportLog .= str_pad($row, 4, " ", STR_PAD_LEFT)." ";
-                        $this->_reportLog .= str_pad($col, 3, " ", STR_PAD_LEFT)." ";
-                        $before = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
                         $this->_fixedLog[$fixCode][$row]["assig"] = $fixMessage; 
                         $this->_fixedLog[$fixCode][$row]["types"] = implode(", ", $this->_CodeRows[$row]->getTokenTypes());
-                        $this->_fixedLog[$fixCode][$row]["befor"] = $before;
-                        if ($this->_fixProblem($fixMessage, $fixCode, $pattern, $row, $col)) {
+
+                        $this->_fixedLog[$fixCode][$row]["befor"] = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
+                        $fixed = $this->_fixProblem($fixMessage, $fixCode, $pattern, $row, $col);
+                        if ($fixed) {
                             $this->_cntProblemsFixed++;
                             $this->_fixedLog[$fixCode][$row]["after"] = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
-                            $this->_reportLog .= str_pad("FIXED", 7, " ", STR_PAD_LEFT)." ";
-                            $this->_reportLog .= $fixMessage;
-                        } else {
-                            $this->_reportLog .= str_pad("UNFIXED", 7, " ", STR_PAD_LEFT)." ";
-                            $this->_reportLog .= $fixMessage;
-                            
-                        }
-                        $this->_reportLog .= "\n";
+                        }                         
+                        
+                        $this->_reportLog .= $this->showReportRow($fixCode, $fixMessage, $fixed, $lvl, $row, $col);
                     }
                 }
             }
@@ -508,18 +526,27 @@ Class PEAR_Enforce {
     private function _fixProblem($fixMessage, $fixCode, $pattern, $row, $col) {
         
         $debug = false;
-        $CodeRow = $this->_CodeRows[$row];
-        $matches = array();
+        $CodeRow  = $this->_CodeRows[$row];
+        $original = $CodeRow->getCodeRow();
+        $matches  = array();
+        
+        // Init
+        $this->_fixedLog[$fixCode][$row]["error"] = "";
         
         // Get matched variables from message based on pattern 
-        preg_match_all("#".$pattern."#", $fixMessage, $matches_raw);
-        unset($matches_raw[0]);
-        foreach($matches_raw as $i=>$match) {
-            $matches[$i-1] = $match[0];
+        if (preg_match_all("#".$pattern."#", $fixMessage, $matches_raw)) {
+            unset($matches_raw[0]);
+            foreach($matches_raw as $i=>$match) {
+                $matches[$i-1] = $match[0];
+            }
+            
+            if (count($matches) == 2) {
+                list($expected, $found) = $matches;
+                $needed = @($expected - $found);
+            } elseif (count($matches) == 1) {
+                list($expected) = $matches;
+            }
         }
-        
-        list($expected, $found) = $matches;
-        $needed = @($expected - $found);
         
         switch ($fixCode) {
             case "TOO_LNG":
@@ -538,7 +565,9 @@ Class PEAR_Enforce {
                 $DocBlock->setIndent($CodeRow->getIndentation());
                 $DocBlock->setNewLineChar($this->_postFormatAddNewline);
                 
-                if ($expected == "function") {
+                if (!isset($expected)) {
+                    $this->_fixedLog[$fixCode][$row]["error"] .= "var expected was not set!!!";
+                } elseif ($expected == "function") {
                     $CodeRow->insertAt($CodeRow->getIndent(+1), 
                         $DocBlock->generateFunction($CodeRow->getCodeRow()));
                 } else if ($expected == "class") {
@@ -547,8 +576,6 @@ Class PEAR_Enforce {
                 } elseif ($expected == "file") {
                     $CodeRow->insertAt(1, 
                         $DocBlock->generateFile());
-                } else {
-                    die("\nwhat is a $expected\n:".__FILE__);
                 }
                 
                 break;
@@ -590,13 +617,19 @@ Class PEAR_Enforce {
             case "MIS_SPC_AFT_CMA":
                 // No space found after comma in function call
                 
-                $CodeRow->regplace(',([^ ])', ', $1', 'T_ALLOTHER');
+                $CodeRow->regplace(',([^ ]|$)', ', $1', 'T_ALLOTHER');
                 break;
             case "MIS_SPC_BFR_OPN_BRC":
                 // Expected \"if (...) {\n\"; found \"...){\n\"
                 
                 // ){
                 $CodeRow->insertAt($CodeRow->getPosBraceOpen(), " ");
+                break;
+            case "MIS_SPC_BFR_OPN_PTH":
+                // Expected \"if (...) {\n\"; found \"...) {\n\"
+                
+                // if(
+                $CodeRow->insertAt($CodeRow->getPosPrthesisOpen(), " ");
                 break;
             case "MIS_NWL_ARN_CLS_BRC":
                 // Closing brace must be on a line by itself
@@ -647,6 +680,7 @@ Class PEAR_Enforce {
                 $CodeRow->regplace($a.$pth.$b, '$1', 'T_ALLOTHER');
                 break;
             default:
+                $this->_fixedLog[$fixCode][$row]["error"] .= "No such fix: ".$fixCode."!!!";
                 return false;
                 break;
         }
@@ -656,6 +690,11 @@ Class PEAR_Enforce {
         // Default case returns false, so all matched cases don't have to.
         if ($debug) {
             $this->_fixedLog[$fixCode][$row]["debug"] = $debug;
+        }
+        
+        $modified = $CodeRow->getCodeRow();
+        if ($modified == $original) {
+            $this->_fixedLog[$fixCode][$row]["error"] .= "Nothing was modified!!!";
         }
         
         $this->_fixedLog[$fixCode][$row]["match"] = implode(", ", $matches);
@@ -766,7 +805,16 @@ Class PEAR_Enforce {
         
         $pattern = $this->_getPattern($which);
         
-        if ($which && $pattern) {
+        if ($which == "errors") {
+            foreach ($this->_fixedLog as $code=>$rows) {
+                foreach ($rows as $nr=>$row) {
+                    if ($row["error"]) {
+                         //$report .= "Fixcode: $code @ line: $nr: ".$row["error"]." (".$row["befor"].")\n";
+                         $report .= $this->showReportRow($code, $row["befor"], false, "FIXERROR-".$row["error"], $nr, 0);
+                    }
+                }
+            }
+        } elseif ($which && $pattern) {
             $report .= "Results for $which fix, pattern: \n    ".$pattern.""."\n"."\n";
             
             $row = false;
@@ -794,6 +842,8 @@ Class PEAR_Enforce {
         $report .= "Detected ".$this->_cntProblemsTotal." problems"."\n";
         $report .= "Fixed    ".$this->_cntProblemsFixed." problems"."\n";
         $report .= "Saved to ".$this->_fileImproved." (".filesize($this->_fileImproved).")"."\n";
+        
+        
         
         return $report;
     }

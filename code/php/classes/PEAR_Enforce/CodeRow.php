@@ -21,6 +21,7 @@ Class CodeRow {
         
     public function wrap($newLineChar, $at=85, $indentation="") {
         // Some reserve (e.g. for added dot to glue)
+        $anotherRun = false;
         $at = $at -3;
         
         $wrapCode   = "#{NWL+IND}#";
@@ -294,6 +295,10 @@ Class CodeRow {
         return 0;
     }
     
+    public function getPosPrthesisOpen() {
+        return $this->getPosCodeChar('(');
+    }
+
     public function getPosBraceOpen() {
         return $this->getPosCodeChar('{');
     }
