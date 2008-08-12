@@ -241,10 +241,9 @@ Class PEAR_Enforce {
         $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_SPC_BFR_OPN_BRC'; // 3 things wrong with same pattern!
         $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_SPC_BFR_OPN_PTH'; // 3 things wrong with same pattern!
         
-        $predefined['Expected \"if (...) {\n\"; found \"...) {\n"'][]       = 'MIS_SPC_BFR_OPN_PTH';
-        
-        
-        
+        $predefined['Expected \"if (...) {\n\"; found \"...) {\n\"'][]       = 'MIS_SPC_BFR_OPN_PTH';
+        $predefined['Expected \"while (...) {\n\"; found \"...) {\n\"'][]       = 'MIS_SPC_BFR_OPN_PTH';
+
         $predefined['Expected \"%c (...) {\n\"; found \"...){\n\"'][]       = 'MIS_SPC_BFR_OPN_BRC';
         $predefined['Expected \"for (...) {\n\"; found \"...){\n\"'][]      = 'MIS_SPC_BFR_OPN_BRC';
         $predefined['Expected \"} elseif (...) {\n\"; found \"...){\n\"'][] = 'MIS_SPC_BFR_OPN_BRC';
