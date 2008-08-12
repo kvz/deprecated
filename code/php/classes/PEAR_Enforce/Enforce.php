@@ -668,7 +668,7 @@ Class PEAR_Enforce {
                 list($spc_loc, $pth_typ) = $matches;
                 $a = $b = $pth = "";
                 
-                $pth = ($pth_typ == 'opening' ? '(\()' : '(\()');
+                $pth = ($pth_typ == 'opening' ? '(\()' : '(\))');
                 $spc = '[\s+]';
                 
                 if ($spc_loc == 'before') {
@@ -677,6 +677,7 @@ Class PEAR_Enforce {
                     $b = $spc;
                 }
                 
+                $debug = "[$spc_loc][$pth_typ] replacing ".$a.$pth.$b;
                 $CodeRow->regplace($a.$pth.$b, '$1', 'T_ALLOTHER');
                 break;
             default:
