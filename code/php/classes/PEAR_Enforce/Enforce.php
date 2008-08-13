@@ -265,7 +265,7 @@ Class PEAR_Enforce {
         
         foreach($this->_definitions as $pattern=>$fixCodes) {
             if (!$pattern || !$fixCodes) continue;
-            if (preg_match("#".$pattern."#i", $fixMessage)) {
+            if (preg_match("#".$pattern."#i", trim($fixMessage))) {
                 return array($pattern, $fixCodes); 
             }
         }
@@ -337,7 +337,9 @@ Class PEAR_Enforce {
         $pattern = str_replace('%s', '([\s \t]+)', $pattern);
         
         $pattern = str_replace('%a', '(.+)', $pattern);
-        $pattern = str_replace('%aN', '[.+?]', $pattern);
+        $pattern = str_replace('%aN', '[.+]', $pattern);
+        
+        $pattern = str_replace('%BEGIN', '^', $pattern);
         
         return $pattern;
     }    
@@ -414,20 +416,9 @@ Class PEAR_Enforce {
         // Small alignment
         $predefined['Space found before comma in function call'][]           = 'FND_SWS_BFR_CMA';
         
-        $predefined['Expected %a'][] = 'EXPECTED';
-        
-/*        
-        $predefined['Expected \"} %c {\n\"; found \"}\n%s %c{\n\"']          = array('FND_SWS_AFT_CLS_BRC', 'MIS_SPC_BFR_OPN_BRC'); // 2 things wrong with same pattern!
-        $predefined['Expected \"} %c {\n\"; found \"} %c{\n\"'][]            = 'MIS_SPC_BFR_OPN_BRC';
-        $predefined['Expected \"} %c {\n\"; found \"} %c %s{\n\"'][]         = 'FND_SWS_BFR_OPN_BRC';
-        $predefined['Expected \"} %c (...) {\n\"; found \"...) {\n\"'][]     = 'FND_SWS_AFT_CLS_BRC';
-        $predefined['Expected \"} %c (...) {\n\"; found \"...){\n\"'][]      = 'MIS_SPC_BFR_OPN_BRC';
-                    
-        $predefined['Expected \"%c (...) {\n\"; found \"...){\"']            = array('MIS_NWL_AFT_OPN_BRC', 'MIS_SPC_BFR_OPN_BRC', 'MIS_SPC_BFR_OPN_PTH'); // 3 things wrong with same pattern!
-        $predefined['Expected \"%c (...) {\n\"; found \"...){\n\"'][]        = 'MIS_SPC_BFR_OPN_BRC';
-        $predefined['Expected \"%c (...) {\n\"; found \"...) {\n\"'][]       = 'MIS_SPC_BFR_OPN_PTH';
-        
-*/        
+        // @todo: Begin cannot be matched yet. This is important to distinct <?
+        $predefined['%BEGINExpected %a'][] = 'EXPECTED';
+
         $predefined['No space found after comma in function call'][]         = 'MIS_SPC_AFT_CMA';
         
         // Newlines
@@ -442,7 +433,6 @@ Class PEAR_Enforce {
         $predefined['Missing comment for param \"$%c\" at position %d'][]                                       = 'MIS_PRM_CMT';
         $predefined['The comments for parameters $%c (%d) and $%c (%d) do not align'][]                         = 'MIS_CMT_TAG';
         $predefined['Missing @%c tag in %c comment'][]                                                          = 'MIS_ALN_PRM_CMT';
-        
         
         // Language
         $predefined['Short PHP opening tag used%a'][]       = 'MIS_LNG_TAG';
