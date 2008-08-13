@@ -51,8 +51,8 @@ class DocBlock {
     }    
     
     public function setRow($table, $name, $type="", $description="") {
-        $this->_tables[$table][$name]["name"] = trim($name);
         $this->_tables[$table][$name]["type"] = trim($type);
+        $this->_tables[$table][$name]["name"] = trim($name);
         $this->_tables[$table][$name]["description"] = trim($description);
         return true;
     }

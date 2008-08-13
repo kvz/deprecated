@@ -98,8 +98,8 @@ Class CodeRow {
      * 
      * @return boolean
      */
-    public function regplace($search, $replace, $onlyTokenTypes=false) {
-        return $this->replace($search, $replace, $onlyTokenTypes, true);
+    public function regplace($search, $replace, $onlyTokenTypes=false, $limit=-1) {
+        return $this->replace($search, $replace, $onlyTokenTypes, true, $limit);
     }
     
     /**
@@ -113,7 +113,7 @@ Class CodeRow {
      * 
      * @return boolean
      */
-    public function replace($search, $replace, $onlyTokenTypes=false, $use_regex=false) {
+    public function replace($search, $replace, $onlyTokenTypes=false, $use_regex=false, $limit=-1) {
 
         // Default to array
         if (!$onlyTokenTypes) $onlyTokenTypes = array();
@@ -162,7 +162,7 @@ Class CodeRow {
                 }
                 
                 // Replace this token (a local version)
-                $this->_tokenized[$i]["content"] = $this->_replace($search, $replace, $this->_tokenized[$i]["content"], $use_regex);
+                $this->_tokenized[$i]["content"] = $this->_replace($search, $replace, $this->_tokenized[$i]["content"], $use_regex, $limit);
             }
             
             // Save back to token object
@@ -186,9 +186,9 @@ Class CodeRow {
      * 
      * @return string
      */
-    private function _replace($search, $replace, $subject, $use_regex=false) {
+    private function _replace($search, $replace, $subject, $use_regex=false, $limit=-1) {
         if ($use_regex) {
-            return preg_replace('#'. $search.'#', $replace, $subject);
+            return preg_replace('#'. $search.'#', $replace, $subject, $limit);
         } else {
             return str_replace($search, $replace, $subject);
         }

@@ -1,5 +1,21 @@
 #!/usr/bin/php -q
 <?php
+
+/*$foo = "kevin martijn erwin disable1dennis";
+$result = preg_replace('#(?!disable1|disable2)[a-z0-9]+#is', '$1X', $foo);
+
+echo "result: ".$result."\n";
+*/
+/*$exc = "kevin|jp|martijn|erwin";
+$str = "dennis> kevin> jp> martijn> erwin>";
+$pat = '(?!(kevin>)+)';
+$str = preg_replace('/'.$pat.'/', 'XXX', $str);
+
+echo "pat: ".$pat."\n";
+echo "str: ".$str."\n";
+
+die();
+*/
 error_reporting(E_ALL);
 require_once "Enforce.php";
 
@@ -84,7 +100,7 @@ switch ($action) {
             if (!isset($PEAR_Enforce->wasModifiedBy[$id])) {
                 echo "Line $id was not modified by any fixer\n";
             } else {
-                echo "Line $id was not modified by:\n";
+                echo "Line $id was modified by:\n";
                 print_r($PEAR_Enforce->wasModifiedBy[$id]);
             }
         }

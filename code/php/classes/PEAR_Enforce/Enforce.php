@@ -154,157 +154,7 @@ Class PEAR_Enforce {
         }
         return false;        
     }
-    
-    /**
-     * Mapping of different output patterns of PHPCS to 'fixCodes',
-     * adding flexibility to the fix-architecture.
-     *
-     * @param array $add_definitions
-     */
-    private function _setDefinitions($add_definitions=false) {
-        if (!$add_definitions) $add_definitions = array();
 
-        /* 
-         * How to make abbreviations
-         * 
-         * MIS  Missing
-         * FND  Found
-         * IVD  Invalid
-         * VLD  Valid
-         * 
-         * TOO  Too
-         * LNG  Long
-         * UPC  Uppercase
-         * 
-         * FCD  Function declaration
-         * FCC  Function call
-         * STM  Statement
-         * CNS  Constant
-         * TAG  Tag
-         * ELS  else
-         * DSC  Doc Style Comments
-         * ANC  Allowed Normal Comments
-         * PSC  Perl Style Comments
-         * CMT  Comment
-         * TAG  Tag
-         *
-         * BRC  Brace
-         * PTH  Parenthesis
-         * 
-         * SPC  Space
-         * NWL  Newline
-         * FIL  File
-         * IND  Indentation
-         * SWS  Superfluous white-space
-         * WNL  Windows Newline
-         * 
-         * ARN  Around
-         * BFR  Before
-         * AFT  After
-         * OPN  Opening
-         * CLS  Closing
-         * 
-        */
-                
-        $predefined = array();
-        $prepared   = array();
-        
-        // Large Indentation & Alignment
-        $predefined['Spaces must be used to indent lines; tabs are not allowed'][]            = 'FND_TAB';
-        $predefined['End of line character is invalid; expected \"\n\" but found \"\r\n\"'][] = 'FND_WNL';
-        $predefined['Line exceeds %d characters; contains %d characters'][]                   = 'TOO_LNG';
-        
-        $predefined['Line indented incorrectly; expected %d space%z, found %d'][]            = 'IND';
-        $predefined['Line indented incorrectly; expected at least %d space%z, found %d'][]   = 'IND';
-        $predefined['Break statement indented incorrectly; expected %d space%z, found %d'][] = 'IND';
-        $predefined['Closing brace indented incorrectly; expected %d space%z, found %d'][]   = 'IND';
-        
-        $predefined['Space %c %c parenthesis of function call prohibited'][] = 'FND_SPC_PTH';
-        
-        $predefined['Equals sign not aligned correctly; expected %d space%z but found %d space%z'][]                     = 'MIS_ALN_EQL';
-        $predefined['Equals sign not aligned with surrounding assignments; expected %d space%z but found %d space%z'][]  = 'MIS_ALN_EQL';
-        
-        // Small alignment
-        $predefined['Space found before comma in function call'][]           = 'FND_SWS_BFR_CMA';
-        $predefined['Expected \"} else {\n\"; found \"}\n    else{\n\"'][]   = 'FND_SWS_BFR_ELS';
-        $predefined['Expected \"} elseif (...) {\n\"; found \"...) {\n\"'][] = 'FND_SWS_BFR_ELI';
-        
-        
-        $predefined['Expected \"} else {\n\"; found \"}\n%s else{\n\"'][] = 'FND_SWS_BFR_ELS';     // 2 things wrong with same pattern!
-        $predefined['Expected \"} else {\n\"; found \"}\n%s else{\n\"'][] = 'MIS_SPC_BFR_OPN_BRC'; // 2 things wrong with same pattern!
-        //$predefined['Expected \"} else {\n\"; found \"}\n        else{\n\"'][] = 'FND_SWS_BFR_ELS';     // Two things wrong with same pattern!
-        //$predefined['Expected \"} else {\n\"; found \"}\n        else{\n\"'][] = 'MIS_SPC_BFR_OPN_BRC'; // Two things wrong with same pattern!
-        
-                    
-        $predefined['Expected \"foreach (...) {\n\"; found \"...) {\n\"'][] = 'MIS_SPC_BFR_OPN_PTH';
-        $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_NWL_AFT_OPN_BRC'; // 3 things wrong with same pattern!
-        $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_SPC_BFR_OPN_BRC'; // 3 things wrong with same pattern!
-        $predefined['Expected \"if (...) {\n\"; found \"...){\"'][]         = 'MIS_SPC_BFR_OPN_PTH'; // 3 things wrong with same pattern!
-        
-        $predefined['Expected \"if (...) {\n\"; found \"...) {\n\"'][]       = 'MIS_SPC_BFR_OPN_PTH';
-        $predefined['Expected \"while (...) {\n\"; found \"...) {\n\"'][]       = 'MIS_SPC_BFR_OPN_PTH';
-
-        $predefined['Expected \"%c (...) {\n\"; found \"...){\n\"'][]       = 'MIS_SPC_BFR_OPN_BRC';
-        $predefined['Expected \"for (...) {\n\"; found \"...){\n\"'][]      = 'MIS_SPC_BFR_OPN_BRC';
-        $predefined['Expected \"} elseif (...) {\n\"; found \"...){\n\"'][] = 'MIS_SPC_BFR_OPN_BRC';
-        $predefined['Expected \"} else {\n\"; found \"} else{\n\"'][]       = 'MIS_SPC_BFR_OPN_BRC';
-        $predefined['No space found after comma in function call'][]        = 'MIS_SPC_AFT_CMA';
-        
-        // Newlines
-        $predefined['Closing brace must be on a line by itself'][]      = 'MIS_NWL_ARN_CLS_BRC';
-        $predefined['Opening function brace should be on a new line'][] = 'MIS_NWL_ARN_OPN_BRC';
-        $predefined['Opening brace of a Class must be on the line after the definition'][] = 'MIS_NWL_ARN_OPN_BRC';
-
-        // Comments
-        $predefined['You must use \"/**\" style comments for a %c comment'][]                                   = 'IVD_DSC';
-        $predefined['Perl-style comments are not allowed. Use \"// Comment.\" or \"/* comment */\" instead.'][] = 'IVD_PSC';
-        $predefined['Missing %c doc comment'][]                                                                 = 'MIS_DSC';
-        $predefined['Missing comment for param \"$%c\" at position %d'][]                                       = 'MIS_PRM_CMT';
-        $predefined['The comments for parameters $%c (%d) and $%c (%d) do not align'][]                         = 'MIS_CMT_TAG';
-        $predefined['Missing @%c tag in %c comment'][]                                                          = 'MIS_ALN_PRM_CMT';
-        
-        
-        // Language
-        $predefined['Short PHP opening tag used. Found \"<?\" Expected \"<?php\".'][]       = 'MIS_LNG_TAG';
-        $predefined['Constants must be uppercase; expected %c but found %c'][]              = 'MIS_UPC_CNS';
-        $predefined['\"%c\" is a statement, not a function; no parentheses are required'][] = 'FND_PTH_ARN_STM';
-        $predefined['File is being unconditionally included; use \"require\" instead'][]    = 'FND_IVD_STM';
-        
-        // Not going to fix. Ever.
-        $predefined['Protected method name \"%c::%c\" must not be prefixed with an underscore'][] = 'NEVER_FIX';
-        //$predefined[''][] = 'NEVER_FIX';
-        
-        
-        
-        //$this->_definitions      = array_merge($predefined, $add_definitions);
-        
-        foreach ($predefined as $pattern=>$fixCodes) {
-            $prep = $this->_patternPrepare($pattern);
-            $prepared[$prep] = $fixCodes;
-        }
-        
-        $this->_definitions = $prepared;
-        $this->_fixCodesMaxLen = $this->_valMaxLen2D($this->_definitions);
-    }
-    
-    /**
-     * Takes a custom pattern and returns a valid perl regex
-     *
-     * @param string $pattern
-     * 
-     * @return string
-     */
-    private function _patternPrepare($pattern) {
-        $pattern = preg_quote($pattern);
-        $pattern = str_replace('%c', '(\w[\w\d_]+)', $pattern);
-        $pattern = str_replace('%d', '(\d+)', $pattern);
-        $pattern = str_replace('%s', '([\s \t]+)', $pattern);
-        $pattern = str_replace('%z', '[s]?', $pattern);
-        $pattern = str_replace('%a', '(.+?)', $pattern);
-        
-        return $pattern;
-    }    
-    
     /**
      * Logs messages. Anything from and above LOG_CRIT will kill the app. 
      *
@@ -420,9 +270,7 @@ Class PEAR_Enforce {
             }
         }
         
-        if (!count($use_codes)) {
-            return array(false, array("**UNKNOWN"));
-        } 
+        return array(false, array("**UNKNOWN"));
     }    
     
     private function _runPHPCS($file) {
@@ -472,43 +320,151 @@ Class PEAR_Enforce {
         return $buf;
     }
     
-    private function _improveCode($results) {
-        $this->_reportLog = "";
-        $this->_debugLog = "";
-        $fixedResults = "";
+    
+    /**
+     * Takes a custom pattern and returns a valid perl regex
+     *
+     * @param string $pattern
+     * 
+     * @return string
+     */
+    private function _patternPrepare($pattern) {
+        $pattern = preg_quote($pattern);
+        $pattern = str_replace('%z', '[s]?', $pattern); // 's' or not to match multiples
         
-        foreach($results as $row=>$cols) {
-            $this->_rowProblems[$row] = array();
-            foreach($cols as $col=>$reports) {
-                foreach($reports as $nmr=>$report) {
-                    extract($report);
-                    list($pattern, $fixCodes) = $this->_determineFixCodes($fixMessage);
-                    $this->_rowProblems[$row] = array_merge($this->_rowProblems[$row], $fixCodes);
-                    
-                    $this->_cntProblemsTotal++;
-                    foreach($fixCodes as $fixCode) {
-                        $this->_fixedLog[$fixCode][$row]["assig"] = $fixMessage; 
-                        $this->_fixedLog[$fixCode][$row]["types"] = implode(", ", $this->_CodeRows[$row]->getTokenTypes());
+        $pattern = str_replace('%c', '(\w[\w\d_]+)', $pattern);
+        $pattern = str_replace('%d', '(\d+)', $pattern);
+        $pattern = str_replace('%s', '([\s \t]+)', $pattern);
+        
+        $pattern = str_replace('%a', '(.+?)', $pattern);
+        $pattern = str_replace('%aN', '[.+?]', $pattern);
+        
+        return $pattern;
+    }    
 
-                        $this->_fixedLog[$fixCode][$row]["befor"] = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
-                        $fixed = $this->_fixProblem($fixMessage, $fixCode, $pattern, $row, $col);
-                        if ($fixed) {
-                            $this->_cntProblemsFixed++;
-                            $this->_fixedLog[$fixCode][$row]["after"] = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
-                        }                         
-                        
-                        $this->_reportLog .= $this->showReportRow($fixCode, $fixMessage, $fixed, $lvl, $row, $col);
-                    }
-                }
-            }
+    /**
+     * Mapping of different output patterns of PHPCS to 'fixCodes',
+     * adding flexibility to the fix-architecture.
+     *
+     * @param array $add_definitions
+     */
+    private function _setDefinitions($add_definitions=false) {
+        if (!$add_definitions) $add_definitions = array();
+
+        /* 
+         * How to make abbreviations
+         * 
+         * MIS  Missing
+         * FND  Found
+         * IVD  Invalid
+         * VLD  Valid
+         * 
+         * TOO  Too
+         * LNG  Long
+         * UPC  Uppercase
+         * 
+         * FCD  Function declaration
+         * FCC  Function call
+         * STM  Statement
+         * CNS  Constant
+         * TAG  Tag
+         * ELS  else
+         * DSC  Doc Style Comments
+         * ANC  Allowed Normal Comments
+         * PSC  Perl Style Comments
+         * CMT  Comment
+         * TAG  Tag
+         *
+         * BRC  Brace
+         * PTH  Parenthesis
+         * 
+         * SPC  Space
+         * NWL  Newline
+         * FIL  File
+         * IND  Indentation
+         * SWS  Superfluous white-space
+         * WNL  Windows Newline
+         * 
+         * ARN  Around
+         * BFR  Before
+         * AFT  After
+         * OPN  Opening
+         * CLS  Closing
+         * 
+        */
+                
+        $predefined = array();
+        $prepared   = array();
+        
+        // Large Indentation & Alignment
+        $predefined['Spaces must be used to indent lines; tabs are not allowed'][]            = 'FND_TAB';
+        $predefined['End of line character is invalid; expected \"\n\" but found \"\r\n\"'][] = 'FND_WNL';
+        $predefined['Line exceeds %d characters; contains %d characters'][]                   = 'TOO_LNG';
+        
+        $predefined['Line indented incorrectly; expected %d space%z, found %d'][]            = 'IND';
+        $predefined['Line indented incorrectly; expected at least %d space%z, found %d'][]   = 'IND';
+        $predefined['Break statement indented incorrectly; expected %d space%z, found %d'][] = 'IND';
+        $predefined['Closing brace indented incorrectly; expected %d space%z, found %d'][]   = 'IND';
+        
+        $predefined['Space %c %c parenthesis of function call prohibited'][] = 'FND_SPC_PTH';
+        
+        $predefined['Equals sign not aligned correctly; expected %d space%z but found %d space%z'][]                     = 'MIS_ALN_EQL';
+        $predefined['Equals sign not aligned with surrounding assignments; expected %d space%z but found %d space%z'][]  = 'MIS_ALN_EQL';
+        
+        // Small alignment
+        $predefined['Space found before comma in function call'][]           = 'FND_SWS_BFR_CMA';
+        
+        $predefined['Expected %a'][] = 'EXPECTED';
+        
+/*        
+        $predefined['Expected \"} %c {\n\"; found \"}\n%s %c{\n\"']          = array('FND_SWS_AFT_CLS_BRC', 'MIS_SPC_BFR_OPN_BRC'); // 2 things wrong with same pattern!
+        $predefined['Expected \"} %c {\n\"; found \"} %c{\n\"'][]            = 'MIS_SPC_BFR_OPN_BRC';
+        $predefined['Expected \"} %c {\n\"; found \"} %c %s{\n\"'][]         = 'FND_SWS_BFR_OPN_BRC';
+        $predefined['Expected \"} %c (...) {\n\"; found \"...) {\n\"'][]     = 'FND_SWS_AFT_CLS_BRC';
+        $predefined['Expected \"} %c (...) {\n\"; found \"...){\n\"'][]      = 'MIS_SPC_BFR_OPN_BRC';
+                    
+        $predefined['Expected \"%c (...) {\n\"; found \"...){\"']            = array('MIS_NWL_AFT_OPN_BRC', 'MIS_SPC_BFR_OPN_BRC', 'MIS_SPC_BFR_OPN_PTH'); // 3 things wrong with same pattern!
+        $predefined['Expected \"%c (...) {\n\"; found \"...){\n\"'][]        = 'MIS_SPC_BFR_OPN_BRC';
+        $predefined['Expected \"%c (...) {\n\"; found \"...) {\n\"'][]       = 'MIS_SPC_BFR_OPN_PTH';
+        
+*/        
+        $predefined['No space found after comma in function call'][]         = 'MIS_SPC_AFT_CMA';
+        
+        // Newlines
+        $predefined['Closing brace must be on a line by itself'][]      = 'MIS_NWL_ARN_CLS_BRC';
+        $predefined['Opening function brace should be on a new line'][] = 'MIS_NWL_ARN_OPN_BRC';
+        $predefined['Opening brace of a Class must be on the line after the definition'][] = 'MIS_NWL_ARN_OPN_BRC';
+
+        // Comments
+        $predefined['You must use \"/**\" style comments for a %c comment'][]                                   = 'IVD_DSC';
+        $predefined['Perl-style comments are not allowed. Use \"// Comment.\" or \"/* comment */\" instead.'][] = 'IVD_PSC';
+        $predefined['Missing %c doc comment'][]                                                                 = 'MIS_DSC';
+        $predefined['Missing comment for param \"$%c\" at position %d'][]                                       = 'MIS_PRM_CMT';
+        $predefined['The comments for parameters $%c (%d) and $%c (%d) do not align'][]                         = 'MIS_CMT_TAG';
+        $predefined['Missing @%c tag in %c comment'][]                                                          = 'MIS_ALN_PRM_CMT';
+        
+        
+        // Language
+        $predefined['Short PHP opening tag used. Found \"<?\" Expected \"<?php\".'][]       = 'MIS_LNG_TAG';
+        $predefined['Constants must be uppercase; expected %c but found %c'][]              = 'MIS_UPC_CNS';
+        $predefined['\"%c\" is a statement, not a function; no parentheses are required'][] = 'FND_PTH_ARN_STM';
+        $predefined['File is being unconditionally included; use \"require\" instead'][]    = 'FND_IVD_STM';
+        
+        // Not going to fix. Ever.
+        $predefined['Protected method name \"%c::%c\" must not be prefixed with an underscore'][] = 'NEVER_FIX';
+        //$predefined[''][] = 'NEVER_FIX';
+        
+        
+        
+        //$this->_definitions      = array_merge($predefined, $add_definitions);
+        
+        foreach ($predefined as $pattern=>$fixCodes) {
+            $prep = $this->_patternPrepare($pattern);
+            $prepared[$prep] = $fixCodes;
         }
         
-        $fixedResults  = "";
-        foreach($this->_CodeRows as $row=>$CodeRow) {
-            $fixedResults .= $CodeRow->getCodeRow();
-        }
-        
-        return $fixedResults;
+        $this->_definitions = $prepared;
+        $this->_fixCodesMaxLen = $this->_valMaxLen2D($this->_definitions);
     }
     
     /**
@@ -529,6 +485,10 @@ Class PEAR_Enforce {
         $original = $CodeRow->getCodeRow();
         $matches  = array();
         
+        $functionPattern = '[a-zA-Z0-9\_]+';
+        $controlStructures = array("if", "else", "elseif", "do", "while", "switch", "for", "foreach");
+        $controlStructuresTxt = implode("|", $controlStructures);
+        
         // Init
         $this->_fixedLog[$fixCode][$row]["error"] = "";
         
@@ -548,6 +508,35 @@ Class PEAR_Enforce {
         }
         
         switch ($fixCode) {
+            case "EXPECTED":
+                
+                // '( '
+                $CodeRow->regplace('(\()[\s]+', '(', 'T_ALLOTHER', 1);
+                
+                // ' )'
+                $CodeRow->regplace('[\s]+(\))', ')', 'T_ALLOTHER', 1);
+                
+                // '){'
+                $CodeRow->regplace('\){', ') {', 'T_ALLOTHER', 1);
+                
+                // '    else{'
+                $CodeRow->regplace('^[\s]+('.$controlStructuresTxt.'){', $this->_postFormatBackSpaceCB. ' $1 {', 'T_ALLOTHER', -1);
+                
+                // 'while($row = mysql_fetch_array($res)) {'
+                $CodeRow->regplace('('.$controlStructuresTxt.')\(', '$1 (', 'T_ALLOTHER', -1);
+                
+                // 'count ('
+                if (preg_match_all('/('.$functionPattern.') \(/', $CodeRow->getCodeRow(), $m)) {
+                    $functionCalls = $m[1];
+                    foreach ($functionCalls as $functionCall) {
+                        if (in_array($functionCall, $controlStructures)) continue;
+                        $CodeRow->regplace('('.$functionCall.') \(', '$1(', 'T_ALLOTHER', -1);
+                    }
+                }
+                
+        
+                
+                break;
             case "TOO_LNG":
                 // "Line exceeds 85 characters; contains 96 characters
                 
@@ -618,18 +607,6 @@ Class PEAR_Enforce {
                 
                 $CodeRow->regplace(',([^ ]|$)', ', $1', 'T_ALLOTHER');
                 break;
-            case "MIS_SPC_BFR_OPN_BRC":
-                // Expected \"if (...) {\n\"; found \"...){\n\"
-                
-                // ){
-                $CodeRow->insertAt($CodeRow->getPosBraceOpen(), " ");
-                break;
-            case "MIS_SPC_BFR_OPN_PTH":
-                // Expected \"if (...) {\n\"; found \"...) {\n\"
-                
-                // if(
-                $CodeRow->insertAt($CodeRow->getPosPrthesisOpen(), " ");
-                break;
             case "MIS_NWL_ARN_CLS_BRC":
                 // Closing brace must be on a line by itself
                 
@@ -643,7 +620,7 @@ Class PEAR_Enforce {
                 // on a newline (for functions)
                 // {!\n
                 $CodeRow->insertAt($CodeRow->getPosBraceOpen()+1, 
-                    $this->_postFormatAddNewline . $CodeRow->getIndentation(4));
+                    $this->_postFormatAddNewline . $CodeRow->getIndentation(+4));
                 break;
             case "MIS_NWL_ARN_OPN_BRC":
                 // Opening function brace should be on a new line
@@ -656,18 +633,13 @@ Class PEAR_Enforce {
                 
                 $CodeRow->regplace('(\s+),', ',', 'T_ALLOTHER');
                 break;
-            case "FND_SWS_BFR_ELS":
-                // Expected \"} else {\n\"; found \"}\n    else{\n\"
-                
-                $CodeRow->replace('else{', $this->_postFormatBackSpaceCB. ' else {', 'T_ALLOTHER');
-                break;
             case "FND_SPC_PTH":
                 // Space surrounding parentheses
                 
                 list($spc_loc, $pth_typ) = $matches;
                 $a = $b = $pth = "";
                 
-                $pth = ($pth_typ == 'opening' ? '(\()' : '(\))');
+                $pth = ($pth_typ == 'opening' ? 'c' : '(\))');
                 $spc = '[\s+]';
                 
                 if ($spc_loc == 'before') {
@@ -677,7 +649,7 @@ Class PEAR_Enforce {
                 }
                 
                 $debug = "[$spc_loc][$pth_typ] replacing ".$a.$pth.$b;
-                $CodeRow->regplace($a.$pth.$b, '$1', 'T_ALLOTHER');
+                $CodeRow->regplace($a.$pth.$b, '$1', 'T_ALLOTHER', 1);
                 break;
             default:
                 $this->_fixedLog[$fixCode][$row]["error"] .= "No such fix: ".$fixCode."!!!";
@@ -702,6 +674,45 @@ Class PEAR_Enforce {
         return true;
     }
 
+        
+    private function _improveCode($results) {
+        $this->_reportLog = "";
+        $this->_debugLog = "";
+        $fixedResults = "";
+        
+        foreach($results as $row=>$cols) {
+            $this->_rowProblems[$row] = array();
+            foreach($cols as $col=>$reports) {
+                foreach($reports as $nmr=>$report) {
+                    extract($report);
+                    list($pattern, $fixCodes) = $this->_determineFixCodes($fixMessage);
+                    $this->_rowProblems[$row] = array_merge($this->_rowProblems[$row], $fixCodes);
+                    
+                    $this->_cntProblemsTotal++;
+                    foreach($fixCodes as $fixCode) {
+                        $this->_fixedLog[$fixCode][$row]["assig"] = $fixMessage; 
+                        $this->_fixedLog[$fixCode][$row]["types"] = implode(", ", $this->_CodeRows[$row]->getTokenTypes());
+
+                        $this->_fixedLog[$fixCode][$row]["befor"] = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
+                        $fixed = $this->_fixProblem($fixMessage, $fixCode, $pattern, $row, $col);
+                        if ($fixed) {
+                            $this->_cntProblemsFixed++;
+                            $this->_fixedLog[$fixCode][$row]["after"] = str_replace("\n", "", $this->_CodeRows[$row]->getCodeRow());
+                        }                         
+                        
+                        $this->_reportLog .= $this->showReportRow($fixCode, $fixMessage, $fixed, $lvl, $row, $col);
+                    }
+                }
+            }
+        }
+        
+        $fixedResults  = "";
+        foreach($this->_CodeRows as $row=>$CodeRow) {
+            $fixedResults .= $CodeRow->getCodeRow();
+        }
+        
+        return $fixedResults;
+    }
     
     
     /**
