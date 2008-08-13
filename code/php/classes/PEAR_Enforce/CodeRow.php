@@ -281,10 +281,6 @@ Class CodeRow {
         return 0;
     }
     
-    public function getPosEqual() {
-        return $this->getPosCodeChar('=');
-    }
-
     public function getPosToken($tokenType) {
         foreach ($this->_tokenized as $i=>$token) {
              if ($token["type"] == $tokenType) {
@@ -295,16 +291,20 @@ Class CodeRow {
         return 0;
     }
     
-    public function getPosPrthesisOpen() {
-        return $this->getPosCodeChar('(');
+    public function getPosEqual($extra = 0) {
+        return $this->getPosCodeChar('=') + $extra;
     }
 
-    public function getPosBraceOpen() {
-        return $this->getPosCodeChar('{');
+    public function getPosPrthesisOpen($extra = 0) {
+        return $this->getPosCodeChar('(') + $extra;
     }
 
-    public function getPosBraceClose() {
-        return $this->getPosCodeChar('}', true);
+    public function getPosBraceOpen($extra = 0) {
+        return $this->getPosCodeChar('{') + $extra;
+    }
+
+    public function getPosBraceClose($extra = 0) {
+        return $this->getPosCodeChar('}', true) + $extra;
     }
         
     public function getIndentation($extra = 0){

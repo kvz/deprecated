@@ -336,7 +336,7 @@ Class PEAR_Enforce {
         $pattern = str_replace('%d', '(\d+)', $pattern);
         $pattern = str_replace('%s', '([\s \t]+)', $pattern);
         
-        $pattern = str_replace('%a', '(.+?)', $pattern);
+        $pattern = str_replace('%a', '(.+)', $pattern);
         $pattern = str_replace('%aN', '[.+?]', $pattern);
         
         return $pattern;
@@ -445,7 +445,7 @@ Class PEAR_Enforce {
         
         
         // Language
-        $predefined['Short PHP opening tag used. Found \"<?\" Expected \"<?php\".'][]       = 'MIS_LNG_TAG';
+        $predefined['Short PHP opening tag used%a'][]       = 'MIS_LNG_TAG';
         $predefined['Constants must be uppercase; expected %c but found %c'][]              = 'MIS_UPC_CNS';
         $predefined['\"%c\" is a statement, not a function; no parentheses are required'][] = 'FND_PTH_ARN_STM';
         $predefined['File is being unconditionally included; use \"require\" instead'][]    = 'FND_IVD_STM';
@@ -485,7 +485,8 @@ Class PEAR_Enforce {
         $original = $CodeRow->getCodeRow();
         $matches  = array();
         
-        $functionPattern = '[a-zA-Z0-9\_]+';
+        $pattExpression   = '[^\)]+';
+        $pattFunctionCall = '[a-zA-Z0-9\_]+';
         $controlStructures = array("if", "else", "elseif", "do", "while", "switch", "for", "foreach");
         $controlStructuresTxt = implode("|", $controlStructures);
         
@@ -519,14 +520,22 @@ Class PEAR_Enforce {
                 // '){'
                 $CodeRow->regplace('\){', ') {', 'T_ALLOTHER', 1);
                 
+                // @todo: Fout, zie regel 546 enforced
                 // '    else{'
-                $CodeRow->regplace('^[\s]+('.$controlStructuresTxt.'){', $this->_postFormatBackSpaceCB. ' $1 {', 'T_ALLOTHER', -1);
+                $CodeRow->regplace('^[\s]*('.$controlStructuresTxt.'){', $this->_postFormatBackSpaceCB . ' $1 {', 'T_ALLOTHER', -1);
+
+                // 'elseif (!$insensitive && substr_count($l, $pattern)) {'
+                $CodeRow->regplace('^[\s]*(elseif)', $this->_postFormatBackSpaceCB . ' $1 ', 'T_ALLOTHER', -1);
+                
+                
+                // '}else{' || '}  else      {'  
+                $CodeRow->regplace('^[\s]*}([\s]*('.$controlStructuresTxt.')[\s]*){', '} $2 {', 'T_ALLOTHER', -1);
                 
                 // 'while($row = mysql_fetch_array($res)) {'
                 $CodeRow->regplace('('.$controlStructuresTxt.')\(', '$1 (', 'T_ALLOTHER', -1);
                 
                 // 'count ('
-                if (preg_match_all('/('.$functionPattern.') \(/', $CodeRow->getCodeRow(), $m)) {
+                if (preg_match_all('/('.$pattFunctionCall.') \(/', $CodeRow->getCodeRow(), $m)) {
                     $functionCalls = $m[1];
                     foreach ($functionCalls as $functionCall) {
                         if (in_array($functionCall, $controlStructures)) continue;
@@ -534,7 +543,12 @@ Class PEAR_Enforce {
                     }
                 }
                 
-        
+                // 'if ($v) {$keep = !$keep;'
+                if ($expected == '\"if (...) {\n\"; found \"...){\""') {
+                    $CodeRow->insertAt($CodeRow->getPosBraceOpen(+1), 
+                        $this->_postFormatAddNewline . $CodeRow->getIndentation(+4));
+                    
+                }
                 
                 break;
             case "TOO_LNG":
@@ -575,7 +589,7 @@ Class PEAR_Enforce {
             case "MIS_LNG_TAG":
                 // Short PHP opening tag used. Found \"<?\" Expected \"<?php\".
                 
-                $CodeRow->replace('<?', '<?php', 'T_OPEN_TAG');
+                $CodeRow->replace('<?', '<?php', 'T_ALLOTHER');
                 break;
             case "MIS_UPC_CNS":
                 // Constants must be uppercase; expected IS_NUMERIC but found is_numeric
@@ -612,15 +626,6 @@ Class PEAR_Enforce {
                 
                 $CodeRow->insertAt($CodeRow->getPosBraceClose(), 
                     $this->_postFormatAddNewline . $CodeRow->getIndentation());
-                break;
-            case "MIS_NWL_AFT_OPN_BRC":
-                // "Expected \"if (...) {\n\"; found \"...){\
-                
-                // Not the same as MIS_NWL_ARN_OPN_BRC, which will put the brace itself
-                // on a newline (for functions)
-                // {!\n
-                $CodeRow->insertAt($CodeRow->getPosBraceOpen()+1, 
-                    $this->_postFormatAddNewline . $CodeRow->getIndentation(+4));
                 break;
             case "MIS_NWL_ARN_OPN_BRC":
                 // Opening function brace should be on a new line
