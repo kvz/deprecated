@@ -93,31 +93,31 @@ class DocBlock {
      * @return unknown
      */
     public function generateFunction($codeFunction) {
-        
-        $Token = new Token($codeFunction);
+        $unKnown = "unknown_type";
+        $Token   = new Token($codeFunction);
         
         $this->setHeader("Enter description here...");
         
         $vars = $Token->getVariables();
         foreach ($vars as $var=>$valueData) {
-            $know_type = "unknown_type";
+            $knowType = $unKnown;
             
             if (is_array($valueData)) {
                 foreach($this->_varTypes as $type=>$possibilities) {
-                    if ($know_type != "unknown_type") continue;
                     if (is_array($possibilities) && in_array($valueData["type"], $possibilities)) {
-                        $know_type = $type;
+                        $knowType = $type;
+                        break;
                     }
                 }
-                
-                $know_type = "Kevin_please_translate: ".$valueData["type"];
+                if ($knowType == $unKnown) {
+                    $knowType = "Kevin_please_translate: ".$valueData["type"];
+                }
             }
             
-            $this->setRow("param", $var, $know_type, "");
+            $this->setRow("param", $var, $knowType, "");
         }
         
-        $this->setRow("return", "unknown");
-        
+        $this->setRow("return", $unKnown);
         return $this->generate();
     }
     
@@ -199,7 +199,7 @@ class DocBlock {
         
         $this->_addLine("", "tail");
         
-        return $this->_docBlock;
+        return "\n".$this->_docBlock;
     }
     
     private function _addLine($str="", $type="body") {

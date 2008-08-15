@@ -45,26 +45,23 @@ Class PEAR_Enforce {
      */
     const LOG_DEBUG = 7;
     
-    private $_definitions = array();
-    private $_fixCodesMaxLen = 0;
-
-    private $_CodeRows = false;
-    
-    private $_cntProblemsTotal = 0;
-    private $_cntProblemsFixed = 0;
-    
-    private $_rowProblems = array();
     public  $wasModifiedBy = array();
-    private $_fixedLog = array();
-    private $_reportLog = "";
-
-    private $_fileOriginal = false;
-    private $_fileImproved = false;
-
-    private $_postFormatAddNewline  = "<NEWLINE>";  // Should be Concatenated so this script can also be run on itself.
-    private $_postFormatBackSpaceCB = "<BACKSPACE,T_CURLY_BRACKET>";
     
+    protected $_definitions = array();
+    protected $_fixCodesMaxLen = 0;
+
+    protected $_CodeRows = false;
     
+    protected $_cntProblemsTotal = 0;
+    protected $_cntProblemsFixed = 0;
+    
+    protected $_rowProblems = array();
+    protected $_fixedLog = array();
+    protected $_reportLog = "";
+
+    protected $_fileOriginal = false;
+    protected $_fileImproved = false;
+
     public $cmd_phpcs = "/usr/bin/phpcs";
     
     /**
@@ -81,7 +78,7 @@ Class PEAR_Enforce {
      * 
      * @return string
      */
-    private function _str_shift($delimiter, &$string)
+    protected function _str_shift($delimiter, &$string)
     {
         // Explode into parts
         $parts  = explode($delimiter, $string);
@@ -103,7 +100,7 @@ Class PEAR_Enforce {
      * 
      * @return integer
      */
-    private function _valMaxLen2D($array) {
+    protected function _valMaxLen2D($array) {
         $longest = 0;
         foreach($array as $key=>$array) {
             foreach($array as $val) {
@@ -125,7 +122,7 @@ Class PEAR_Enforce {
      * 
      * @return array
      */
-    private function _exe($cmd) {
+    protected function _exe($cmd) {
         $o = array(); 
         exec($cmd, $o, $r);
         if ($r) {
@@ -136,17 +133,16 @@ Class PEAR_Enforce {
     }    
     
     /**
-     * == Specific Private Functions 
+     * == Specific protected Functions 
      */
     
-
     
     /**
      * Returns a fixCode's pattern
      *
      * @param string $fixCode
      */
-    private function _getPattern($fixCode) {
+    protected function _getPattern($fixCode) {
         foreach ($this->_definitions as $pattern=>$fixCodes) {
             if (array_search($fixCode, $fixCodes) !== false){
                 return $pattern;
@@ -161,7 +157,7 @@ Class PEAR_Enforce {
      * @param string  $str
      * @param integer $level
      */
-    private function _log($str, $level=PEAR_Enforce::LOG_INFO) {
+    protected function _log($str, $level=PEAR_Enforce::LOG_INFO) {
         echo $str."\n";
         if ($level <= PEAR_Enforce::LOG_CRIT) {
             die();
@@ -175,7 +171,7 @@ Class PEAR_Enforce {
      * 
      * @return string
      */
-    private function _preFormat($source) {
+    protected function _preFormat($source) {
         $source = str_replace("\r", "", $source);
         $source = str_replace("\t", "    ", $source);
         $source = trim($source);
@@ -189,16 +185,35 @@ Class PEAR_Enforce {
      * 
      * @return string
      */
-    private function _postFormat($source) {
+    protected function _postFormat($source) {
         // Newlines
-        $source = str_replace($this->_postFormatAddNewline, "\n", $source);
+        $source = str_replace($this->_getPostFormatAddNewline(), "\n", $source);
 
         // Backspace until curly brace found
-        $f = preg_quote($this->_postFormatBackSpaceCB);
-        $p = '\}([\s]+)('.$f.')';
-        $source = preg_replace('#'.$p.'#s', '}', $source);
+        $f = preg_quote($this->_getPostFormatBackSpaceCB());
+        $p = '\}(\s*)('.$f.')';
+        // $p = '('.$f.')';
+        $source = preg_replace('#'.$p.'#ms', '}', $source);
         
         return $source;
+    }    
+    
+    protected function _getPostFormatAddNewline() {
+        // Should be Concatenated so this script can also be run on itself.
+        $buf  = "";
+        $buf .= "/*<";
+        $buf .= "NEWLINE";
+        $buf .= ">*/";
+        return $buf;
+    }
+    
+    protected function _getPostFormatBackSpaceCB(){
+        // Should be Concatenated so this script can also be run on itself.
+        $buf  = "";
+        $buf .= "/*<";
+        $buf .= "BACKSPACE, T_CURLY_BRACKET";
+        $buf .= ">*/";
+        return $buf;
     }    
     
     /**
@@ -209,7 +224,7 @@ Class PEAR_Enforce {
      * 
      * @return boolean
      */
-    private function _loadFile($file, $preformat=true) {
+    protected function _loadFile($file, $preformat=true) {
         
         $file = realpath($file);
         
@@ -256,25 +271,8 @@ Class PEAR_Enforce {
         
         return true;
     }
-    
-    private function _determineFixCodes($fixMessage) {
-        if (!is_array($this->_definitions) || count($this->_definitions) < 5) {
-            log("What happened to my fixcode definitions?!", PEAR_Enforce::LOG_EMERG);
-            return false;
-        }
-        
-        foreach($this->_definitions as $pattern=>$fixCodes) {
-            if (!$pattern || !$fixCodes) continue;
-            if (preg_match("#".$pattern."#i", trim($fixMessage))) {
-                return array($pattern, $fixCodes); 
-            }
-        }
-        
-        return array(false, array("**UNKNOWN"));
-    }    
-    
-    private function _runPHPCS($file) {
-        
+
+    protected function _runPHPCSCmd($file) {
         if (!file_exists($this->cmd_phpcs)) {
             log("Please: aptitude install php-pear && pear install PHP_Codesniffer", PEAR_Enforce::LOG_CRIT);
             return false;
@@ -290,12 +288,34 @@ Class PEAR_Enforce {
             $row = trim(str_replace('"', '', $this->_str_shift(",", $line)));
             $col = trim(str_replace('"', '', $this->_str_shift(",", $line)));
             $lvl = trim(str_replace('"', '', $this->_str_shift(",", $line)));
-            $fixMessage = trim($line);
+            $fixMessage = trim(stripslashes($line));
             
             if ($src == "File") continue;
             
             $results[$row][$col][] = compact("lvl", "fixMessage");
         }
+        
+        return $results;        
+    }
+    
+    protected function _runPHPCS($file) {
+        return $this->_runPHPCSClass($file);
+    }
+    
+    protected function _runPHPCSClass($file) {
+        
+        // Check the PHP version.
+        if (version_compare(PHP_VERSION, '5.1.0') === -1) {
+            echo 'ERROR: PEAR_Enforce requires PHP version 5.1.0 or greater.'.PHP_EOL;
+            exit(2);
+        }
+        
+        require_once 'PHP/CodeSniffer.php';
+        
+        $phpcs = new PHP_CodeSniffer(0, 4);
+        $phpcs->process($file, "PEAR", array(), false);
+        $results = $phpcs->prepareErrorReport(true);
+        $results = $results['files'][$file]['messages'];
         
         return $results;        
     }
@@ -319,30 +339,7 @@ Class PEAR_Enforce {
         
         return $buf;
     }
-    
-    
-    /**
-     * Takes a custom pattern and returns a valid perl regex
-     *
-     * @param string $pattern
-     * 
-     * @return string
-     */
-    private function _patternPrepare($pattern) {
-        $pattern = preg_quote($pattern);
-        $pattern = str_replace('%z', '[s]?', $pattern); // 's' or not to match multiples
-        
-        $pattern = str_replace('%c', '(\w[\w\d_]+)', $pattern);
-        $pattern = str_replace('%d', '(\d+)', $pattern);
-        $pattern = str_replace('%s', '([\s \t]+)', $pattern);
-        
-        $pattern = str_replace('%a', '(.+)', $pattern);
-        $pattern = str_replace('%aN', '[.+]', $pattern);
-        
-        $pattern = str_replace('%BEGIN', '^', $pattern);
-        
-        return $pattern;
-    }    
+
 
     /**
      * Mapping of different output patterns of PHPCS to 'fixCodes',
@@ -350,7 +347,7 @@ Class PEAR_Enforce {
      *
      * @param array $add_definitions
      */
-    private function _setDefinitions($add_definitions=false) {
+    protected function _setDefinitions($add_definitions=false) {
         if (!$add_definitions) $add_definitions = array();
 
         /* 
@@ -400,7 +397,7 @@ Class PEAR_Enforce {
         
         // Large Indentation & Alignment
         $predefined['Spaces must be used to indent lines; tabs are not allowed'][]            = 'FND_TAB';
-        $predefined['End of line character is invalid; expected \"\n\" but found \"\r\n\"'][] = 'FND_WNL';
+        $predefined['End of line character is invalid; expected "\n" but found "\r\n"'][] = 'FND_WNL';
         $predefined['Line exceeds %d characters; contains %d characters'][]                   = 'TOO_LNG';
         
         $predefined['Line indented incorrectly; expected %d space%z, found %d'][]            = 'IND';
@@ -408,7 +405,7 @@ Class PEAR_Enforce {
         $predefined['Break statement indented incorrectly; expected %d space%z, found %d'][] = 'IND';
         $predefined['Closing brace indented incorrectly; expected %d space%z, found %d'][]   = 'IND';
         
-        $predefined['Space %c %c parenthesis of function call prohibited'][] = 'FND_SPC_PTH';
+        $predefined['Space %c %c parenthesis of function call prohibited'][] = 'EXPECTED';
         
         $predefined['Equals sign not aligned correctly; expected %d space%z but found %d space%z'][]                     = 'MIS_ALN_EQL';
         $predefined['Equals sign not aligned with surrounding assignments; expected %d space%z but found %d space%z'][]  = 'MIS_ALN_EQL';
@@ -416,7 +413,6 @@ Class PEAR_Enforce {
         // Small alignment
         $predefined['Space found before comma in function call'][]           = 'FND_SWS_BFR_CMA';
         
-        // @todo: Begin cannot be matched yet. This is important to distinct <?
         $predefined['%BEGINExpected %a'][] = 'EXPECTED';
 
         $predefined['No space found after comma in function call'][]         = 'MIS_SPC_AFT_CMA';
@@ -427,21 +423,21 @@ Class PEAR_Enforce {
         $predefined['Opening brace of a Class must be on the line after the definition'][] = 'MIS_NWL_ARN_OPN_BRC';
 
         // Comments
-        $predefined['You must use \"/**\" style comments for a %c comment'][]                                   = 'IVD_DSC';
-        $predefined['Perl-style comments are not allowed. Use \"// Comment.\" or \"/* comment */\" instead.'][] = 'IVD_PSC';
+        $predefined['You must use "/**" style comments for a %c comment'][]                                   = 'IVD_DSC';
+        $predefined['Perl-style comments are not allowed. Use "// Comment." or "/* comment */" instead.'][] = 'IVD_PSC';
         $predefined['Missing %c doc comment'][]                                                                 = 'MIS_DSC';
-        $predefined['Missing comment for param \"$%c\" at position %d'][]                                       = 'MIS_PRM_CMT';
+        $predefined['Missing comment for param "$%c" at position %d'][]                                       = 'MIS_PRM_CMT';
         $predefined['The comments for parameters $%c (%d) and $%c (%d) do not align'][]                         = 'MIS_CMT_TAG';
         $predefined['Missing @%c tag in %c comment'][]                                                          = 'MIS_ALN_PRM_CMT';
         
         // Language
         $predefined['Short PHP opening tag used%a'][]       = 'MIS_LNG_TAG';
         $predefined['Constants must be uppercase; expected %c but found %c'][]              = 'MIS_UPC_CNS';
-        $predefined['\"%c\" is a statement, not a function; no parentheses are required'][] = 'FND_PTH_ARN_STM';
-        $predefined['File is being unconditionally included; use \"require\" instead'][]    = 'FND_IVD_STM';
+        $predefined['"%c" is a statement, not a function; no parentheses are required'][] = 'FND_PTH_ARN_STM';
+        $predefined['File is being unconditionally included; use "require" instead'][]    = 'FND_IVD_STM';
         
         // Not going to fix. Ever.
-        $predefined['Protected method name \"%c::%c\" must not be prefixed with an underscore'][] = 'NEVER_FIX';
+        $predefined['Protected method name "%c::%c" must not be prefixed with an underscore'][] = 'NEVER_FIX';
         //$predefined[''][] = 'NEVER_FIX';
         
         
@@ -458,6 +454,46 @@ Class PEAR_Enforce {
     }
     
     /**
+     * Takes a custom pattern and returns a valid perl regex
+     *
+     * @param string $pattern
+     * 
+     * @return string
+     */
+    protected function _patternPrepare($pattern) {
+        $pattern = preg_quote($pattern);
+        $pattern = str_replace('%z', '[s]?', $pattern); // 's' or not to match multiples
+        
+        $pattern = str_replace('%c', '(\w[\w\d_]+)', $pattern);
+        $pattern = str_replace('%d', '(\d+)', $pattern);
+        $pattern = str_replace('%s', '([\s \t]+)', $pattern);
+        
+        $pattern = str_replace('%a', '(.+)', $pattern);
+        $pattern = str_replace('%aN', '[.+]', $pattern);
+        
+        $pattern = str_replace('%BEGIN', '^', $pattern);
+        
+        return $pattern; 
+    }        
+    
+    
+    protected function _determineFixCodes($fixMessage) {
+        if (!is_array($this->_definitions) || count($this->_definitions) < 5) {
+            log("What happened to my fixcode definitions?!", PEAR_Enforce::LOG_EMERG);
+            return false;
+        }
+        
+        foreach($this->_definitions as $pattern=>$fixCodes) {
+            if (!$pattern || !$fixCodes) continue;
+            if (preg_match("#".$pattern."#i", trim($fixMessage))) {
+                return array($pattern, $fixCodes); 
+            }
+        }
+        
+        return array(false, array("**UNKNOWN"));
+    }    
+        
+    /**
      * Fix a spefic problem as reported by PHPCS
      *
      * @param string  $fixMessage
@@ -468,7 +504,7 @@ Class PEAR_Enforce {
      * 
      * @return boolean
      */
-    private function _fixProblem($fixMessage, $fixCode, $pattern, $row, $col) {
+    protected function _fixProblem($fixMessage, $fixCode, $pattern, $row, $col) {
         
         $debug = false;
         $CodeRow  = $this->_CodeRows[$row];
@@ -512,10 +548,10 @@ Class PEAR_Enforce {
                 
                 // @todo: Fout, zie regel 546 enforced
                 // '    else{'
-                $CodeRow->regplace('^[\s]*('.$controlStructuresTxt.'){', $this->_postFormatBackSpaceCB . ' $1 {', 'T_ALLOTHER', -1);
+                $CodeRow->regplace('^[\s]*('.$controlStructuresTxt.'){', $this->_getPostFormatBackSpaceCB() . ' $1 {', 'T_ALLOTHER', -1);
 
                 // 'elseif (!$insensitive && substr_count($l, $pattern)) {'
-                $CodeRow->regplace('^[\s]*(elseif)', $this->_postFormatBackSpaceCB . ' $1 ', 'T_ALLOTHER', -1);
+                $CodeRow->regplace('^[\s]*(elseif)', $this->_getPostFormatBackSpaceCB() . ' $1 ', 'T_ALLOTHER', -1);
                 
                 
                 // '}else{' || '}  else      {'  
@@ -534,28 +570,29 @@ Class PEAR_Enforce {
                 }
                 
                 // 'if ($v) {$keep = !$keep;'
-                if ($expected == '\"if (...) {\n\"; found \"...){\""') {
+                if ($expected == '"if (...) {\n"; found "...){""') {
                     $CodeRow->insertAt($CodeRow->getPosBraceOpen(+1), 
-                        $this->_postFormatAddNewline . $CodeRow->getIndentation(+4));
-                    
+                        $this->_getPostFormatAddNewline() . $CodeRow->getIndentation(+4));
                 }
+                
+                
                 
                 break;
             case "TOO_LNG":
                 // "Line exceeds 85 characters; contains 96 characters
                 
-                $CodeRow->wrap($this->_postFormatAddNewline, 85, $CodeRow->getIndentation(+4));
+                $CodeRow->wrap($this->_getPostFormatAddNewline(), 85, $CodeRow->getIndentation(+4));
                 
                 break;
             case "IVD_DSC":
-                // You must use \"/**\" style comments for a function comment
+                // You must use "/**" style comments for a function comment
                 
             case "MIS_DSC":
                 // Missing function/doc comment
 
                 $DocBlock = new DocBlock();
                 $DocBlock->setIndent($CodeRow->getIndentation());
-                $DocBlock->setNewLineChar($this->_postFormatAddNewline);
+                $DocBlock->setNewLineChar($this->_getPostFormatAddNewline());
                 
                 if (!isset($expected)) {
                     $this->_fixedLog[$fixCode][$row]["error"] .= "var expected was not set!!!";
@@ -572,19 +609,19 @@ Class PEAR_Enforce {
                 
                 break;
             case "IVD_PSC":
-                // Perl-style comments are not allowed. Use \"// Comment.\" or \"/* comment */\" instead.
+                // Perl-style comments are not allowed. Use "// Comment.\" or "/* comment */" instead.
                 
-                $CodeRow->regplace('\#(\s*)', '// ', 'T_COMMENT');
+                $CodeRow->regplace('\#(\s*)', '// ', 'T_COMMENT', 1);
                 break;
             case "MIS_LNG_TAG":
-                // Short PHP opening tag used. Found \"<?\" Expected \"<?php\".
+                // Short PHP opening tag used. Found "<?" Expected "<?php".
                 
-                $CodeRow->replace('<?', '<?php', 'T_ALLOTHER');
+                $CodeRow->replace('<?', '<?php', 'T_OPEN_TAG');
                 break;
             case "MIS_UPC_CNS":
                 // Constants must be uppercase; expected IS_NUMERIC but found is_numeric
                 
-                $CodeRow->replace($found, $expected, 'T_ALLOTHER');
+                $CodeRow->replace($found, $expected, 'T_ALLOTHER', 1);
                 break;
             case "MIS_ALN_EQL":
                 // Equals sign not aligned correctly
@@ -598,7 +635,7 @@ Class PEAR_Enforce {
                 
                 
                 // After Equal
-                $CodeRow->regplace('=([^ ])', '= $1', 'T_ALLOTHER');
+                $CodeRow->regplace('=([^ ])', '= $1', 'T_ALLOTHER', 1);
                 
                 break;
             case "IND":
@@ -609,24 +646,24 @@ Class PEAR_Enforce {
             case "MIS_SPC_AFT_CMA":
                 // No space found after comma in function call
                 
-                $CodeRow->regplace(',([^ ]|$)', ', $1', 'T_ALLOTHER');
+                $CodeRow->regplace(',([^ ]|$)', ', $1', 'T_ALLOTHER', 1);
                 break;
             case "MIS_NWL_ARN_CLS_BRC":
                 // Closing brace must be on a line by itself
                 
                 $CodeRow->insertAt($CodeRow->getPosBraceClose(), 
-                    $this->_postFormatAddNewline . $CodeRow->getIndentation());
+                    $this->_getPostFormatAddNewline() . $CodeRow->getIndentation());
                 break;
             case "MIS_NWL_ARN_OPN_BRC":
                 // Opening function brace should be on a new line
                 
                 $CodeRow->insertAt($CodeRow->getPosBraceOpen(), 
-                    $this->_postFormatAddNewline . $CodeRow->getIndentation());
+                    $this->_getPostFormatAddNewline() . $CodeRow->getIndentation());
                 break;
             case "FND_SWS_BFR_CMA":
                 // Space found before comma in function call
                 
-                $CodeRow->regplace('(\s+),', ',', 'T_ALLOTHER');
+                $CodeRow->regplace('(\s+),', ',', 'T_ALLOTHER', 1);
                 break;
             case "FND_SPC_PTH":
                 // Space surrounding parentheses
@@ -670,7 +707,7 @@ Class PEAR_Enforce {
     }
 
         
-    private function _improveCode($results) {
+    protected function _improveCode($results) {
         $this->_reportLog = "";
         $this->_debugLog = "";
         $fixedResults = "";
@@ -679,7 +716,24 @@ Class PEAR_Enforce {
             $this->_rowProblems[$row] = array();
             foreach($cols as $col=>$reports) {
                 foreach($reports as $nmr=>$report) {
-                    extract($report);
+                    if (isset($report['message'])) {
+                        $fixMessage = $report['message'];
+                    } elseif (isset($report['fixMessage'])) {
+                        $fixMessage = $report['fixMessage'];
+                    } else {
+                        $this->_log("No fixMessage found in row $row col $col nmr $nmr",PEAR_Enforce::LOG_ERROR);
+                        continue;
+                    }
+                     
+                    if (isset($report['type'])) {
+                        $lvl = $report['type'];
+                    } elseif (isset($report['lvl'])) {
+                        $lvl = $report['lvl'];
+                    } else {
+                        $this->_log("No fixLevel found in row $row col $col nmr $nmr",PEAR_Enforce::LOG_ERROR);
+                        continue;
+                    }
+                    
                     list($pattern, $fixCodes) = $this->_determineFixCodes($fixMessage);
                     $this->_rowProblems[$row] = array_merge($this->_rowProblems[$row], $fixCodes);
                     
@@ -766,7 +820,7 @@ Class PEAR_Enforce {
     }//end autoload()    
     
     /**
-     * Combines private functions to convert loaded codefile and store the 
+     * Combines protected functions to convert loaded codefile and store the 
      * improved version in $this->_fileImproved
      *
      * @return boolean
