@@ -114,7 +114,7 @@ class DocBlock {
                 }
             }
             
-            $this->setRow("param", $var, $knowType, "");
+            $this->setRow("param", $var, $knowType, "Enter description here...");
         }
         
         $this->setRow("return", $unKnown);

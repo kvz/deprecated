@@ -548,7 +548,7 @@ Class PEAR_Enforce {
                 
                 // @todo: Fout, zie regel 546 enforced
                 // '    else{'
-                $CodeRow->regplace('^[\s]*('.$controlStructuresTxt.'){', $this->_getPostFormatBackSpaceCB() . ' $1 {', 'T_ALLOTHER', -1);
+                $CodeRow->regplace('^[\s]*('.$controlStructuresTxt.'){', $this->_getPostFormatBackSpaceCB() . ' $1 {', 'T_ALLOTHER', 1);
 
                 // 'elseif (!$insensitive && substr_count($l, $pattern)) {'
                 $CodeRow->regplace('^[\s]*(elseif)', $this->_getPostFormatBackSpaceCB() . ' $1 ', 'T_ALLOTHER', -1);
@@ -570,7 +570,7 @@ Class PEAR_Enforce {
                 }
                 
                 // 'if ($v) {$keep = !$keep;'
-                if ($expected == '"if (...) {\n"; found "...){""') {
+                if ($expected == '"if (...) {\n"; found "...){"') {
                     $CodeRow->insertAt($CodeRow->getPosBraceOpen(+1), 
                         $this->_getPostFormatAddNewline() . $CodeRow->getIndentation(+4));
                 }
