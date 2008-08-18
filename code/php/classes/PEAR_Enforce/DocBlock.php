@@ -4,23 +4,25 @@
  *
  */
 class DocBlock {
-    private $_params;
-    private $_header;
-    private $_tables;
+    protected $_params;
+    protected $_header;
+    protected $_tables;
     
-    private $_indent = 0;
-    private $_indentation = '';
-    private $_docBlock = '';
-    private $_maxWidth = '70';
-    private $_varTypes = array(
+    protected $_indent = 0;
+    protected $_indentation = '';
+    protected $_docBlock = '';
+    protected $_maxWidth = '70';
+    protected $_varTypes = array(
         "string"  => array("T_CONSTANT_ENCAPSED_STRING"), 
         "integer" => array(), 
         "boolean" => array("T_FALSE", "T_TRUE"), 
         "array"   => array()
     );
-    private $_newLineBefore = array("return");
-    private $_newLineAfter  = array("header");
-    private $_newLineChar = "\n";
+    protected $_newLineBefore = array("return");
+    protected $_newLineAfter  = array("header");
+    protected $_newLineChar = "\n";
+    
+    protected $_lastWasEmptyLine = false;
     
     public  $errors = array();
     
@@ -39,7 +41,7 @@ class DocBlock {
      * 
      * @return integer
      */
-    private function _keyMaxLen($array) {
+    protected function _keyMaxLen($array) {
         $longest = 0;
         foreach($array as $key=>$array) {
             $len = strlen($key);
@@ -121,7 +123,7 @@ class DocBlock {
         return $this->generate();
     }
     
-    private function _longestKeys($array) {
+    protected function _longestKeys($array) {
         $longest = array();
         foreach ($array as $name=>$params) {
             foreach($params as $key=>$value) {
@@ -135,7 +137,7 @@ class DocBlock {
         return $longest;
     }
     
-    private function _addTable2D($tableName, $rows) {
+    protected function _addTable2D($tableName, $rows) {
         if (!is_array($rows) || !count($rows)) {
             $this->errors[] = "No valid array provided to _addTable2D";
             return false;
@@ -167,7 +169,7 @@ class DocBlock {
         
     }
     
-    private function _addHeader($header="Unknown", $maxWidth=70) {
+    protected function _addHeader($header="Unknown", $maxWidth=70) {
         if (in_array("header", $this->_newLineBefore)) {
             $this->_addLine("");
         }
@@ -182,7 +184,7 @@ class DocBlock {
         }
     }
     
-    private function _reset() {
+    protected function _reset() {
         // Reset
         $this->_docBlock = '';
     }
@@ -202,16 +204,24 @@ class DocBlock {
         return "\n".$this->_docBlock;
     }
     
-    private function _addLine($str="", $type="body") {
-        $in = $this->_indentation;
+    protected function _addLine($str="", $type="body") {
+        $thisIsEmptyLine = ($str == "");
         
-        if ($type == "head") {
-            $this->_docBlock .= $in."/**".$this->_newLineChar;
-        } elseif ($type == "tail") {
-            $this->_docBlock .= $in." */".$this->_newLineChar;
+        if (($this->_lastWasEmptyLine === $thisIsEmptyLine) === true) {
+            // No double empty lines allowed!
         } else {
-            $this->_docBlock .= $in." * $str".$this->_newLineChar;
+            $in = $this->_indentation;
+            
+            if ($type == "head") {
+                $this->_docBlock .= $in."/**".$this->_newLineChar;
+            } elseif ($type == "tail") {
+                $this->_docBlock .= $in." */".$this->_newLineChar;
+            } else {
+                $this->_docBlock .= $in." * $str".$this->_newLineChar;
+            }
         }
+        
+        $this->_lastWasEmptyLine = $thisIsEmptyLine;
     }
 }
 ?>

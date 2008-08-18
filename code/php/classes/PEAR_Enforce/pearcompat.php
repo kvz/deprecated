@@ -22,6 +22,7 @@ require_once "Enforce.php";
 $file   = (!isset($argv[1])) ? "" : $argv[1];
 $action = (!isset($argv[2])) ? "" : $argv[2]; 
 $id     = (!isset($argv[3])) ? "" : $argv[3];
+$arg4   = (!isset($argv[4])) ? "" : $argv[4];
 
 $PEAR_Enforce = new PEAR_Enforce($file);
 
@@ -38,7 +39,7 @@ switch ($action) {
         
         break;
     case "test":
-        echo "Running Test [$test]\n\n";
+        echo "Running Test [".$id."]\n\n";
         
         $CodeRow = new CodeRow("abcdefghijklmnopqrstuvwxyz'=' = 12345");
         $CodeRow = new CodeRow("\$x = \"\\\$kevin = 1\";");
@@ -59,6 +60,10 @@ switch ($action) {
                 break;
             case 5:
                 $CodeRow->insertAt(4, "x", -2);
+                break;
+            case 6:
+                $x = $PEAR_Enforce->syntaxCheckFile($file);
+                print_r($x);
                 break;
         }
         

@@ -68,6 +68,127 @@ Class PEAR_Enforce {
      * == General Functions 
      */
     
+    public function syntaxCheckFile($file) {
+        if (!file_exists($file)) {
+            $this->_log("Directory: $tmpdir not found", PEAR_Enforce::LOG_ERR);
+            return false;
+        }
+        
+        $code = file_get_contents($file);
+        
+        // Execute
+        return $this->_checkEval($code);
+    }
+        
+    public function syntaxCheckCode($code) {
+        // Execute
+        return $this->_checkEval($code);
+    }
+        
+    /**
+     * Performs a Syntax check without killing the parser (hopefully)
+     * By kevin at metalaxe dot com, http://nl.php.net/manual/en/function.php-check-syntax.php#82811
+     *
+     * @param string PHP to be evaluated
+     * 
+     * @return mixed array or boolean on success
+     */    
+    protected function _checkEval( $code )
+    {
+        $evalStr = 'return;';
+    
+        // Get the string tokens
+        $crack = token_get_all( "<?php\n".$code );
+       
+        // Drop our manually entered opening tag
+        array_shift( $crack );
+        $this->_tokenFix( $crack );
+       
+        // Check to see how we need to proceed
+        // prepare the string for parsing
+        if( isset( $crack[0][0] ) &&
+            (
+                $crack[0][0] === T_CONSTANT_ENCAPSED_STRING ||
+                $crack[0][0] === T_STRING ||
+                $crack[0][0] === T_OPEN_TAG
+            )
+        ){
+            $evalStr .= '?>';
+        }
+    
+        // Make sure syntax reporting is on...probably only need E_PARSE...but I'm anal
+        $oldErr = error_reporting( E_ALL | E_STRICT );
+    
+        // Prevent output
+        ob_start();
+        eval( $evalStr.$code );
+        $evaluput = ob_get_clean();
+    
+        // Reset error reporting
+        error_reporting( $oldErr );
+    
+        // Only do this if there was output
+        if ($evaluput !== '') {
+            // Strip annoying html tags, in case html reporting is enabled in php.ini
+            $evaluput = strip_tags( $evaluput );
+    
+            // Fancy Regex to pull the error that killed us
+            $pattern    = '/Parse error:\s*syntax error,(.+?)\s+in\s+.+?\s*line\s+(\d+)/';
+            $parse_fail    = (bool)preg_match( $pattern, $evaluput, $match );
+    
+            // Parse error to report?
+            if( $parse_fail === true )
+            {
+                return array(
+                    'line'    =>    (int)$match[2],
+                    'msg'    =>    $match[1]
+                );
+            }
+        }
+        return true;
+    }    
+    
+    /**
+     * fixes related bugs: 29761, 34782 => token_get_all returns <?php NOT as T_OPEN_TAG
+     * By rogier at dsone dot nl, http://nl2.php.net/manual/en/function.token-get-all.php#80335;
+     *
+     * @param array &$tokens
+     */
+    protected function _tokenFix( &$tokens ) {
+        if (!is_array($tokens) || (count($tokens)<2)) {
+            return;
+        }
+       //return of no fixing needed
+        if (is_array($tokens[0]) && (($tokens[0][0]==T_OPEN_TAG) || ($tokens[0][0]==T_OPEN_TAG_WITH_ECHO)) ) {
+            return;
+        }
+        //continue
+        $p1 = (is_array($tokens[0])?$tokens[0][1]:$tokens[0]);
+        $p2 = (is_array($tokens[1])?$tokens[1][1]:$tokens[1]);
+        $p3 = '';
+    
+        if (($p1.$p2 == '<?') || ($p1.$p2 == '<%')) {
+            $type = ($p2=='?')?T_OPEN_TAG:T_OPEN_TAG_WITH_ECHO;
+            $del = 2;
+            //update token type for 3rd part?
+            if (count($tokens)>2) {
+                $p3 = is_array($tokens[2])?$tokens[2][1]:$tokens[2];
+                $del = (($p3=='php') || ($p3=='='))?3:2;
+                $type = ($p3=='=')?T_OPEN_TAG_WITH_ECHO:$type;
+            }
+            //rebuild erroneous token
+            $temp = array($type, $p1.$p2.$p3);
+            if (version_compare(phpversion(), '5.2.2', '<' )===false) {
+                $temp[] = $token[0][2];
+            }
+            //rebuild
+            $tokens[1] = '';
+            if ($del==3) $tokens[2]='';
+            $tokens[0] = $temp;
+        }
+        return;
+    }    
+    
     /**
      * Takes first part of a string based on the delimiter.
      * Returns that part, and mutates the original string to contain
@@ -201,7 +322,7 @@ Class PEAR_Enforce {
     protected function _getPostFormatAddNewline() {
         // Should be Concatenated so this script can also be run on itself.
         $buf  = "";
-        $buf .= "/*<";
+        $buf .= "/*<PEAR_Enforce:";
         $buf .= "NEWLINE";
         $buf .= ">*/";
         return $buf;
@@ -210,7 +331,7 @@ Class PEAR_Enforce {
     protected function _getPostFormatBackSpaceCB(){
         // Should be Concatenated so this script can also be run on itself.
         $buf  = "";
-        $buf .= "/*<";
+        $buf .= "/*<PEAR_Enforce:";
         $buf .= "BACKSPACE, T_CURLY_BRACKET";
         $buf .= ">*/";
         return $buf;
@@ -721,7 +842,7 @@ Class PEAR_Enforce {
                     } elseif (isset($report['fixMessage'])) {
                         $fixMessage = $report['fixMessage'];
                     } else {
-                        $this->_log("No fixMessage found in row $row col $col nmr $nmr",PEAR_Enforce::LOG_ERROR);
+                        $this->_log("No fixMessage found in row $row col $col nmr $nmr",PEAR_Enforce::LOG_ERR);
                         continue;
                     }
                      
@@ -730,7 +851,7 @@ Class PEAR_Enforce {
                     } elseif (isset($report['lvl'])) {
                         $lvl = $report['lvl'];
                     } else {
-                        $this->_log("No fixLevel found in row $row col $col nmr $nmr",PEAR_Enforce::LOG_ERROR);
+                        $this->_log("No fixLevel found in row $row col $col nmr $nmr",PEAR_Enforce::LOG_ERR);
                         continue;
                     }
                     
@@ -835,8 +956,15 @@ Class PEAR_Enforce {
             $this->_log("File '".$this->_fileOriginal."' does not exist", PEAR_Enforce::LOG_CRIT);
             return false;
         }
+        
         if (!file_exists($this->_fileImproved)) {
             $this->_log("File '".$this->_fileImproved."' should have been created automatically, but does not exist", PEAR_Enforce::LOG_CRIT);
+            return false;
+        }
+        
+        if (($res = $this->syntaxCheckFile($this->_fileOriginal)) !== true) {
+            extract($res);
+            $this->_log("File '".$this->_fileOriginal."' contains syntax error: $msq on line: $line. Please fix first.", PEAR_Enforce::LOG_CRIT);
             return false;
         }
         
@@ -903,7 +1031,12 @@ Class PEAR_Enforce {
         $report .= "Fixed    ".$this->_cntProblemsFixed." problems"."\n";
         $report .= "Saved to ".$this->_fileImproved." (".filesize($this->_fileImproved).")"."\n";
         
-        
+        if (($res = $this->syntaxCheckFile($this->_fileImproved)) !== true) {
+            extract($res);
+            $report .= "Sorry, I've accidentaly created syntax error: $msg on line: $line.\n";
+        } else {
+            $report .= "No syntax errors created.\n";
+        }
         
         return $report;
     }
