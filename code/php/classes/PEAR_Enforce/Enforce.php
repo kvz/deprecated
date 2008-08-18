@@ -393,45 +393,21 @@ Class PEAR_Enforce {
         return true;
     }
 
-    protected function _runPHPCSCmd($file) {
-        if (!file_exists($this->cmd_phpcs)) {
-            log("Please: aptitude install php-pear && pear install PHP_Codesniffer", PEAR_Enforce::LOG_CRIT);
-            return false;
-        }
+    protected function _runPHPCSCode($code, $tmpdir="/tmp") {
         
-        $results = array();
+        $tmpfile = tempnam($tmpdir, "enforce_");
+        file_put_contents($tmpfile, $code);
+        $x = $this->_runPHPCSFile($tmpfile);
+        unlink($tmpfile);
         
-        $cmd = $this->cmd_phpcs." --standard=PEAR --report=csv ".$file;
-        list($success, $lines) = $this->_exe($cmd);
-        
-        foreach ($lines as $i=>$line) {
-            $src = trim(str_replace('"', '', $this->_str_shift(",", $line)));
-            $row = trim(str_replace('"', '', $this->_str_shift(",", $line)));
-            $col = trim(str_replace('"', '', $this->_str_shift(",", $line)));
-            $lvl = trim(str_replace('"', '', $this->_str_shift(",", $line)));
-            $fixMessage = trim(stripslashes($line));
-            
-            if ($src == "File") continue;
-            
-            $results[$row][$col][] = compact("lvl", "fixMessage");
-        }
-        
-        return $results;        
+        return $x;
     }
     
-    protected function _runPHPCS($file) {
-        return $this->_runPHPCSClass($file);
+    protected function _runPHPCSFile($file) {
+        return $this->_runPHPCSWithClass($file);
     }
     
-    protected function _runPHPCSClass($file) {
-        
-        // Check the PHP version.
-        if (version_compare(PHP_VERSION, '5.1.0') === -1) {
-            echo 'ERROR: PEAR_Enforce requires PHP version 5.1.0 or greater.'.PHP_EOL;
-            exit(2);
-        }
-        
-        require_once 'PHP/CodeSniffer.php';
+    protected function _runPHPCSWithClass($file) {
         
         $phpcs = new PHP_CodeSniffer(0, 4);
         $phpcs->process($file, "PEAR", array(), false);
@@ -667,16 +643,17 @@ Class PEAR_Enforce {
                 // '){'
                 $CodeRow->regplace('\){', ') {', 'T_ALLOTHER', 1);
                 
-                // @todo: Fout, zie regel 546 enforced
-                // '    else{'
-                $CodeRow->regplace('^[\s]*('.$controlStructuresTxt.'){', $this->_getPostFormatBackSpaceCB() . ' $1 {', 'T_ALLOTHER', 1);
+                // 'else{'
+                $CodeRow->regplace('('.$controlStructuresTxt.')[\s]+{', $this->_getPostFormatBackSpaceCB() . ' $1 {', 'T_ALLOTHER', 1);
 
+                // '               else {'
+                $CodeRow->regplace('^[\s]+('.$controlStructuresTxt.')[\s]*{', $this->_getPostFormatBackSpaceCB() . ' $1 {', 'T_ALLOTHER', 1);
+                
                 // 'elseif (!$insensitive && substr_count($l, $pattern)) {'
                 $CodeRow->regplace('^[\s]*(elseif)', $this->_getPostFormatBackSpaceCB() . ' $1 ', 'T_ALLOTHER', -1);
                 
-                
                 // '}else{' || '}  else      {'  
-                $CodeRow->regplace('^[\s]*}([\s]*('.$controlStructuresTxt.')[\s]*){', '} $2 {', 'T_ALLOTHER', -1);
+                $CodeRow->regplace('}[\s]*('.$controlStructuresTxt.')[\s]*{', '} $1 {', 'T_ALLOTHER', -1);
                 
                 // 'while($row = mysql_fetch_array($res)) {'
                 $CodeRow->regplace('('.$controlStructuresTxt.')\(', '$1 (', 'T_ALLOTHER', -1);
@@ -685,6 +662,7 @@ Class PEAR_Enforce {
                 if (preg_match_all('/('.$pattFunctionCall.') \(/', $CodeRow->getCodeRow(), $m)) {
                     $functionCalls = $m[1];
                     foreach ($functionCalls as $functionCall) {
+                        // Don't do this for control structures!
                         if (in_array($functionCall, $controlStructures)) continue;
                         $CodeRow->regplace('('.$functionCall.') \(', '$1(', 'T_ALLOTHER', -1);
                     }
@@ -695,8 +673,6 @@ Class PEAR_Enforce {
                     $CodeRow->insertAt($CodeRow->getPosBraceOpen(+1), 
                         $this->_getPostFormatAddNewline() . $CodeRow->getIndentation(+4));
                 }
-                
-                
                 
                 break;
             case "TOO_LNG":
@@ -767,7 +743,7 @@ Class PEAR_Enforce {
             case "MIS_SPC_AFT_CMA":
                 // No space found after comma in function call
                 
-                $CodeRow->regplace(',([^ ]|$)', ', $1', 'T_ALLOTHER', 1);
+                $CodeRow->regplace(',([^ ]|$)', ', $1', 'T_ALLOTHER', -1);
                 break;
             case "MIS_NWL_ARN_CLS_BRC":
                 // Closing brace must be on a line by itself
@@ -897,6 +873,14 @@ Class PEAR_Enforce {
      * @return PEAR_Enforce
      */
     public function PEAR_Enforce($file = false) {        
+
+        // Check the PHP version.
+        if (version_compare(PHP_VERSION, '5.1.0') === -1) {
+            echo 'ERROR: PEAR_Enforce requires PHP version 5.1.0 or greater.'."\n";
+            exit(2);
+        }
+        
+        require_once 'PHP/CodeSniffer.php';
         
         $this->_setDefinitions();
         if ($file) {
@@ -968,11 +952,21 @@ Class PEAR_Enforce {
             return false;
         }
         
-        $results   = $this->_runPHPCS($this->_fileOriginal);
-        $improved  = $this->_improveCode($results);
-        $formatted = $this->_postFormat($improved);
+        // Load
+        $source    = file_get_contents($this->_fileOriginal);
         
-
+        // Pass 1
+        $results   = $this->_runPHPCSCode($source);
+        $source    = $this->_improveCode($results);
+        
+        // Pass 2
+        $results   = $this->_runPHPCSCode($source);
+        $source  = $this->_improveCode($results);
+        
+        // Postformat
+        $formatted = $this->_postFormat($source);
+        
+        // Save
         if (!file_put_contents($this->_fileImproved, $formatted)) {
             $this->_log("Cannot write to file '".$this->_fileImproved."'", PEAR_Enforce::LOG_CRIT);
             return false;

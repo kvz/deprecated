@@ -1,23 +1,65 @@
 <?php
 Class CodeRow {
-    private $_codeRow = '';
-    private $_length = 0;
-    private $_Token = false;
-    private $_tokenized = array();
+    protected $_codeRow = '';
+    protected $_length = 0;
+    protected $_Token = false;
+    protected $_tokenized = array();
+    protected $_declaration = false;
+    protected $_codeWords = array();
     
     public function CodeRow($codeRow) {
         $this->_codeRow = $codeRow;
         $this->_changed();
     }
     
-    private function _changed(){
+    protected function _changed() {
         $this->_length = strlen($this->_codeRow);
                 
         $this->_Token = new TokenSimple($this->_codeRow);
         $this->_tokenized = $this->_Token->getTokenized();
         
+        $this->_codeWords = $this->_determineCodeWords($this->_tokenized);
+        
+        // Determine declaration
+        $this->_declaration = $this->_determineDeclaration($this->_codeWords);
     }
     
+    protected function _determineCodeWords($tokens) {
+        $codeWords = array();
+        foreach ($this->_tokenized as $i=>$token) {
+            extract($token);
+            if ($type == 'T_ALLOTHER') {
+                $newCodeWords = preg_split('/[^a-zA-Z0-9_]/', $content, null, PREG_SPLIT_NO_EMPTY);
+                if (is_array($newCodeWords)) {
+                    $codeWords = array_merge($codeWords, $newCodeWords);
+                }
+            }
+        }
+        return $codeWords;
+    }
+    
+    protected function _determineDeclaration($codeWords) {
+        $firstWord = strtolower(reset($codeWords));
+        $declarationWords = array("function", "class");
+        
+        if (($found = array_search($firstWord, $declarationWords)) !== false) {
+            return $declarationWords[$found];
+        }
+        
+        return false;
+    }
+    
+    public function isDeclaration($forceType=false) {
+        if ($forceType !== false) {
+            if ($this->_declaration == $forceType) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return $this->_declaration;
+        }
+    }
         
     public function wrap($newLineChar, $at=85, $indentation="") {
         // Some reserve (e.g. for added dot to glue)
@@ -50,7 +92,7 @@ Class CodeRow {
         return true;
     }
     
-    private function _wrapPoints($wrapCode="#{NWL+IND}#") {
+    protected function _wrapPoints($wrapCode="#{NWL+IND}#") {
         
         $wrapWhere = array();
         $wrapChars["T_CONSTANT_ENCAPSED_STRING"] = array(' ');
@@ -186,7 +228,7 @@ Class CodeRow {
      * 
      * @return string
      */
-    private function _replace($search, $replace, $subject, $use_regex=false, $limit=-1) {
+    protected function _replace($search, $replace, $subject, $use_regex=false, $limit=-1) {
         if ($use_regex) {
             return preg_replace('#'. $search.'#', $replace, $subject, $limit);
         } else {
@@ -278,7 +320,7 @@ Class CodeRow {
             }
         }
         
-        return 0;
+        return -1;
     }
     
     public function getPosToken($tokenType) {
@@ -288,7 +330,7 @@ Class CodeRow {
              }
         }
         
-        return 0;
+        return -1;
     }
     
     public function getPosEqual($extra = 0) {

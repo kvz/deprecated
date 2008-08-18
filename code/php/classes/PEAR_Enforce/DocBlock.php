@@ -134,6 +134,7 @@ class DocBlock {
                 }
             }
         }
+        
         return $longest;
     }
     
@@ -207,7 +208,7 @@ class DocBlock {
     protected function _addLine($str="", $type="body") {
         $thisIsEmptyLine = ($str == "");
         
-        if (($this->_lastWasEmptyLine === $thisIsEmptyLine) === true) {
+        if ($this->_lastWasEmptyLine == true && $thisIsEmptyLine == true) {
             // No double empty lines allowed!
         } else {
             $in = $this->_indentation;
@@ -220,7 +221,7 @@ class DocBlock {
                 $this->_docBlock .= $in." * $str".$this->_newLineChar;
             }
         }
-        
+            
         $this->_lastWasEmptyLine = $thisIsEmptyLine;
     }
 }
