@@ -395,7 +395,7 @@ Class PEAR_Enforce {
 
     protected function _runPHPCSCode($code, $tmpdir="/tmp") {
         
-        $tmpfile = tempnam($tmpdir, "enforce_");
+        $tmpfile = tempnam($tmpdir, "enforce_").".php";
         file_put_contents($tmpfile, $code);
         $x = $this->_runPHPCSFile($tmpfile);
         unlink($tmpfile);
@@ -409,6 +409,14 @@ Class PEAR_Enforce {
     
     protected function _runPHPCSWithClass($file) {
         
+        // Check the PHP version.
+        if (version_compare(PHP_VERSION, '5.1.0') === -1) {
+            echo 'ERROR: PEAR_Enforce requires PHP version 5.1.0 or greater.'.PHP_EOL;
+            exit(2);
+        }
+        
+        require_once 'PHP/CodeSniffer.php';
+        
         $phpcs = new PHP_CodeSniffer(0, 4);
         $phpcs->process($file, "PEAR", array(), false);
         $results = $phpcs->prepareErrorReport(true);
@@ -416,7 +424,7 @@ Class PEAR_Enforce {
         
         return $results;        
     }
-    
+
     public function showReportRow($fixCode, $fixMessage, $fixed, $lvl, $row, $col) {
         $buf  = "";
         $buf .= " ".str_pad($fixCode, $this->_fixCodesMaxLen, " ", STR_PAD_LEFT)." ";
@@ -517,6 +525,7 @@ Class PEAR_Enforce {
         // Newlines
         $predefined['Closing brace must be on a line by itself'][]      = 'MIS_NWL_ARN_CLS_BRC';
         $predefined['Opening function brace should be on a new line'][] = 'MIS_NWL_ARN_OPN_BRC';
+        $predefined['Opening brace should be on a new line'][] = 'MIS_NWL_ARN_OPN_BRC';
         $predefined['Opening brace of a Class must be on the line after the definition'][] = 'MIS_NWL_ARN_OPN_BRC';
 
         // Comments
@@ -669,11 +678,15 @@ Class PEAR_Enforce {
                 }
                 
                 // 'if ($v) {$keep = !$keep;'
-                if ($expected == '"if (...) {\n"; found "...){"') {
+                $CodeRow->regplace('{[\s]*(\S)+[\s]*', '{ '. $this->_getPostFormatAddNewline().$CodeRow->getIndentation(+4).'$1', 'T_ALLOTHER', -1);
+                
+                
+                
+/*                if ($expected == '"if (...) {\n"; found "if (...) {"') {
                     $CodeRow->insertAt($CodeRow->getPosBraceOpen(+1), 
                         $this->_getPostFormatAddNewline() . $CodeRow->getIndentation(+4));
                 }
-                
+*/                
                 break;
             case "TOO_LNG":
                 // "Line exceeds 85 characters; contains 96 characters
@@ -873,14 +886,6 @@ Class PEAR_Enforce {
      * @return PEAR_Enforce
      */
     public function PEAR_Enforce($file = false) {        
-
-        // Check the PHP version.
-        if (version_compare(PHP_VERSION, '5.1.0') === -1) {
-            echo 'ERROR: PEAR_Enforce requires PHP version 5.1.0 or greater.'."\n";
-            exit(2);
-        }
-        
-        require_once 'PHP/CodeSniffer.php';
         
         $this->_setDefinitions();
         if ($file) {
@@ -952,21 +957,15 @@ Class PEAR_Enforce {
             return false;
         }
         
-        // Load
-        $source    = file_get_contents($this->_fileOriginal);
         
-        // Pass 1
+        $source    = file_get_contents($this->_fileOriginal);
+
         $results   = $this->_runPHPCSCode($source);
         $source    = $this->_improveCode($results);
         
-        // Pass 2
-        $results   = $this->_runPHPCSCode($source);
-        $source  = $this->_improveCode($results);
-        
-        // Postformat
         $formatted = $this->_postFormat($source);
         
-        // Save
+
         if (!file_put_contents($this->_fileImproved, $formatted)) {
             $this->_log("Cannot write to file '".$this->_fileImproved."'", PEAR_Enforce::LOG_CRIT);
             return false;
