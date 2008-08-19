@@ -47,20 +47,20 @@ Class PEAR_Enforce {
     
     public  $wasModifiedBy = array();
     
-    protected $_definitions = array();
-    protected $_fixCodesMaxLen = 0;
+    private $_definitions = array();
+    private $_fixCodesMaxLen = 0;
 
-    protected $_CodeRows = false;
+    private $_CodeRows = false;
     
-    protected $_cntProblemsTotal = 0;
-    protected $_cntProblemsFixed = 0;
+    private $_cntProblemsTotal = 0;
+    private $_cntProblemsFixed = 0;
     
-    protected $_rowProblems = array();
-    protected $_fixedLog = array();
-    protected $_reportLog = "";
+    private $_rowProblems = array();
+    private $_fixedLog = array();
+    private $_reportLog = "";
 
-    protected $_fileOriginal = false;
-    protected $_fileImproved = false;
+    private $_fileOriginal = false;
+    private $_fileImproved = false;
 
     public $cmd_phpcs = "/usr/bin/phpcs";
     
@@ -93,7 +93,7 @@ Class PEAR_Enforce {
      * 
      * @return mixed array or boolean on success
      */    
-    protected function _checkEval( $code )
+    private function _checkEval( $code )
     {
         $evalStr = 'return;';
     
@@ -154,7 +154,7 @@ Class PEAR_Enforce {
      *
      * @param array &$tokens
      */
-    protected function _tokenFix( &$tokens ) {
+    private function _tokenFix( &$tokens ) {
         if (!is_array($tokens) || (count($tokens)<2)) {
             return;
         }
@@ -178,7 +178,7 @@ Class PEAR_Enforce {
             }
             //rebuild erroneous token
             $temp = array($type, $p1.$p2.$p3);
-            if (version_compare(phpversion(), '5.2.2', '<' )===false) {
+            if (version_compare(phpversion(), '5.2.2', '<' )===false && isset($token[0]) && isset($token[0][2])) {
                 $temp[] = $token[0][2];
             }
             //rebuild
@@ -199,7 +199,7 @@ Class PEAR_Enforce {
      * 
      * @return string
      */
-    protected function _str_shift($delimiter, &$string)
+    private function _str_shift($delimiter, &$string)
     {
         // Explode into parts
         $parts  = explode($delimiter, $string);
@@ -221,7 +221,7 @@ Class PEAR_Enforce {
      * 
      * @return integer
      */
-    protected function _valMaxLen2D($array) {
+    private function _valMaxLen2D($array) {
         $longest = 0;
         foreach($array as $key=>$array) {
             foreach($array as $val) {
@@ -243,7 +243,7 @@ Class PEAR_Enforce {
      * 
      * @return array
      */
-    protected function _exe($cmd) {
+    private function _exe($cmd) {
         $o = array(); 
         exec($cmd, $o, $r);
         if ($r) {
@@ -254,7 +254,7 @@ Class PEAR_Enforce {
     }    
     
     /**
-     * == Specific protected Functions 
+     * == Specific private Functions 
      */
     
     
@@ -263,7 +263,7 @@ Class PEAR_Enforce {
      *
      * @param string $fixCode
      */
-    protected function _getPattern($fixCode) {
+    private function _getPattern($fixCode) {
         foreach ($this->_definitions as $pattern=>$fixCodes) {
             if (array_search($fixCode, $fixCodes) !== false){
                 return $pattern;
@@ -278,7 +278,7 @@ Class PEAR_Enforce {
      * @param string  $str
      * @param integer $level
      */
-    protected function _log($str, $level=PEAR_Enforce::LOG_INFO) {
+    private function _log($str, $level=PEAR_Enforce::LOG_INFO) {
         echo $str."\n";
         if ($level <= PEAR_Enforce::LOG_CRIT) {
             die();
@@ -292,7 +292,7 @@ Class PEAR_Enforce {
      * 
      * @return string
      */
-    protected function _preFormat($source) {
+    private function _preFormat($source) {
         $source = str_replace("\r", "", $source);
         $source = str_replace("\t", "    ", $source);
         $source = trim($source);
@@ -306,7 +306,7 @@ Class PEAR_Enforce {
      * 
      * @return string
      */
-    protected function _postFormat($source) {
+    private function _postFormat($source) {
         // Newlines
         $source = str_replace($this->_getPostFormatAddNewline(), "\n", $source);
 
@@ -319,7 +319,7 @@ Class PEAR_Enforce {
         return $source;
     }    
     
-    protected function _getPostFormatAddNewline() {
+    private function _getPostFormatAddNewline() {
         // Should be Concatenated so this script can also be run on itself.
         $buf  = "";
         $buf .= "/*<PEAR_Enforce:";
@@ -328,7 +328,7 @@ Class PEAR_Enforce {
         return $buf;
     }
     
-    protected function _getPostFormatBackSpaceCB(){
+    private function _getPostFormatBackSpaceCB(){
         // Should be Concatenated so this script can also be run on itself.
         $buf  = "";
         $buf .= "/*<PEAR_Enforce:";
@@ -345,7 +345,7 @@ Class PEAR_Enforce {
      * 
      * @return boolean
      */
-    protected function _loadFile($file, $preformat=true) {
+    private function _loadFile($file, $preformat=true) {
         
         $file = realpath($file);
         
@@ -393,7 +393,7 @@ Class PEAR_Enforce {
         return true;
     }
 
-    protected function _runPHPCSCode($code, $tmpdir="/tmp") {
+    private function _runPHPCSCode($code, $tmpdir="/tmp") {
         
         $tmpfile = tempnam($tmpdir, "enforce_").".php";
         file_put_contents($tmpfile, $code);
@@ -403,11 +403,11 @@ Class PEAR_Enforce {
         return $x;
     }
     
-    protected function _runPHPCSFile($file) {
+    private function _runPHPCSFile($file) {
         return $this->_runPHPCSWithClass($file);
     }
     
-    protected function _runPHPCSWithClass($file) {
+    private function _runPHPCSWithClass($file) {
         
         // Check the PHP version.
         if (version_compare(PHP_VERSION, '5.1.0') === -1) {
@@ -452,7 +452,7 @@ Class PEAR_Enforce {
      *
      * @param array $add_definitions
      */
-    protected function _setDefinitions($add_definitions=false) {
+    private function _setDefinitions($add_definitions=false) {
         if (!$add_definitions) $add_definitions = array();
 
         /* 
@@ -503,7 +503,7 @@ Class PEAR_Enforce {
         // Large Indentation & Alignment
         $predefined['Spaces must be used to indent lines; tabs are not allowed'][]            = 'FND_TAB';
         $predefined['End of line character is invalid; expected "\n" but found "\r\n"'][] = 'FND_WNL';
-        $predefined['Line exceeds %d characters; contains %d characters'][]                   = 'TOO_LNG';
+        $predefined['Line exceeds %d characters; contains %d characters'][]                   = 'WONTFIX';//'TOO_LNG';
         
         $predefined['Line indented incorrectly; expected %d space%z, found %d'][]            = 'IND';
         $predefined['Line indented incorrectly; expected at least %d space%z, found %d'][]   = 'IND';
@@ -543,8 +543,8 @@ Class PEAR_Enforce {
         $predefined['File is being unconditionally included; use "require" instead'][]    = 'FND_IVD_STM';
         
         // Not going to fix. Ever.
-        $predefined['Protected method name "%c::%c" must not be prefixed with an underscore'][] = 'NEVER_FIX';
-        //$predefined[''][] = 'NEVER_FIX';
+        $predefined['private method name "%c::%c" must not be prefixed with an underscore'][] = 'WONTFIX';
+        //$predefined[''][] = 'WONTFIX';
         
         
         
@@ -566,7 +566,7 @@ Class PEAR_Enforce {
      * 
      * @return string
      */
-    protected function _patternPrepare($pattern) {
+    private function _patternPrepare($pattern) {
         $pattern = preg_quote($pattern);
         $pattern = str_replace('%z', '[s]?', $pattern); // 's' or not to match multiples
         
@@ -583,7 +583,7 @@ Class PEAR_Enforce {
     }        
     
     
-    protected function _determineFixCodes($fixMessage) {
+    private function _determineFixCodes($fixMessage) {
         if (!is_array($this->_definitions) || count($this->_definitions) < 5) {
             log("What happened to my fixcode definitions?!", PEAR_Enforce::LOG_EMERG);
             return false;
@@ -610,10 +610,20 @@ Class PEAR_Enforce {
      * 
      * @return boolean
      */
-    protected function _fixProblem($fixMessage, $fixCode, $pattern, $row, $col) {
+    private function _fixProblem($fixMessage, $fixCode, $pattern, $row, $col) {
         
-        $debug = false;
-        $CodeRow  = $this->_CodeRows[$row];
+        $debug   = false;
+        $CodeRow = $this->_CodeRows[$row];
+        $NextRow = false;
+        $PrevRow = false;
+        
+        if (isset($this->_CodeRows[$row+1])) {
+            $NextRow = $this->_CodeRows[$row+1];
+        }
+        if (isset($this->_CodeRows[$row-1])) {
+            $PrevRow = $this->_CodeRows[$row-1];
+        }
+        
         $original = $CodeRow->getCodeRow();
         $matches  = array();
         
@@ -678,7 +688,7 @@ Class PEAR_Enforce {
                 }
                 
                 // 'if ($v) {$keep = !$keep;'
-                $CodeRow->regplace('{[\s]*(\S)+[\s]*', '{ '. $this->_getPostFormatAddNewline().$CodeRow->getIndentation(+4).'$1', 'T_ALLOTHER', -1);
+                $CodeRow->regplace('{[\s]*(\S+)', '{ '. $this->_getPostFormatAddNewline().$CodeRow->getIndentation(+4).'$1', 'T_ALLOTHER', -1);
                 
                 
                 
@@ -699,9 +709,11 @@ Class PEAR_Enforce {
                 
             case "MIS_DSC":
                 // Missing function/doc comment
-
+                
+                $indent = $CodeRow->getIndent();    
+                
                 $DocBlock = new DocBlock();
-                $DocBlock->setIndent($CodeRow->getIndentation());
+                $DocBlock->setIndent($indent);
                 $DocBlock->setNewLineChar($this->_getPostFormatAddNewline());
                 
                 if (!isset($expected)) {
@@ -713,8 +725,12 @@ Class PEAR_Enforce {
                     $CodeRow->insertAt($CodeRow->getIndent(+1), 
                         $DocBlock->generateClass($CodeRow->getCodeRow()));
                 } elseif ($expected == "file") {
-                    $CodeRow->insertAt(1, 
+                    $CodeRow->insertAt($CodeRow->getLength(), 
                         $DocBlock->generateFile());
+                }
+                
+                if (count($DocBlock->errors)) {
+                    $this->_fixedLog[$fixCode][$row]["error"] .= "DocBlock Errors: ". implode('; ', $DocBlock->errors);
                 }
                 
                 break;
@@ -745,7 +761,7 @@ Class PEAR_Enforce {
                 
                 
                 // After Equal
-                $CodeRow->regplace('=([^ ])', '= $1', 'T_ALLOTHER', 1);
+                $CodeRow->regplace('=([a-zA-Z0-9\$\_]+)', '= $1', 'T_ALLOTHER', 1);
                 
                 break;
             case "IND":
@@ -817,7 +833,7 @@ Class PEAR_Enforce {
     }
 
         
-    protected function _improveCode($results) {
+    private function _improveCode($results) {
         $this->_reportLog = "";
         $this->_debugLog = "";
         $fixedResults = "";
@@ -930,7 +946,7 @@ Class PEAR_Enforce {
     }//end autoload()    
     
     /**
-     * Combines protected functions to convert loaded codefile and store the 
+     * Combines private functions to convert loaded codefile and store the 
      * improved version in $this->_fileImproved
      *
      * @return boolean

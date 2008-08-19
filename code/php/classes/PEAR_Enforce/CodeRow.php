@@ -1,18 +1,18 @@
 <?php
 Class CodeRow {
-    protected $_codeRow = '';
-    protected $_length = 0;
-    protected $_Token = false;
-    protected $_tokenized = array();
-    protected $_declaration = false;
-    protected $_codeWords = array();
+    private $_codeRow = '';
+    private $_length = 0;
+    private $_Token = false;
+    private $_tokenized = array();
+    private $_declaration = false;
+    private $_codeWords = array();
     
     public function CodeRow($codeRow) {
         $this->_codeRow = $codeRow;
         $this->_changed();
     }
     
-    protected function _changed() {
+    private function _changed() {
         $this->_length = strlen($this->_codeRow);
                 
         $this->_Token = new TokenSimple($this->_codeRow);
@@ -24,7 +24,7 @@ Class CodeRow {
         $this->_declaration = $this->_determineDeclaration($this->_codeWords);
     }
     
-    protected function _determineCodeWords($tokens) {
+    private function _determineCodeWords($tokens) {
         $codeWords = array();
         foreach ($this->_tokenized as $i=>$token) {
             extract($token);
@@ -38,7 +38,7 @@ Class CodeRow {
         return $codeWords;
     }
     
-    protected function _determineDeclaration($codeWords) {
+    private function _determineDeclaration($codeWords) {
         $firstWord = strtolower(reset($codeWords));
         $declarationWords = array("function", "class");
         
@@ -92,7 +92,7 @@ Class CodeRow {
         return true;
     }
     
-    protected function _wrapPoints($wrapCode="#{NWL+IND}#") {
+    private function _wrapPoints($wrapCode="#{NWL+IND}#") {
         
         $wrapWhere = array();
         $wrapChars["T_CONSTANT_ENCAPSED_STRING"] = array(' ');
@@ -228,7 +228,7 @@ Class CodeRow {
      * 
      * @return string
      */
-    protected function _replace($search, $replace, $subject, $use_regex=false, $limit=-1) {
+    private function _replace($search, $replace, $subject, $use_regex=false, $limit=-1) {
         if ($use_regex) {
             return preg_replace('#'. $search.'#', $replace, $subject, $limit);
         } else {
@@ -292,6 +292,10 @@ Class CodeRow {
         
         $this->_changed();
         return true;
+    }
+    
+    public function getLength() {
+        return $this->_length;
     }
     
     public function getCharAt($at, $howmany=1) {

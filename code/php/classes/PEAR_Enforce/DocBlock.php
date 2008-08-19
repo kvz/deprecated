@@ -4,30 +4,40 @@
  *
  */
 class DocBlock {
-    protected $_params;
-    protected $_header;
-    protected $_tables;
+    private $_params;
+    private $_header;
+    private $_tables;
+    private $_fields;
     
-    protected $_indent = 0;
-    protected $_indentation = '';
-    protected $_docBlock = '';
-    protected $_maxWidth = '70';
-    protected $_varTypes = array(
+    private $_indent = 0;
+    private $_indentation = '';
+    private $_docBlock = '';
+    private $_maxWidth = '70';
+    private $_varTypes = array(
         "string"  => array("T_CONSTANT_ENCAPSED_STRING"), 
         "integer" => array(), 
         "boolean" => array("T_FALSE", "T_TRUE"), 
         "array"   => array()
     );
-    protected $_newLineBefore = array("return");
-    protected $_newLineAfter  = array("header");
-    protected $_newLineChar = "\n";
+    private $_newLineBefore = array("return");
+    private $_newLineAfter  = array("header");
+    private $_newLineChar = "\n";
     
-    protected $_lastWasEmptyLine = false;
+    private $_lastWasEmptyLine = false;
     
     public  $errors = array();
     
     public function DocBlock () {
         
+    }
+    
+    private function _reset() {
+        // Reset
+        $this->_docBlock = '';
+        $this->_header = '';
+        $this->_tables = array();
+        $this->_fields = array();
+        $this->_lastWasEmptyLine = false;
     }
     
     public function setNewLineChar($newLineChar="\n") {
@@ -41,7 +51,7 @@ class DocBlock {
      * 
      * @return integer
      */
-    protected function _keyMaxLen($array) {
+    private function _longestKey($array) {
         $longest = 0;
         foreach($array as $key=>$array) {
             $len = strlen($key);
@@ -52,6 +62,27 @@ class DocBlock {
         return $longest;
     }    
     
+    /**
+     * Enter description here...
+     *
+     * @param unknown_type $array
+     * @return unknown
+     */
+    private function _longestKeys2D($array) {
+        $longest = array();
+        foreach ($array as $name=>$params) {
+            foreach($params as $key=>$value) {
+                if (!isset($longest[$key])) $longest[$key] = null;
+                $len = strlen($value);
+                if($len > $longest[$key]) {
+                    $longest[$key] = $len;
+                }
+            }
+        }
+        
+        return $longest;
+    }    
+    
     public function setRow($table, $name, $type="", $description="") {
         $this->_tables[$table][$name]["type"] = trim($type);
         $this->_tables[$table][$name]["name"] = trim($name);
@@ -59,8 +90,13 @@ class DocBlock {
         return true;
     }
     
-    public function setHeader($header="Unknown") {
-        $this->_header = $header;
+    public function setField($fieldName, $fieldValue) {
+        $this->_fields[$fieldName] = $fieldValue;
+        return true;
+    }
+    
+    public function addHeader($header="Unknown") {
+        $this->_header[] = $header;
         return true;
     }
     
@@ -68,6 +104,7 @@ class DocBlock {
         if ($indent > 40 || $indent < 0) {
             return false;
         }
+        $this->_indent = $indent; 
         $this->_indentation = str_repeat(" ", $indent);
         return true;
     }
@@ -76,16 +113,46 @@ class DocBlock {
         return $this->_params;
     }
     
-    public function generateFile($str="") {
-        $this->setRow("author", "Kevin");
-        return $this->generate();
-    }
-
-    public function generateClass($str="") {
-        $this->setRow("author", "Kevin");
-        return $this->generate();
+    public function setFields($info) {
+        if (!$info) $info = array();
+        $licenseUrls = array(
+            "New BSD License" => "http://www.opensource.org/licenses/bsd-license.php"
+        );
+        
+        $required = array(
+            "@category" => "Unknown_Category",
+            "@package" => "Unknown_Package", 
+            "@author" => "Unknown Author <unknown_firstname@unknown_domain.tld>",
+            "@copyright" => date("Y")." Unknown Author (http://unknown_url)",  
+            "@license" => "New BSD License",
+            "@version" => "SVN: Release: \$Id\$", 
+            "@link"=> "http://unknown_url"
+        );
+        $fields = array_merge($required, $info);
+        
+        if (isset($fields["license"])) {
+            if (isset($licenseUrls[$fields["license"]])) {
+                $licenseUrl = $licenseUrls[$fields["license"]];
+                $fields["license"] = $licenseUrl." ".$fields["license"];
+            }
+        }
+        foreach ($fields as $fieldName=>$fieldValue) {
+            $this->setField($fieldName, $fieldValue);
+        }
     }
     
+    public function generateFile($info=false, $php_version="5") {
+        $this->addHeader("Unknown Package");
+        $this->addHeader("PHP version ".$php_version);
+        $this->setFields($info);
+        return $this->_generate();
+    }
+
+    public function generateClass() {
+        $this->addHeader("Unknown Class");
+        $this->setFields($info);
+        return $this->_generate();
+    }
     
     /**
      * Enter description here...
@@ -98,7 +165,7 @@ class DocBlock {
         $unKnown = "unknown_type";
         $Token   = new Token($codeFunction);
         
-        $this->setHeader("Enter description here...");
+        $this->addHeader("Enter description here...");
         
         $vars = $Token->getVariables();
         foreach ($vars as $var=>$valueData) {
@@ -120,34 +187,37 @@ class DocBlock {
         }
         
         $this->setRow("return", $unKnown);
-        return $this->generate();
+        return $this->_generate();
     }
     
-    protected function _longestKeys($array) {
-        $longest = array();
-        foreach ($array as $name=>$params) {
-            foreach($params as $key=>$value) {
-                if (!isset($longest[$key])) $longest[$key] = null;
-                $len = strlen($value);
-                if($len > $longest[$key]) {
-                    $longest[$key] = $len;
-                }
-            }
+    private function _generate() {
+
+        $this->_writeLine("", "head");
+        
+        $this->_writeHeaders($this->_maxWidth);
+        
+        $this->_writeFields();
+        
+        if (count($this->_tables)) {
+            $this->_writeLine("");
+            $this->_writeTables();
         }
         
-        return $longest;
+        $this->_writeLine("", "tail");
+        
+        return "\n".$this->_docBlock.$this->_indentation;
     }
     
-    protected function _addTable2D($tableName, $rows) {
+    private function _writeTable2D($tableName, $rows) {
         if (!is_array($rows) || !count($rows)) {
-            $this->errors[] = "No valid array provided to _addTable2D";
+            $this->errors[] = "No valid array provided to ".__FUNCTION__;
             return false;
         }
         
-        $maxColumnLengths = $this->_longestKeys($rows);
+        $maxColumnLengths = $this->_longestKeys2D($rows);
         
         if (in_array($tableName, $this->_newLineBefore)) {
-            $this->_addLine("");
+            $this->_writeLine("");
         }
         
         foreach ($rows as $rowName=>$cells) {
@@ -161,54 +231,71 @@ class DocBlock {
                 
                 $str .= str_pad($value, $l, " ", STR_PAD_RIGHT)." ";
             }
-            $this->_addLine($str);
+            $this->_writeLine($str);
         }
         
         if (in_array($tableName, $this->_newLineAfter)) {
-            $this->_addLine("");
-        }
-        
-    }
-    
-    protected function _addHeader($header="Unknown", $maxWidth=70) {
-        if (in_array("header", $this->_newLineBefore)) {
-            $this->_addLine("");
-        }
-        
-        $headerLines = explode($this->_newLineChar, wordwrap($header, $maxWidth, $this->_newLineChar, true));
-        foreach($headerLines as $headerLine) {
-            $this->_addLine($headerLine);
-        }
-        
-        if (in_array("header", $this->_newLineAfter)) {
-            $this->_addLine("");
+            $this->_writeLine("");
         }
     }
     
-    protected function _reset() {
-        // Reset
-        $this->_docBlock = '';
+    private function _writeFields() {
+        $fields = $this->_fields;
+        if (!is_array($fields) || !count($fields)) {
+            $this->errors[] = "No valid array provided to ".__FUNCTION__;
+            return false;
+        }
+        
+        $this->_writeLine("");
+        
+        $l = $this->_longestKey($fields);
+        foreach ($fields as $fieldName=>$fieldValue) {
+            $str  = "";
+            $str .= str_pad($fieldName, $l, " ", STR_PAD_RIGHT)." ".$fieldValue;
+            $this->_writeLine($str);
+        }
     }
     
-    public function generate() {
-        $this->_reset();
+    private function _writeTables() {
+        $tables = $this->_tables;
+        if (!is_array($tables) || !count($tables)) {
+            $this->errors[] = "No valid array provided to ".__FUNCTION__;
+            return false;
+        }
+        
+        foreach ($tables as $tableName=>$rows) {
+            $this->_writeTable2D($tableName, $rows);
+        }
+    }
+    
+    private function _writeHeaders($maxWidth=70) {
+        $headers = $this->_header;
+        if (!is_array($headers) || !count($headers)) {
+            $this->errors[] = "No valid array provided to ".__FUNCTION__;
+            return false;
+        }
+                
+        foreach ($headers as $header) {
+            if (in_array("header", $this->_newLineBefore)) {
+                $this->_writeLine("");
+            }
+            
+            $headerLines = explode($this->_newLineChar, wordwrap($header, $maxWidth, $this->_newLineChar, true));
+            foreach($headerLines as $headerLine) {
+                $this->_writeLine($headerLine);
+            }
+            
+            if (in_array("header", $this->_newLineAfter)) {
+                $this->_writeLine("");
+            }
+        }
+    }
 
-        $this->_addLine("", "head");
-        $this->_addHeader($this->_header, $this->_maxWidth);
-        
-        foreach ($this->_tables as $tableName=>$rows) {
-            $this->_addTable2D($tableName, $rows);
-        }
-        
-        $this->_addLine("", "tail");
-        
-        return "\n".$this->_docBlock;
-    }
     
-    protected function _addLine($str="", $type="body") {
+    private function _writeLine($str="", $type="body") {
         $thisIsEmptyLine = ($str == "");
         
-        if ($this->_lastWasEmptyLine == true && $thisIsEmptyLine == true) {
+        if ($type=="body" && $this->_lastWasEmptyLine == true && $thisIsEmptyLine == true) {
             // No double empty lines allowed!
         } else {
             $in = $this->_indentation;

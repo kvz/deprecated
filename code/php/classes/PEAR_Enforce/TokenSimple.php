@@ -15,7 +15,6 @@ Class TokenSimple extends Token {
         
     }
 
-    
     public function getTypes() {
         $cont = array();
         foreach ($this->_tokenized as $i=>$token) {
@@ -29,7 +28,7 @@ Class TokenSimple extends Token {
         return $this->_tokenized;
     }
         
-    private function _simplify($onlyRecognize=false, $othersAreCalled="T_ALLOTHER") {
+    protected function _simplify($onlyRecognize=false, $othersAreCalled="T_ALLOTHER") {
         if (!$onlyRecognize) {
             $onlyRecognize = array(
                 "T_CONSTANT_ENCAPSED_STRING", 

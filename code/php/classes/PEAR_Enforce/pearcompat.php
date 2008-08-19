@@ -17,6 +17,8 @@ echo "str: ".$str."\n";
 die();
 */
 error_reporting(E_ALL);
+
+
 require_once "Enforce.php";
 
 $file   = (!isset($argv[1])) ? "" : $argv[1];
@@ -72,6 +74,7 @@ switch ($action) {
         $DocBlock = new DocBlock();
         $DocBlock->setIndent(4);
         
+/*        
         $DocBlock->setHeader("Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! ");
         
         $DocBlock->setRow("param", "\$strData", "string", "Used for processing");
@@ -79,11 +82,11 @@ switch ($action) {
         $DocBlock->setRow("param", "\$lines", "array");
         
         $DocBlock->setRow("return", "array");
-        
         print_r($DocBlock->getParams());
+*/        
         
         
-        echo $DocBlock->generate();
+        echo $DocBlock->generateFile();
         echo "\n";
         
         if (count($DocBlock->errors)) {
