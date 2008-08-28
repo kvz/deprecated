@@ -2,6 +2,7 @@
 /**
  * Recusive alternative to ksort
  *
+ * The following code block can be utilized by PEAR's Testing_DocTest
  * <code> 
  * // Input //
  * $array = array(
@@ -33,7 +34,7 @@
  * // Show //
  * print_r($array);
  * 
- * // expect:
+ * // expects:
  * // Array
  * // (
  * //     [a] => Array
@@ -66,8 +67,6 @@
  * </code>
  * 
  * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
- * @author    Lachlan Donald
- * @author    Takkie
  * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
  * @version   SVN: Release: $Id$

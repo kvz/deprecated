@@ -41,6 +41,7 @@
  * but I haven't really dugg into this. If you have more info on those
  * matters feel free to leave a comment.
  * 
+ * The following code block can be utilized by PEAR's Testing_DocTest
  * <code>
  * // Input //
  * $number_in = 2188847690240;

@@ -2,14 +2,15 @@
 /**
  * Finds a substring between two needles
  *
+ * The following code block can be utilized by PEAR's Testing_DocTest
  * <code>
  * // Input //
  * $input = "Kevin and Max go for walk in the park.";
  * 
  * // Execute //
  * $output   = array();
- * $output[] = str_between($input, "and ", " go");
- * $output[] = str_between($input, "and ", " GO", true, true);
+ * $output[] = strBetween($input, "and ", " go");
+ * $output[] = strBetween($input, "and ", " GO", true, true);
  * 
  * // Show //
  * print_r($output);
@@ -30,7 +31,7 @@
  * 
  * @return mixed boolean or string
  */
-function str_between($haystack, $left, $right, $include_needles=false, $case_sensitive=true)
+function strBetween($haystack, $left, $right, $include_needles=false, $case_sensitive=true)
 {
     // Set parameters
     $left      = preg_quote($left);

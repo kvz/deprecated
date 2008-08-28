@@ -84,9 +84,6 @@ class KvzLib {
         $arg_list = func_get_args();
         $args     = array();
         
-        print_r($numargs);
-        print_r($arg_list);
-        
         $cmdE = $this->_cmds[$cmd];
         if ($numargs > 1) {
             for ($i = 1; $i < $numargs; $i++) {
@@ -127,7 +124,7 @@ class KvzLib {
     
     public function test(){
         $x = $this->exe("phpdt", $this->_path);
-        print_r($x);
+        echo implode("\n", $x);
     }
     
 }

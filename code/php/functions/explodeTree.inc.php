@@ -3,6 +3,7 @@
  * Explode any single-dimensional array into a full blown tree structure, 
  * based on the delimiters found in it's keys.
  * 
+ * The following code block can be utilized by PEAR's Testing_DocTest 
  * <code>
  * // Input //
  * $key_files = array(

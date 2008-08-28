@@ -2,6 +2,7 @@
 /**
  * Recursive alternative to str_replace that supports replacing keys as well
  *
+ * The following code block can be utilized by PEAR's Testing_DocTest
  * <code>
  * // Input //
  * $settings = array(
@@ -22,7 +23,7 @@
  * // Show //
  * print_r($settings);
  * 
- * // expect:
+ * // expects:
  * // Array
  * // (
  * //     [Credits] => logchopper created by kevin
