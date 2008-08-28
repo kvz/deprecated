@@ -2,6 +2,26 @@
 /**
  * Finds a substring between two needles
  *
+ * <code>
+ * // Input //
+ * $input = "Kevin and Max go for walk in the park.";
+ * 
+ * // Execute //
+ * $output   = array();
+ * $output[] = str_between($input, "and ", " go");
+ * $output[] = str_between($input, "and ", " GO", true, true);
+ * 
+ * // Show //
+ * print_r($output);
+ * 
+ * // expects:
+ * // Array
+ * // (
+ * //     [0] => Max
+ * //     [1] => and Max go
+ * // )
+ * </code>
+ * 
  * @param string  $haystack
  * @param string  $left
  * @param string  $right

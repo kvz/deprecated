@@ -1,4 +1,0 @@
-001- 2188847690240 => SpQXn7Cb
-002- SpQXn7Cb => 2188847690240
-002+ Warning: require_once(/home/kevin/workspace/plutonia-kvzlib/code/php/functions/strBetween.php.php): failed to open stream: No such file or directory in /home/kevin/workspace/plutonia-kvzlib/tests/php/functions/strBetween.php.php on line 2
-004+ Fatal error: require_once(): Failed opening required '/home/kevin/workspace/plutonia-kvzlib/code/php/functions/strBetween.php.php' (include_path='.:/usr/share/php:/usr/share/pear') in /home/kevin/workspace/plutonia-kvzlib/tests/php/functions/strBetween.php.php on line 2
