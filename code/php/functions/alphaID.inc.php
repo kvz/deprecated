@@ -41,6 +41,34 @@
  * but I haven't really dugg into this. If you have more info on those
  * matters feel free to leave a comment.
  * 
+ * <code>
+ * // Input //
+ * $number_in = 2188847690240;
+ * $alpha_in  = "SpQXn7Cb";
+ * 
+ * // Execute //
+ * $alpha_out  = alphaID($number_in, false, 8);
+ * $number_out = alphaID($alpha_in, true, 8);
+ * 
+ * if ($number_in != $number_out) {
+ *     echo "Conversion failure, ".$alpha_in." returns ".$number_out." instead of the ";
+ *     echo "desired: ".$number_in."\n";
+ * }
+ * if ($alpha_in != $alpha_out) {
+ *     echo "Conversion failure, ".$number_in." returns ".$alpha_out." instead of the ";
+ *     echo "desired: ".$alpha_in."\n";
+ * }
+ * 
+ * // Show //
+ * echo $number_in." => ".$alpha_out."\n";
+ * echo $alpha_in." => ".$number_out."\n";
+ * 
+ * // expects:
+ * // 2188847690240 => SpQXn7Cb
+ * // SpQXn7Cb => 2188847690240
+ * 
+ * </code>
+ * 
  * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
  * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
