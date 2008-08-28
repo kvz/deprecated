@@ -2,6 +2,38 @@
 /**
  * Explodes phpt content into different sections
  *
+ * <code> 
+ * // Input //
+ * $input = "--TEST--\n--FILE--\n<?php\necho 'a\n';\n\n?>\n--EXPECT--\na";
+ * 
+ * // Execute //
+ * $sections = phptSections($input);
+ * 
+ * // Show //
+ * print_r($sections);
+ * 
+ * // expects: 
+ * // Array
+ * // (
+ * //     [TEST] => 
+ * //     [SKIPIF] => 
+ * //     [GET] => 
+ * //     [COOKIE] => 
+ * //     [POST_RAW] => 
+ * //     [POST] => 
+ * //     [UPLOAD] => 
+ * //     [ARGS] => 
+ * //     [FILE] => <?php
+ * // echo 'a
+ * // ';
+ * // 
+ * // ?>
+ * // 
+ * //     [EXPECT] => a
+ * // 
+ * // )
+ * </code>
+ *
  * @param string $str
  * 
  * @return array

@@ -1,6 +1,69 @@
 <?php
 /**
  * Recusive alternative to ksort
+ *
+ * <code> 
+ * // Input //
+ * $array = array(
+ *     "c" => array(
+ *         "d" => 4,
+ *         "a" => 1,
+ *         "b" => 2,
+ *         "c" => 3,
+ *         "e" => 5 
+ *     ),
+ *     "a" => array(
+ *         "d" => 4,
+ *         "b" => 2,
+ *         "a" => 1,
+ *         "e" => 5,
+ *         "c" => 3
+ *     ),
+ *     "b" => array(
+ *         "d" => 4,
+ *         "b" => 2,
+ *         "c" => 3,   
+ *         "a" => 1
+ *     )
+ * );
+ * 
+ * // Execute //
+ * ksortTree($array);
+ * 
+ * // Show //
+ * print_r($array);
+ * 
+ * // expect:
+ * // Array
+ * // (
+ * //     [a] => Array
+ * //         (
+ * //             [a] => 1
+ * //             [b] => 2
+ * //             [c] => 3
+ * //             [d] => 4
+ * //             [e] => 5
+ * //         )
+ * // 
+ * //     [b] => Array
+ * //         (
+ * //             [a] => 1
+ * //             [b] => 2
+ * //             [c] => 3
+ * //             [d] => 4
+ * //         )
+ * // 
+ * //     [c] => Array
+ * //         (
+ * //             [a] => 1
+ * //             [b] => 2
+ * //             [c] => 3
+ * //             [d] => 4
+ * //             [e] => 5
+ * //         )
+ * // 
+ * // )
+ * </code>
  * 
  * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
  * @author    Lachlan Donald
