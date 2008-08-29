@@ -4,34 +4,49 @@
  *
  */
 class DocBlock {
-    private $_params;
-    private $_header;
-    private $_tables;
-    private $_fields;
+    protected $_params;
+    protected $_header;
+    protected $_tables;
+    protected $_fields;
     
-    private $_indent = 0;
-    private $_indentation = '';
-    private $_docBlock = '';
-    private $_maxWidth = '70';
-    private $_varTypes = array(
+    protected $_indent = 0;
+    protected $_indentation = '';
+    protected $_docBlock = '';
+    protected $_maxWidth = '70';
+    protected $_varTypes = array(
         "string"  => array("T_CONSTANT_ENCAPSED_STRING"), 
         "integer" => array(), 
         "boolean" => array("T_FALSE", "T_TRUE"), 
         "array"   => array()
     );
-    private $_newLineBefore = array("return");
-    private $_newLineAfter  = array("header");
-    private $_newLineChar = "\n";
+    protected $_newLineBefore = array("return");
+    protected $_newLineAfter  = array("header");
+    protected $_newLineChar = "\n";
     
-    private $_lastWasEmptyLine = false;
+    protected $_docBlockDefaults = array();
+    
+    protected $_lastWasEmptyLine = false;
     
     public  $errors = array();
     
     public function DocBlock () {
-        
+        $this->_docBlockDefaults = array(
+            "@category" => "Unknown_Category",
+            "@package" => "Unknown_Package", 
+            "@author" => "Unknown Author <unknown_firstname@unknown_domain.tld>",
+            "@copyright" => date("Y")." Unknown Author (http://unknown_url)",  
+            "@license" => "New BSD License",
+            "@version" => "SVN: Release: \$Id\$", 
+            "@link"=> "http://unknown_url"
+        );
     }
     
-    private function _reset() {
+    public function setDocBLockDefaults($defaults) {
+        $this->_docBlockDefaults = array_merge($this->_docBlockDefaults, $defaults);
+        return true;
+    }
+    
+    protected function _reset() {
         // Reset
         $this->_docBlock = '';
         $this->_header = '';
@@ -51,7 +66,7 @@ class DocBlock {
      * 
      * @return integer
      */
-    private function _longestKey($array) {
+    protected function _longestKey($array) {
         $longest = 0;
         foreach($array as $key=>$array) {
             $len = strlen($key);
@@ -68,7 +83,7 @@ class DocBlock {
      * @param unknown_type $array
      * @return unknown
      */
-    private function _longestKeys2D($array) {
+    protected function _longestKeys2D($array) {
         $longest = array();
         foreach ($array as $name=>$params) {
             foreach($params as $key=>$value) {
@@ -119,16 +134,7 @@ class DocBlock {
             "New BSD License" => "http://www.opensource.org/licenses/bsd-license.php"
         );
         
-        $required = array(
-            "@category" => "Unknown_Category",
-            "@package" => "Unknown_Package", 
-            "@author" => "Unknown Author <unknown_firstname@unknown_domain.tld>",
-            "@copyright" => date("Y")." Unknown Author (http://unknown_url)",  
-            "@license" => "New BSD License",
-            "@version" => "SVN: Release: \$Id\$", 
-            "@link"=> "http://unknown_url"
-        );
-        $fields = array_merge($required, $info);
+        $fields = array_merge($this->_docBlockDefaults, $info);
         
         if (isset($fields["license"])) {
             if (isset($licenseUrls[$fields["license"]])) {
@@ -190,7 +196,7 @@ class DocBlock {
         return $this->_generate();
     }
     
-    private function _generate() {
+    protected function _generate() {
 
         $this->_writeLine("", "head");
         
@@ -208,7 +214,7 @@ class DocBlock {
         return "\n".$this->_docBlock.$this->_indentation;
     }
     
-    private function _writeTable2D($tableName, $rows) {
+    protected function _writeTable2D($tableName, $rows) {
         if (!is_array($rows) || !count($rows)) {
             $this->errors[] = "No valid array provided to ".__FUNCTION__;
             return false;
@@ -239,7 +245,7 @@ class DocBlock {
         }
     }
     
-    private function _writeFields() {
+    protected function _writeFields() {
         $fields = $this->_fields;
         if (!is_array($fields) || !count($fields)) {
             $this->errors[] = "No valid array provided to ".__FUNCTION__;
@@ -256,7 +262,7 @@ class DocBlock {
         }
     }
     
-    private function _writeTables() {
+    protected function _writeTables() {
         $tables = $this->_tables;
         if (!is_array($tables) || !count($tables)) {
             $this->errors[] = "No valid array provided to ".__FUNCTION__;
@@ -268,7 +274,7 @@ class DocBlock {
         }
     }
     
-    private function _writeHeaders($maxWidth=70) {
+    protected function _writeHeaders($maxWidth=70) {
         $headers = $this->_header;
         if (!is_array($headers) || !count($headers)) {
             $this->errors[] = "No valid array provided to ".__FUNCTION__;
@@ -292,7 +298,7 @@ class DocBlock {
     }
 
     
-    private function _writeLine($str="", $type="body") {
+    protected function _writeLine($str="", $type="body") {
         $thisIsEmptyLine = ($str == "");
         
         if ($type=="body" && $this->_lastWasEmptyLine == true && $thisIsEmptyLine == true) {

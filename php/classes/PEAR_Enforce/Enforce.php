@@ -61,7 +61,9 @@ Class PEAR_Enforce {
 
     protected $_fileOriginal = false;
     protected $_fileImproved = false;
-
+    
+    protected $_docBlockDefaults = array();
+    
     public $cmd_phpcs = "/usr/bin/phpcs";
     
     /**
@@ -80,6 +82,12 @@ Class PEAR_Enforce {
         return $this->_checkEval($code);
     }
         
+    public function setDocBLockDefaults($defaults = false, $category="all") {
+        if (!$defaults) $defaults = array();
+        $this->_docBlockDefaults = $defaults;
+        return true;      
+    }
+    
     public function syntaxCheckCode($code) {
         // Execute
         return $this->_checkEval($code);
@@ -713,6 +721,7 @@ Class PEAR_Enforce {
                 $indent = $CodeRow->getIndent();    
                 
                 $DocBlock = new DocBlock();
+                $DocBlock->setDocBLockDefaults($this->_docBlockDefaults);
                 $DocBlock->setIndent($indent);
                 $DocBlock->setNewLineChar($this->_getPostFormatAddNewline());
                 
@@ -725,7 +734,7 @@ Class PEAR_Enforce {
                     $CodeRow->insertAt($CodeRow->getIndent(+1), 
                         $DocBlock->generateClass($CodeRow->getCodeRow()));
                 } elseif ($expected == "file") {
-                    $CodeRow->insertAt($CodeRow->getLength(), 
+                    $CodeRow->insertAt(1, 
                         $DocBlock->generateFile());
                 }
                 

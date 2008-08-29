@@ -28,6 +28,16 @@ $arg4   = (!isset($argv[4])) ? "" : $argv[4];
 
 $PEAR_Enforce = new PEAR_Enforce($file);
 
+$defaults = array(
+    "@author" => "Kevin van Zonneveld <kevin@vanzonneveld.net>",
+    "@copyright" => date("Y")." Kevin van Zonneveld (http://kevin.vanzonneveld.net)", 
+    "@license" => "New BSD License",
+    "@version" => "SVN: Release: \$Id\$", 
+    "@link"=> "http://kevin.vanzonneveld.net"
+);
+
+$PEAR_Enforce->setDocBLockDefaults($defaults);
+
 switch ($action) {
     case "token":
         $lines = file($file);
