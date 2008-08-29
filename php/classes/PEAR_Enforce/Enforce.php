@@ -756,9 +756,15 @@ Class PEAR_Enforce {
                 
                 // Before Equal
                 // Insert will actually backspace on negative amount
-                $posEq = $CodeRow->getPosEqual();
-                $CodeRow->insertAt($posEq, " ", $needed);
+                $posEq    = $CodeRow->getPosEqual();
+                $posBefEq = $posEq - 1;
+                $chrBefEq = $CodeRow->getCharAt($posBefEq);
+                $posIns   = $posEq;
+                if (in_array($chrBefEq, array("."))) {
+                    $posIns   = $posBefEq;
+                }
                 
+                $CodeRow->insertAt($posIns, " ", $needed);
                 
                 // After Equal
                 $CodeRow->regplace('=([a-zA-Z0-9\$\_]+)', '= $1', 'T_ALLOTHER', 1);

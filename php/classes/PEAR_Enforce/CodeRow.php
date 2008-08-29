@@ -300,8 +300,8 @@ Class CodeRow {
     
     public function getCharAt($at, $howmany=1) {
         // Compensate
-        $at++;
-        return substr($this->codeRow, $at, $howmany); 
+        $at--;
+        return substr($this->_codeRow, $at, $howmany); 
     }
     
     public function getTokenized() {
