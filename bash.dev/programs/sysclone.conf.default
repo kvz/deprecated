@@ -1,11 +1,14 @@
-DB_USER_GET="root"
-DB_PASS_GET="xxxxxxxx"
-DB_HOST_GET="${HOST_GET}"
+# MySQL credentials of source server.
+# note: when this is localhost, /etc/mysql/debian.cnf will be used if possible
+DB_USER_SOURCE="root"
+DB_PASS_SOURCE="xxxxxxxx"
 
-DB_USER_PUT="root"
-DB_PASS_PUT="xxxxxxxx"
-DB_HOST_PUT="${HOST_PUT}"
+# MySQL credentials of destination server.
+# note: when this is localhost, /etc/mysql/debian.cnf will be used if possible
+DB_USER_DEST="root"
+DB_PASS_DEST="xxxxxxxx"
 
+# What to clone
 DO_SOURCES="0"
 DO_PACKAGES="0"
 DO_PEARPKG="0"

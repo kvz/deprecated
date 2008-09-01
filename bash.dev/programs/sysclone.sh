@@ -1,6 +1,9 @@
 #!/bin/bash
 #/**
-# * Clones a system's: database, config, files, etc. Extremely dangerous!!!
+# * This program will totally destory your servers and ruin your carreer.
+# * Or it will try to copy all important packages, settings, and file from
+# * one ubuntu server to another. Extremely dangerous!!! Only use in testing
+# * environments!
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -22,6 +25,54 @@ source $(realpath "$(dirname ${0})/../functions/sshKeyInstall.sh") # make::inclu
 source $(realpath "$(dirname ${0})/../functions/sshKeyVerify.sh") # make::include
 source $(realpath "$(dirname ${0})/../functions/isPortOpen.sh") # make::include
 
+# Private Functions
+###############################################################
+
+function usage {
+	
+	if [ -n "${1}" ]; then
+	    echo "" 
+		echo "Cowardly resisted: ${1}"
+	fi
+	echo "";
+    echo "This program will totally destory your servers and ruin your carreer."
+    echo "Or it will try to copy all important packages, settings, and file from"
+    echo "one ubuntu server to another.  Extremely dangerous!!! Only use in testing"
+    echo "environments!"
+    echo ""
+    echo "Usage: ${0} localhost HOST_DEST"
+    echo "  or   ${0} HOST_SOURCE localhost"
+    echo ""
+    echo "Options:"
+    echo "--help Shows this page" 
+    echo ""
+    echo "Config:"
+    echo "Must be defined in ${FILE_CONFIG}" 
+
+    exit 0
+}
+
+function exeSource {
+    local cmd="${1}"
+    if [ "${HOST_SOURCE}" = "${HOST_SSH}" ]; then
+        ssh ${HOST_SOURCE} "${cmd}"
+    else
+        /bin/bash -c "${cmd}"
+    fi
+}
+
+function exeDest {
+    set -x
+    local cmd="${1}"
+    if [ "${HOST_DEST}" = "${HOST_SSH}" ]; then
+        ssh ${HOST_DEST} "${cmd}"
+    else
+        /bin/bash -c "${cmd}"
+    fi
+    set +x
+}
+
+
 
 # Check for program requirements
 ###############################################################
@@ -38,10 +89,9 @@ commandTestHandle "netcat"
 commandTestHandle "ssh"
 commandTestHandle "tail"
 
-
-# Config
+# Essential Config
 ###############################################################
-OUTPUT_DEBUG=1
+OUTDEST_DEBUG=1
 DIR_ROOT=$(getWorkingDir)
 FILE_CONFIG=${DIR_ROOT}/sysclone.conf
 
@@ -53,67 +103,53 @@ CMD_RSYNC="rsync -a --itemize-changes"
 [ -f  ${FILE_CONFIG} ] || log "No config file found. Maybe: cp -af ${FILE_CONFIG}.default ${FILE_CONFIG} && nano ${FILE_CONFIG}" "EMERG"
 source ${FILE_CONFIG}
 
-if [ "${HOST_GET}" == "localhost" ] && [ -f /etc/mysql/debian.cnf ]; then
-	CMD_MYSQL_GET="${CMD_MYSQL} --defaults-file=/etc/mysql/debian.cnf"
-	CMD_MYSQLDUMP_GET="${CMD_MYSQLDUMP} --defaults-file=/etc/mysql/debian.cnf"
-else
-	CMD_MYSQL_GET="${CMD_MYSQL} -p${DB_PASS_GET} -u${DB_USER_GET} -h${HOST_GET}"
-	CMD_MYSQLDUMP_GET="${CMD_MYSQLDUMP} -p${DB_PASS_GET} -u${DB_USER_GET} -h${HOST_GET}"
-fi
-
-if [ "${HOST_PUT}" == "localhost" ] && [ -f /etc/mysql/debian.cnf ]; then
-    CMD_MYSQL_PUT="${CMD_MYSQL} --defaults-file=/etc/mysql/debian.cnf"
-    CMD_MYSQLDUMP_PUT="${CMD_MYSQLDUMP} --defaults-file=/etc/mysql/debian.cnf"
-else
-    CMD_MYSQL_PUT="${CMD_MYSQL} -p${DB_PASS_PUT} -u${DB_USER_PUT} -h${HOST_PUT}"
-    CMD_MYSQLDUMP_PUT="${CMD_MYSQLDUMP} -p${DB_PASS_PUT} -u${DB_USER_PUT} -h${HOST_PUT}"
-fi
-
 # Setup run parameters
 ###############################################################
+HOST_SOURCE="${1}"
+HOST_DEST="${2}"
 
-if [ "${HOST_GET}" != "localhost" ] && [ "${HOST_PUT}" != "localhost" ]; then
-    echo "Error. Either HOST_GET or HOST_PUT needs to be localhost. Can't sync between 2 remote machines. I'm not superman."
-    exit 0
+# Parameter Check
+[ -n "${HOST_SOURCE}" ] || usage "Missing parameter 1: HOST_SOURCE"
+[ -n "${HOST_DEST}" ] || usage "Missing parameter 2: HOST_DEST"
+
+if [ "${HOST_SOURCE}" != "localhost" ] && [ "${HOST_DEST}" != "localhost" ]; then
+    usage "Either HOST_SOURCE or HOST_DEST needs to be localhost. Can't sync between 2 remote machines. I'm not superman."
+fi
+if [ "${HOST_SOURCE}" == "localhost" ] && [ "${HOST_DEST}" == "localhost" ]; then
+    usage "Either HOST_SOURCE or HOST_DEST needs to be localhost. Can't sync locally. I'm not superman."
 fi
 
-if [ "${HOST_GET}" = "localhost" ]; then
-    RSYNC_HOST_GET=""
+# MySQL Order
+if [ "${HOST_SOURCE}" == "localhost" ] && [ -f /etc/mysql/debian.cnf ]; then
+	CMD_MYSQL_SOURCE="${CMD_MYSQL} --defaults-file=/etc/mysql/debian.cnf"
+	CMD_MYSQLDUMP_SOURCE="${CMD_MYSQLDUMP} --defaults-file=/etc/mysql/debian.cnf"
 else
-    HOST_SSH="${HOST_GET}"
-	RSYNC_HOST_GET="${HOST_GET}:"
+	CMD_MYSQL_SOURCE="${CMD_MYSQL} -p${DB_PASS_SOURCE} -u${DB_USER_SOURCE} -h${HOST_SOURCE}"
+	CMD_MYSQLDUMP_SOURCE="${CMD_MYSQLDUMP} -p${DB_PASS_SOURCE} -u${DB_USER_SOURCE} -h${HOST_SOURCE}"
 fi
 
-if [ "${HOST_PUT}" = "localhost" ]; then
-    RSYNC_HOST_PUT=""
+if [ "${HOST_DEST}" == "localhost" ] && [ -f /etc/mysql/debian.cnf ]; then
+    CMD_MYSQL_DEST="${CMD_MYSQL} --defaults-file=/etc/mysql/debian.cnf"
+    CMD_MYSQLDUMP_DEST="${CMD_MYSQLDUMP} --defaults-file=/etc/mysql/debian.cnf"
 else
-    HOST_SSH="${HOST_PUT}"
-	RSYNC_HOST_PUT="${HOST_PUT}:"
+    CMD_MYSQL_DEST="${CMD_MYSQL} -p${DB_PASS_DEST} -u${DB_USER_DEST} -h${HOST_DEST}"
+    CMD_MYSQLDUMP_DEST="${CMD_MYSQLDUMP} -p${DB_PASS_DEST} -u${DB_USER_DEST} -h${HOST_DEST}"
 fi
 
+# SSH Order
+if [ "${HOST_SOURCE}" = "localhost" ]; then
+    RSYNC_HOST_SOURCE=""
+else
+    HOST_SSH="${HOST_SOURCE}"
+	RSYNC_HOST_SOURCE="${HOST_SOURCE}:"
+fi
 
-# Private Functions
-###############################################################
-function exeGet {
-    local cmd="${1}"
-    if [ "${HOST_GET}" = "${HOST_SSH}" ]; then
-    	ssh ${HOST_GET} "${cmd}"
-    else
-        /bin/bash -c "${cmd}"
-    fi
-}
-
-function exePut {
-	set -x
-	local cmd="${1}"
-    if [ "${HOST_PUT}" = "${HOST_SSH}" ]; then
-    	ssh ${HOST_PUT} "${cmd}"
-    else
-        /bin/bash -c "${cmd}"
-    fi
-    set +x
-}
-
+if [ "${HOST_DEST}" = "localhost" ]; then
+    RSYNC_HOST_DEST=""
+else
+    HOST_SSH="${HOST_DEST}"
+	RSYNC_HOST_DEST="${HOST_DEST}:"
+fi
 
 # Run
 ###############################################################
@@ -140,8 +176,8 @@ fi
 # Start syncing
 log "package sources sync"
 if [ "${DO_SOURCES}" = 1 ]; then
-    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/apt/sources.list  ${RSYNC_HOST_PUT}/etc/apt/
-    ${AT_HOST_PUT} aptitude -y update > /dev/null && aptitude -y dist-upgrade
+    ${CMD_RSYNC} ${RSYNC_HOST_SOURCE}/etc/apt/sources.list  ${RSYNC_HOST_DEST}/etc/apt/
+    ${AT_HOST_DEST} aptitude -y update > /dev/null && aptitude -y dist-upgrade
     log " [done] "
 else 
     log " [skipped] "
@@ -149,12 +185,12 @@ fi
 
 log "package sync"
 if [ "${DO_PACKAGES}" = 1 ]; then
-	exeGet "dpkg --get-selections > /tmp/dpkglist.txt"
-    ${CMD_RSYNC} ${RSYNC_HOST_GET}/tmp/dpkglist.txt ${RSYNC_HOST_PUT}/tmp/
-    exePut "cat /tmp/dpkglist.txt | dpkg --set-selections"
-    exePut "apt-get -y update > /dev/null"
-    exePut "apt-get -y dselect-upgrade"
-    exePut ""
+	exeSource "dpkg --get-selections > /tmp/dpkglist.txt"
+    ${CMD_RSYNC} ${RSYNC_HOST_SOURCE}/tmp/dpkglist.txt ${RSYNC_HOST_DEST}/tmp/
+    exeDest "cat /tmp/dpkglist.txt | dpkg --set-selections"
+    exeDest "apt-get -y update > /dev/null"
+    exeDest "apt-get -y dselect-upgrade"
+    exeDest ""
     log " [done] "
 else 
     log " [skipped] "
@@ -162,9 +198,9 @@ fi
 
 log "PEAR package sync"
 if [ "${DO_PEARPKG}" = 1 ]; then
-    exeGet "sudo pear -q list | egrep 'alpha|beta|stable' |awk '{print \$1}' > /tmp/pearlist.txt"
-    ${CMD_RSYNC} ${RSYNC_HOST_GET}/tmp/pearlist.txt ${RSYNC_HOST_PUT}/tmp/
-    exePut "cat /tmp/pearlist.txt |awk '{print \"pear install -f \"\$0}' |sudo bash"
+    exeSource "sudo pear -q list | egrep 'alpha|beta|stable' |awk '{print \$1}' > /tmp/pearlist.txt"
+    ${CMD_RSYNC} ${RSYNC_HOST_SOURCE}/tmp/pearlist.txt ${RSYNC_HOST_DEST}/tmp/
+    exeDest "cat /tmp/pearlist.txt |awk '{print \"pear install -f \"\$0}' |sudo bash"
     log " [done] "
 else 
     log " [skipped] "
@@ -172,11 +208,11 @@ fi
 
 log "account sync"
 if [ "${DO_ACCOUNTS}" = 1 ]; then
-    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/passwd  ${RSYNC_HOST_PUT}/etc/
-    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/passwd- ${RSYNC_HOST_PUT}/etc/
-    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/shadow  ${RSYNC_HOST_PUT}/etc/
-    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/shadow- ${RSYNC_HOST_PUT}/etc/
-    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/group   ${RSYNC_HOST_PUT}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_SOURCE}/etc/passwd  ${RSYNC_HOST_DEST}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_SOURCE}/etc/passwd- ${RSYNC_HOST_DEST}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_SOURCE}/etc/shadow  ${RSYNC_HOST_DEST}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_SOURCE}/etc/shadow- ${RSYNC_HOST_DEST}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_SOURCE}/etc/group   ${RSYNC_HOST_DEST}/etc/
     log " [done] "
 else 
     log " [skipped] "
@@ -184,10 +220,10 @@ fi
 
 log "config sync"
 if [ "${DO_CONFIG}" = 1 ]; then
-    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/mysql/   ${RSYNC_HOST_PUT}/etc/mysql
-    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/apache2/ ${RSYNC_HOST_PUT}/etc/apache2
-    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/php5/    ${RSYNC_HOST_PUT}/etc/php5
-    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/postfix/ ${RSYNC_HOST_PUT}/etc/postfix
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_SOURCE}/etc/mysql/   ${RSYNC_HOST_DEST}/etc/mysql
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_SOURCE}/etc/apache2/ ${RSYNC_HOST_DEST}/etc/apache2
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_SOURCE}/etc/php5/    ${RSYNC_HOST_DEST}/etc/php5
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_SOURCE}/etc/postfix/ ${RSYNC_HOST_DEST}/etc/postfix
     log " [done] "
 else 
     log " [skipped] "
@@ -196,8 +232,8 @@ fi
 log "database sync"
 if [ "${DO_DATABASE}" = 1 ]; then
 	log "verifying mysql source connection"
-	# Test MySQL_GET access 
-	OK=$(echo "SELECT User FROM user WHERE User='root' LIMIT 1" | ${CMD_MYSQL_GET} --connect-timeout=3 mysql | ${CMD_TAIL} -n1)
+	# Test MySQL_SOURCE access 
+	OK=$(echo "SELECT User FROM user WHERE User='root' LIMIT 1" | ${CMD_MYSQL_SOURCE} --connect-timeout=3 mysql | ${CMD_TAIL} -n1)
 	if [ "${OK}" != "root" ]; then
 		log "Unable to access MySQL Source: ${OK}" "EMERG"
 	else
@@ -205,8 +241,8 @@ if [ "${DO_DATABASE}" = 1 ]; then
 	fi
 	
     log "verifying mysql destination connection"
-    # Test MySQL_PUT access 
-    OK=$(echo "SELECT User FROM user WHERE User='root' LIMIT 1" | ${CMD_MYSQL_PUT} --connect-timeout=3 mysql | ${CMD_TAIL} -n1)
+    # Test MySQL_DEST access 
+    OK=$(echo "SELECT User FROM user WHERE User='root' LIMIT 1" | ${CMD_MYSQL_DEST} --connect-timeout=3 mysql | ${CMD_TAIL} -n1)
     if [ "${OK}" != "root" ]; then
         log "Unable to access MySQL Destination: ${OK}" "EMERG"
     else
@@ -214,13 +250,13 @@ if [ "${DO_DATABASE}" = 1 ]; then
     fi
     
 	# Export everything
-    DATABASES=`echo "SHOW DATABASES;" | ${CMD_MYSQL_GET}`
+    DATABASES=`echo "SHOW DATABASES;" | ${CMD_MYSQL_SOURCE}`
     for DATABASE in $DATABASES; do
         if [ "${DATABASE}" != "Database" ]; then
             log "transmitting ${DATABASE}"
-            echo "CREATE DATABASE IF NOT EXISTS ${DATABASE}" | ${CMD_MYSQL_PUT}
-            ${CMD_MYSQLDUMP_GET} -Q -B --create-options --delayed-insert \
-                --complete-insert --quote-names --add-drop-table ${DATABASE} | ${CMD_MYSQL_PUT} ${DATABASE}
+            echo "CREATE DATABASE IF NOT EXISTS ${DATABASE}" | ${CMD_MYSQL_DEST}
+            ${CMD_MYSQLDUMP_SOURCE} -Q -B --create-options --delayed-insert \
+                --complete-insert --quote-names --add-drop-table ${DATABASE} | ${CMD_MYSQL_DEST} ${DATABASE}
         fi
     done
     log " [done] "
@@ -232,10 +268,10 @@ log "directory sync"
 if [ "${DO_DIRS}" = 1 ]; then
     # root must be copied like /*, because of ssh keys
     # actually, don't do root at all because of sync script!
-    #${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/root/* ${RSYNC_HOST_PUT}/root/
-    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/home/ ${RSYNC_HOST_PUT}/home
-    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/var/www/ ${RSYNC_HOST_PUT}/var/www
-    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/var/lib/svn/ ${RSYNC_HOST_PUT}/var/lib/svn
+    #${CMD_RSYNCDEL} ${RSYNC_HOST_SOURCE}/root/* ${RSYNC_HOST_DEST}/root/
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_SOURCE}/home/ ${RSYNC_HOST_DEST}/home
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_SOURCE}/var/www/ ${RSYNC_HOST_DEST}/var/www
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_SOURCE}/var/lib/svn/ ${RSYNC_HOST_DEST}/var/lib/svn
     log " [done] "
 else 
     log " [skipped] "
