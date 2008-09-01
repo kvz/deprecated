@@ -12,7 +12,7 @@
 # Includes
 ###############################################################
 
-# (make::included from '/../functions/log.sh')
+# ('log' included from '/../functions/log.sh')
 #/**
 # * Logs a message
 # * 
@@ -58,7 +58,7 @@ function log(){
     fi
 }
 
-# (make::included from '/../functions/toUpper.sh')
+# ('toUpper' included from '/../functions/toUpper.sh')
 #/**
 # * Converts a string to uppercase
 # * 
@@ -68,7 +68,7 @@ function toUpper(){
    echo "$(echo ${1} |tr '[:lower:]' '[:upper:]')"
 }
 
-# (make::included from '/../functions/commandTestHandle.sh')
+# ('commandTestHandle' included from '/../functions/commandTestHandle.sh')
 #/**
 # * Tests if a command exists, tries to install package,
 # * resorts to 'handler' argument on fail. 
@@ -125,12 +125,13 @@ function commandTestHandle(){
     fi
 }
 
-# (make::included from '/../functions/commandInstall.sh')
+# ('commandInstall' included from '/../functions/commandInstall.sh')
 #/**
 # * Tries to install a package
 # * Also saved command location in CMD_XXX
 # *
 # * @param string $1 Command name
+# * @param string $1 Package name
 # */
 function commandInstall() {
     # Init
@@ -140,12 +141,14 @@ function commandInstall() {
     # Show
     echo "Trying to install ${package}"
     
-    if [ -z "${CMD_APTITUDE}" ]; then
+    if [ -n "${CMD_APTITUDE}" ]; then
         aptitude -y install ${package}
+    else
+        echo "No supported package management tool found"
     fi
 }
 
-# (make::included from '/../functions/commandTest.sh')
+# ('commandTest' included from '/../functions/commandTest.sh')
 #/**
 # * Tests if a command exists, and returns it's location or an error string.
 # * Also saved command location in CMD_XXX.

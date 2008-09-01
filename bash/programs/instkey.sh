@@ -15,7 +15,7 @@
 # Includes
 ###############################################################
 
-# (make::included from '/../functions/log.sh')
+# ('log' included from '/../functions/log.sh')
 #/**
 # * Logs a message
 # * 
@@ -61,7 +61,7 @@ function log(){
     fi
 }
 
-# (make::included from '/../functions/installKeyAt.sh')
+# ('installKeyAt' included from '/../functions/installKeyAt.sh')
 #!/bin/bash
 #/**
 # * Installs SSH Keys remotely

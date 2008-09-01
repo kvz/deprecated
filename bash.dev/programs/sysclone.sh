@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 #/**
 # * Clones a system's: database, config, files, etc. Extremely dangerous!!!
 # * 
@@ -13,13 +14,11 @@
 ###############################################################
 source $(realpath "$(dirname ${0})/../functions/log.sh")     # make::include
 source $(realpath "$(dirname ${0})/../functions/toUpper.sh") # make::include
-source $(realpath "$(dirname ${0})/../functions/commandTestHandle.sh") # make::include
 source $(realpath "$(dirname ${0})/../functions/commandInstall.sh") # make::include
 source $(realpath "$(dirname ${0})/../functions/commandTest.sh") # make::include
-
-# Config
-###############################################################
-OUTPUT_DEBUG=0
+source $(realpath "$(dirname ${0})/../functions/commandTestHandle.sh") # make::include
+source $(realpath "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
+source $(realpath "$(dirname ${0})/../functions/installKeyAt.sh") # make::include
 
 # Check for program requirements
 ###############################################################
@@ -29,61 +28,133 @@ commandTestHandle "egrep" "pcregrep"
 commandTestHandle "awk"
 commandTestHandle "sort"
 commandTestHandle "uniq"
-commandTestHandle "awk"
-commandTestHandle "lsof"
+commandTestHandle "realpath"
 
-# Config file found?
-[ -f ./sysclone.conf ] || log "No config file found. Maybe: cp -af ./sysclone.conf.default ./sysclone.conf && nano ./sysclone.conf"
+# Config
+###############################################################
+OUTPUT_DEBUG=1
+DIR_ROOT=$(getWorkingDir)
+FILE_CONFIG=${DIR_ROOT}/sysclone.conf.default
+
+CMD_MYSQL="/usr/bin/mysql"
+CMD_MYSQLDUMP="/usr/bin/mysqldump"
+CMD_RSYNCDEL="rsync -a --itemize-changes --delete"
+CMD_RSYNC="rsync -a --itemize-changes"
+
+[ -f  ${FILE_CONFIG} ] || log "No config file found. Maybe: cp -af ${FILE_CONFIG}.default ${FILE_CONFIG} && nano ${FILE_CONFIG}"
+source ${FILE_CONFIG}
 
 
-log "sad" "EMERG"
-exit 1;  
 
 
-exit 1
+
+# Setup run parameters
+###############################################################
+
+if [ "${HOST_GET}" != "localhost" ] && [ "${HOST_PUT}" != "localhost" ]; then
+    echo "Error. Either HOST_GET or HOST_PUT needs to be localhost. Can't sync between 2 remote machines. I'm not superman."
+    exit 0
+fi
+
+if [ "${HOST_GET}" = "localhost" ]; then
+    RSYNC_HOST_GET=""
+    AT_HOST_GET=""
+else
+	RSYNC_HOST_GET="${HOST_GET}:"
+	AT_HOST_GET="ssh ${HOST_GET}"
+fi
+
+if [ "${HOST_PUT}" = "localhost" ]; then
+    RSYNC_HOST_PUT=""
+    AT_HOST_PUT=""
+else
+	RSYNC_HOST_PUT="${HOST_PUT}:"
+	AT_HOST_PUT="ssh ${HOST_PUT}"
+fi
 
 # Run
 ###############################################################
 
+echo -n "package sources sync"
+if [ "${DO_SOURCES}" = 1 ]; then
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/apt/sources.list  ${RSYNC_HOST_PUT}/etc/apt/
+    ${AT_HOST_PUT} aptitude -y update && aptitude -y dist-upgrade
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
 
-#echo "package source sync"
-#rsync -a --progress ${HOST_SRC}:/etc/apt/sources.list ${HOST_DST}:/etc/apt/
-
-echo "package upgrade"
-ssh ${HOST_DST} 'aptitude -y update && aptitude -y dist-upgrade'
+exit 1
 
 echo "package sync"
-ssh ${HOST_SRC} 'dpkg --get-selections > /tmp/dpkglist.txt'
-scp ${HOST_SRC}:/tmp/dpkglist.txt ${HOST_DST}:/tmp
-dpkg --set-selections < /tmp/dpkglist.txt
-apt-get -y update
-apt-get -y dselect-upgrade
+if [ "${DO_PACKAGES}" = 1 ]; then
+    ssh ${HOST_GET} 'dpkg --get-selections > /tmp/dpkglist.txt'
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/tmp/dpkglist.txt ${RSYNC_HOST_PUT}/tmp/
+    ssh ${HOST_PUT} 'dpkg --set-selections < /tmp/dpkglist.txt'
+    ssh ${HOST_PUT} 'apt-get -y update'
+    ssh ${HOST_PUT} 'apt-get -y dselect-upgrade'
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
+
+echo "PEAR package sync"
+if [ "${DO_PEARPKG}" = 1 ]; then
+    ssh ${HOST_GET} "sudo pear -q list | egrep 'alpha|beta|stable' |awk '{print \$1}' > /tmp/pearlist.txt"
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/tmp/pearlist.txt ${RSYNC_HOST_PUT}/tmp/
+    ssh ${HOST_PUT} "cat /tmp/pearlist.txt |awk '{print \"pear install -f \"\$0}' |sudo bash"
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
 
 echo "account sync"
-rsync -a --progress ${HOST_SRC}:/etc/passwd  ${HOST_DST}:/etc/
-rsync -a --progress ${HOST_SRC}:/etc/passwd- ${HOST_DST}:/etc/
-rsync -a --progress ${HOST_SRC}:/etc/shadow  ${HOST_DST}:/etc/
-rsync -a --progress ${HOST_SRC}:/etc/shadow- ${HOST_DST}:/etc/
-rsync -a --progress ${HOST_SRC}:/etc/group   ${HOST_DST}:/etc/
+if [ "${DO_ACCOUNTS}" = 1 ]; then
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/passwd  ${RSYNC_HOST_PUT}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/passwd- ${RSYNC_HOST_PUT}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/shadow  ${RSYNC_HOST_PUT}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/shadow- ${RSYNC_HOST_PUT}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/group   ${RSYNC_HOST_PUT}/etc/
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
 
 echo "config sync"
-rsync -a --progress --delete ${HOST_SRC}:/etc/mysql/   ${HOST_DST}:/etc/mysql
-rsync -a --progress --delete ${HOST_SRC}:/etc/apache2/ ${HOST_DST}:/etc/apache2
-rsync -a --progress --delete ${HOST_SRC}:/etc/php5/    ${HOST_DST}:/etc/php5
-rsync -a --progress --delete ${HOST_SRC}:/etc/postfix/ ${HOST_DST}:/etc/postfix
+if [ "${DO_CONFIG}" = 1 ]; then
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/mysql/   ${RSYNC_HOST_PUT}/etc/mysql
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/apache2/ ${RSYNC_HOST_PUT}/etc/apache2
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/php5/    ${RSYNC_HOST_PUT}/etc/php5
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/postfix/ ${RSYNC_HOST_PUT}/etc/postfix
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
 
 echo "database sync"
-DATABASES=`echo "SHOW DATABASES;" | ${CMD_MYSQL} -p${DB_PASS_SRC} -u ${DB_USER_SRC} -h ${DB_HOST_SRC}`
-for DATABASE in $DATABASES; do
-  if [ "${DATABASE}" != "Database" ]; then
-    echo "transmitting ${DATABASE}"
-    echo "CREATE DATABASE IF NOT EXISTS ${DATABASE}" | ${CMD_MYSQL} -p${DB_PASS_DST} -u ${DB_USER_DST} -h ${DB_HOST_DST}
-    ${CMD_MYSQLDUMP} -Q -B --create-options --delayed-insert --complete-insert --quote-names --add-drop-table -p${DB_PASS_SRC} -u${DB_USER_SRC} -h${DB_HOST_SRC} ${DATABASE} | ${CMD_MYSQL} -p${DB_PASS_DST} -u ${DB_USER_DST} -h ${DB_HOST_DST} ${DATABASE}
-  fi
-done
+if [ "${DO_DATABASE}" = 1 ]; then
+    DATABASES=`echo "SHOW DATABASES;" | ${CMD_MYSQL} -p${DB_PASS_GET} -u ${DB_USER_GET} -h ${DB_HOST_GET}`
+    for DATABASE in $DATABASES; do
+        if [ "${DATABASE}" != "Database" ]; then
+            echo "transmitting ${DATABASE}"
+            echo "CREATE DATABASE IF NOT EXISTS ${DATABASE}" | ${CMD_MYSQL} -p${DB_PASS_PUT} -u ${DB_USER_PUT} -h ${DB_HOST_PUT}
+            ${CMD_MYSQLDUMP} -Q -B --create-options --delayed-insert --complete-insert --quote-names --add-drop-table -p${DB_PASS_GET} -u${DB_USER_GET} -h${DB_HOST_GET} ${DATABASE} | ${CMD_MYSQL} -p${DB_PASS_PUT} -u ${DB_USER_PUT} -h ${DB_HOST_PUT} ${DATABASE}
+        fi
+    done
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
 
 echo "directory sync"
-# geen etc want dan gaat host, md0 naar de kloten!
-rsync -a --progress --delete ${HOST_SRC}:/root/    ${HOST_DST}:/root
-rsync -a --progress --delete ${HOST_SRC}:/home/    ${HOST_DST}:/home
-rsync -a --progress --delete ${HOST_SRC}:/var/www/ ${HOST_DST}:/var/www
+if [ "${DO_DIRS}" = 1 ]; then
+    # root must be copied like /*, because of ssh keys
+    # actually, don't do root at all because of sync script!
+    #${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/root/* ${RSYNC_HOST_PUT}/root/
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/home/ ${RSYNC_HOST_PUT}/home
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/var/www/ ${RSYNC_HOST_PUT}/var/www
+    #${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/var/lib/svn/ ${RSYNC_HOST_PUT}/var/lib/svn
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi

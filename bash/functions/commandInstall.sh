@@ -3,6 +3,7 @@
 # * Also saved command location in CMD_XXX
 # *
 # * @param string $1 Command name
+# * @param string $1 Package name
 # */
 function commandInstall() {
     # Init
@@ -12,7 +13,9 @@ function commandInstall() {
     # Show
     echo "Trying to install ${package}"
     
-    if [ -z "${CMD_APTITUDE}" ]; then
+    if [ -n "${CMD_APTITUDE}" ]; then
         aptitude -y install ${package}
+    else
+        echo "No supported package management tool found"
     fi
 }

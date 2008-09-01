@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 #/**
 # * Clones a system's: database, config, files, etc. Extremely dangerous!!!
 # * 
@@ -12,7 +13,7 @@
 # Includes
 ###############################################################
 
-# (make::included from '/../functions/log.sh')
+# ('log' included from '/../functions/log.sh')
 #/**
 # * Logs a message
 # * 
@@ -58,7 +59,7 @@ function log(){
     fi
 }
 
-# (make::included from '/../functions/toUpper.sh')
+# ('toUpper' included from '/../functions/toUpper.sh')
 #/**
 # * Converts a string to uppercase
 # * 
@@ -68,7 +69,54 @@ function toUpper(){
    echo "$(echo ${1} |tr '[:lower:]' '[:upper:]')"
 }
 
-# (make::included from '/../functions/commandTestHandle.sh')
+# ('commandInstall' included from '/../functions/commandInstall.sh')
+#/**
+# * Tries to install a package
+# * Also saved command location in CMD_XXX
+# *
+# * @param string $1 Command name
+# * @param string $1 Package name
+# */
+function commandInstall() {
+    # Init
+    local command=${1}
+    local package=${2}
+    
+    # Show
+    echo "Trying to install ${package}"
+    
+    if [ -n "${CMD_APTITUDE}" ]; then
+        aptitude -y install ${package}
+    else
+        echo "No supported package management tool found"
+    fi
+}
+
+# ('commandTest' included from '/../functions/commandTest.sh')
+#/**
+# * Tests if a command exists, and returns it's location or an error string.
+# * Also saved command location in CMD_XXX.
+# *
+# * @param string $1 Command name
+# * @param string $2 Package name
+# */
+function commandTest(){
+    # Init
+    local command=${1}
+    local package=${2}
+    local located=$(which ${command})
+    
+    # Checks
+    if [ ! -n "${located}" ]; then
+        echo "Command ${command} not found at all, please install before running this program."
+    elif [ ! -x "${located}" ]; then
+        echo "Command ${command} not executable at ${located}, please install before running this program."
+    else
+        echo "${located}" 
+    fi
+}
+
+# ('commandTestHandle' included from '/../functions/commandTestHandle.sh')
 #/**
 # * Tests if a command exists, tries to install package,
 # * resorts to 'handler' argument on fail. 
@@ -125,53 +173,77 @@ function commandTestHandle(){
     fi
 }
 
-# (make::included from '/../functions/commandInstall.sh')
+# ('getWorkingDir' included from '/../functions/getWorkingDir.sh')
 #/**
-# * Tries to install a package
-# * Also saved command location in CMD_XXX
-# *
-# * @param string $1 Command name
+# * Determines script's working directory
+# * 
+# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+# * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+# * @version   SVN: Release: $Id$
+# * @link      http://kevin.vanzonneveld.net/
+# * 
+# * @param string PATH Optional path to add
 # */
-function commandInstall() {
-    # Init
-    local command=${1}
-    local package=${2}
-    
-    # Show
-    echo "Trying to install ${package}"
-    
-    if [ -z "${CMD_APTITUDE}" ]; then
-        aptitude -y install ${package}
-    fi
+function getWorkingDir {
+    echo $(realpath "$(dirname ${0})${1}")
 }
 
-# (make::included from '/../functions/commandTest.sh')
+# ('installKeyAt' included from '/../functions/installKeyAt.sh')
+#!/bin/bash
 #/**
-# * Tests if a command exists, and returns it's location or an error string.
-# * Also saved command location in CMD_XXX.
+# * Installs SSH Keys remotely
+# * 
+# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+# * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+# * @version   SVN: Release: $Id$
+# * @link      http://kevin.vanzonneveld.net/
 # *
-# * @param string $1 Command name
-# * @param string $2 Package name
+# * @param string REMOTE_HOST The host to install the key at
+# * @param string REMOTE_USER The user to install the key under
 # */
-function commandTest(){
-    # Init
-    local command=${1}
-    local package=${2}
-    local located=$(which ${command})
-    
-    # Checks
-    if [ ! -n "${located}" ]; then
-        echo "Command ${command} not found at all, please install before running this program."
-    elif [ ! -x "${located}" ]; then
-        echo "Command ${command} not executable at ${located}, please install before running this program."
+
+function installKeyAt(){
+    if [ -n "${1}" ];then
+        REMOTE_HOST="${1}"
     else
-        echo "${located}" 
+        log "1st argument should be the remote hostname." "EMERG"
     fi
+ 
+    if [ -n "${2}" ];then
+        REMOTE_USER="${2}"
+    else
+        REMOTE_USER="$(whoami)"
+    fi
+ 
+    [ -d "~/.ssh" ] || mkdir -p ~/.ssh
+    if [ ! -f ~/.ssh/id_dsa.pub ];then
+        echo "Local SSH key does not exist. Creating..."
+        echo "JUST PRESS ENTER WHEN ssh-keygen ASKS FOR A PASSPHRASE!"
+        echo ""
+        ssh-keygen -t dsa -f ~/.ssh/id_dsa
+ 
+        [ $? -eq 0 ] || log "ssh-keygen returned errors!" "EMERG"
+    fi
+ 
+    [ -f ~/.ssh/id_dsa.pub ] || log "unable to create a local SSH key!" "EMERG"
+ 
+ 
+    while true; do
+        echo -n "Install my local SSH key at ${REMOTE_HOST} (Y/n) "
+        read yn
+        case $yn in
+            "y" | "Y" | "" )
+                echo "Local SSH key present, installing remotely..."
+                cat ~/.ssh/id_dsa.pub | ssh ${REMOTE_USER}@${REMOTE_HOST} "if [ ! -d ~${REMOTE_USER}/.ssh ];then mkdir -p ~${REMOTE_USER}/.ssh ; fi && if [ ! -f ~${REMOTE_USER}/.ssh/authorized_keys2 ];then touch ~${REMOTE_USER}/.ssh/authorized_keys2 ; fi &&  sh -c 'cat - >> ~${REMOTE_USER}/.ssh/authorized_keys2 && chmod 600 ~${REMOTE_USER}/.ssh/authorized_keys2'"
+                [ $? -eq 0 ] || log "ssh returned errors!" "EMERG"
+             break ;;
+            "n" | "N" ) echo -n "" ; break ;;
+            * ) echo "unknown response.  Asking again" ;;
+        esac
+    done
 }
-
-# Config
-###############################################################
-OUTPUT_DEBUG=0
 
 # Check for program requirements
 ###############################################################
@@ -181,61 +253,133 @@ commandTestHandle "egrep" "pcregrep"
 commandTestHandle "awk"
 commandTestHandle "sort"
 commandTestHandle "uniq"
-commandTestHandle "awk"
-commandTestHandle "lsof"
+commandTestHandle "realpath"
 
-# Config file found?
-[ -f ./sysclone.conf ] || log "No config file found. Maybe: cp -af ./sysclone.conf.default ./sysclone.conf && nano ./sysclone.conf"
+# Config
+###############################################################
+OUTPUT_DEBUG=1
+DIR_ROOT=$(getWorkingDir)
+FILE_CONFIG=${DIR_ROOT}/sysclone.conf.default
+
+CMD_MYSQL="/usr/bin/mysql"
+CMD_MYSQLDUMP="/usr/bin/mysqldump"
+CMD_RSYNCDEL="rsync -a --itemize-changes --delete"
+CMD_RSYNC="rsync -a --itemize-changes"
+
+[ -f  ${FILE_CONFIG} ] || log "No config file found. Maybe: cp -af ${FILE_CONFIG}.default ${FILE_CONFIG} && nano ${FILE_CONFIG}"
+source ${FILE_CONFIG}
 
 
-log "sad" "EMERG"
-exit 1;  
 
 
-exit 1
+
+# Setup run parameters
+###############################################################
+
+if [ "${HOST_GET}" != "localhost" ] && [ "${HOST_PUT}" != "localhost" ]; then
+    echo "Error. Either HOST_GET or HOST_PUT needs to be localhost. Can't sync between 2 remote machines. I'm not superman."
+    exit 0
+fi
+
+if [ "${HOST_GET}" = "localhost" ]; then
+    RSYNC_HOST_GET=""
+    AT_HOST_GET=""
+else
+	RSYNC_HOST_GET="${HOST_GET}:"
+	AT_HOST_GET="ssh ${HOST_GET}"
+fi
+
+if [ "${HOST_PUT}" = "localhost" ]; then
+    RSYNC_HOST_PUT=""
+    AT_HOST_PUT=""
+else
+	RSYNC_HOST_PUT="${HOST_PUT}:"
+	AT_HOST_PUT="ssh ${HOST_PUT}"
+fi
 
 # Run
 ###############################################################
 
+echo -n "package sources sync"
+if [ "${DO_SOURCES}" = 1 ]; then
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/apt/sources.list  ${RSYNC_HOST_PUT}/etc/apt/
+    ${AT_HOST_PUT} aptitude -y update && aptitude -y dist-upgrade
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
 
-#echo "package source sync"
-#rsync -a --progress ${HOST_SRC}:/etc/apt/sources.list ${HOST_DST}:/etc/apt/
-
-echo "package upgrade"
-ssh ${HOST_DST} 'aptitude -y update && aptitude -y dist-upgrade'
+exit 1
 
 echo "package sync"
-ssh ${HOST_SRC} 'dpkg --get-selections > /tmp/dpkglist.txt'
-scp ${HOST_SRC}:/tmp/dpkglist.txt ${HOST_DST}:/tmp
-dpkg --set-selections < /tmp/dpkglist.txt
-apt-get -y update
-apt-get -y dselect-upgrade
+if [ "${DO_PACKAGES}" = 1 ]; then
+    ssh ${HOST_GET} 'dpkg --get-selections > /tmp/dpkglist.txt'
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/tmp/dpkglist.txt ${RSYNC_HOST_PUT}/tmp/
+    ssh ${HOST_PUT} 'dpkg --set-selections < /tmp/dpkglist.txt'
+    ssh ${HOST_PUT} 'apt-get -y update'
+    ssh ${HOST_PUT} 'apt-get -y dselect-upgrade'
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
+
+echo "PEAR package sync"
+if [ "${DO_PEARPKG}" = 1 ]; then
+    ssh ${HOST_GET} "sudo pear -q list | egrep 'alpha|beta|stable' |awk '{print \$1}' > /tmp/pearlist.txt"
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/tmp/pearlist.txt ${RSYNC_HOST_PUT}/tmp/
+    ssh ${HOST_PUT} "cat /tmp/pearlist.txt |awk '{print \"pear install -f \"\$0}' |sudo bash"
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
 
 echo "account sync"
-rsync -a --progress ${HOST_SRC}:/etc/passwd  ${HOST_DST}:/etc/
-rsync -a --progress ${HOST_SRC}:/etc/passwd- ${HOST_DST}:/etc/
-rsync -a --progress ${HOST_SRC}:/etc/shadow  ${HOST_DST}:/etc/
-rsync -a --progress ${HOST_SRC}:/etc/shadow- ${HOST_DST}:/etc/
-rsync -a --progress ${HOST_SRC}:/etc/group   ${HOST_DST}:/etc/
+if [ "${DO_ACCOUNTS}" = 1 ]; then
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/passwd  ${RSYNC_HOST_PUT}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/passwd- ${RSYNC_HOST_PUT}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/shadow  ${RSYNC_HOST_PUT}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/shadow- ${RSYNC_HOST_PUT}/etc/
+    ${CMD_RSYNC} ${RSYNC_HOST_GET}/etc/group   ${RSYNC_HOST_PUT}/etc/
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
 
 echo "config sync"
-rsync -a --progress --delete ${HOST_SRC}:/etc/mysql/   ${HOST_DST}:/etc/mysql
-rsync -a --progress --delete ${HOST_SRC}:/etc/apache2/ ${HOST_DST}:/etc/apache2
-rsync -a --progress --delete ${HOST_SRC}:/etc/php5/    ${HOST_DST}:/etc/php5
-rsync -a --progress --delete ${HOST_SRC}:/etc/postfix/ ${HOST_DST}:/etc/postfix
+if [ "${DO_CONFIG}" = 1 ]; then
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/mysql/   ${RSYNC_HOST_PUT}/etc/mysql
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/apache2/ ${RSYNC_HOST_PUT}/etc/apache2
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/php5/    ${RSYNC_HOST_PUT}/etc/php5
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/etc/postfix/ ${RSYNC_HOST_PUT}/etc/postfix
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
 
 echo "database sync"
-DATABASES=`echo "SHOW DATABASES;" | ${CMD_MYSQL} -p${DB_PASS_SRC} -u ${DB_USER_SRC} -h ${DB_HOST_SRC}`
-for DATABASE in $DATABASES; do
-  if [ "${DATABASE}" != "Database" ]; then
-    echo "transmitting ${DATABASE}"
-    echo "CREATE DATABASE IF NOT EXISTS ${DATABASE}" | ${CMD_MYSQL} -p${DB_PASS_DST} -u ${DB_USER_DST} -h ${DB_HOST_DST}
-    ${CMD_MYSQLDUMP} -Q -B --create-options --delayed-insert --complete-insert --quote-names --add-drop-table -p${DB_PASS_SRC} -u${DB_USER_SRC} -h${DB_HOST_SRC} ${DATABASE} | ${CMD_MYSQL} -p${DB_PASS_DST} -u ${DB_USER_DST} -h ${DB_HOST_DST} ${DATABASE}
-  fi
-done
+if [ "${DO_DATABASE}" = 1 ]; then
+    DATABASES=`echo "SHOW DATABASES;" | ${CMD_MYSQL} -p${DB_PASS_GET} -u ${DB_USER_GET} -h ${DB_HOST_GET}`
+    for DATABASE in $DATABASES; do
+        if [ "${DATABASE}" != "Database" ]; then
+            echo "transmitting ${DATABASE}"
+            echo "CREATE DATABASE IF NOT EXISTS ${DATABASE}" | ${CMD_MYSQL} -p${DB_PASS_PUT} -u ${DB_USER_PUT} -h ${DB_HOST_PUT}
+            ${CMD_MYSQLDUMP} -Q -B --create-options --delayed-insert --complete-insert --quote-names --add-drop-table -p${DB_PASS_GET} -u${DB_USER_GET} -h${DB_HOST_GET} ${DATABASE} | ${CMD_MYSQL} -p${DB_PASS_PUT} -u ${DB_USER_PUT} -h ${DB_HOST_PUT} ${DATABASE}
+        fi
+    done
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
 
 echo "directory sync"
-# geen etc want dan gaat host, md0 naar de kloten!
-rsync -a --progress --delete ${HOST_SRC}:/root/    ${HOST_DST}:/root
-rsync -a --progress --delete ${HOST_SRC}:/home/    ${HOST_DST}:/home
-rsync -a --progress --delete ${HOST_SRC}:/var/www/ ${HOST_DST}:/var/www
+if [ "${DO_DIRS}" = 1 ]; then
+    # root must be copied like /*, because of ssh keys
+    # actually, don't do root at all because of sync script!
+    #${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/root/* ${RSYNC_HOST_PUT}/root/
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/home/ ${RSYNC_HOST_PUT}/home
+    ${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/var/www/ ${RSYNC_HOST_PUT}/var/www
+    #${CMD_RSYNCDEL} ${RSYNC_HOST_GET}/var/lib/svn/ ${RSYNC_HOST_PUT}/var/lib/svn
+    echo " [done] "
+else 
+    echo " [skipped] "
+fi
