@@ -12,7 +12,7 @@
 # Includes
 ###############################################################
 
-# ('log' included from '/../functions/log.sh')
+# log() was auto-included from '/../functions/log.sh' by make.sh
 #/**
 # * Logs a message
 # * 
@@ -58,7 +58,7 @@ function log(){
     fi
 }
 
-# ('toUpper' included from '/../functions/toUpper.sh')
+# toUpper() was auto-included from '/../functions/toUpper.sh' by make.sh
 #/**
 # * Converts a string to uppercase
 # * 
@@ -68,7 +68,7 @@ function toUpper(){
    echo "$(echo ${1} |tr '[:lower:]' '[:upper:]')"
 }
 
-# ('commandTestHandle' included from '/../functions/commandTestHandle.sh')
+# commandTestHandle() was auto-included from '/../functions/commandTestHandle.sh' by make.sh
 #/**
 # * Tests if a command exists, tries to install package,
 # * resorts to 'handler' argument on fail. 
@@ -125,7 +125,7 @@ function commandTestHandle(){
     fi
 }
 
-# ('commandInstall' included from '/../functions/commandInstall.sh')
+# commandInstall() was auto-included from '/../functions/commandInstall.sh' by make.sh
 #/**
 # * Tries to install a package
 # * Also saved command location in CMD_XXX
@@ -148,7 +148,7 @@ function commandInstall() {
     fi
 }
 
-# ('commandTest' included from '/../functions/commandTest.sh')
+# commandTest() was auto-included from '/../functions/commandTest.sh' by make.sh
 #/**
 # * Tests if a command exists, and returns it's location or an error string.
 # * Also saved command location in CMD_XXX.
