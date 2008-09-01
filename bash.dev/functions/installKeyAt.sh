@@ -1,4 +1,3 @@
-#!/bin/bash
 #/**
 # * Installs SSH Keys remotely
 # * 
