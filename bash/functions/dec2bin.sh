@@ -1,4 +1,4 @@
-#/**
+#!/bin/bash
 # * Convert a decimal to a binary string
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
