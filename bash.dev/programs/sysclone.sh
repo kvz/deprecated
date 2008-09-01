@@ -62,14 +62,12 @@ function exeSource {
 }
 
 function exeDest {
-    set -x
     local cmd="${1}"
     if [ "${HOST_DEST}" = "${HOST_SSH}" ]; then
         ssh ${HOST_DEST} "${cmd}"
     else
         /bin/bash -c "${cmd}"
     fi
-    set +x
 }
 
 
