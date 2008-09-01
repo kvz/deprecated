@@ -15,15 +15,15 @@
 
 # Includes
 ###############################################################
-source $(realpath "$(dirname ${0})/../functions/log.sh")     # make::include
-source $(realpath "$(dirname ${0})/../functions/toUpper.sh") # make::include
-source $(realpath "$(dirname ${0})/../functions/commandInstall.sh") # make::include
-source $(realpath "$(dirname ${0})/../functions/commandTest.sh") # make::include
-source $(realpath "$(dirname ${0})/../functions/commandTestHandle.sh") # make::include
-source $(realpath "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
-source $(realpath "$(dirname ${0})/../functions/sshKeyInstall.sh") # make::include
-source $(realpath "$(dirname ${0})/../functions/sshKeyVerify.sh") # make::include
-source $(realpath "$(dirname ${0})/../functions/isPortOpen.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/log.sh")     # make::include
+source $(echo "$(dirname ${0})/../functions/toUpper.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/commandInstall.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/commandTestHandle.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/sshKeyInstall.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/sshKeyVerify.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/isPortOpen.sh") # make::include
 
 # Private Functions
 ###############################################################
@@ -78,12 +78,12 @@ function exeDest {
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
 commandTestHandle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
+commandTestHandle "realpath"
 commandTestHandle "egrep" "pcregrep"
 commandTestHandle "awk"
 commandTestHandle "ping"
 commandTestHandle "sort"
 commandTestHandle "uniq"
-commandTestHandle "realpath"
 commandTestHandle "whoami"
 commandTestHandle "netcat"
 commandTestHandle "ssh"
@@ -166,7 +166,7 @@ OK=$(isPortOpen ${HOST_SSH} 22 1)
 if [ "${OK}" = "0" ]; then
 	log "Unable to reach ${HOST_SSH} at port 22" "EMERG"
 else
-    log " [okay]
+    log " [okay] "
 fi 
 
 # SSH Keys
@@ -179,7 +179,7 @@ if [ "${OK}" = "0" ]; then
 	if [ "${OK}" = "0" ]; then
 	    log "Unable to install ssh keys ${HOST_SSH} at port 22" "EMERG"
 	else
-	    log " [okay]
+	    log " [okay]"
 	fi
 fi 
 
