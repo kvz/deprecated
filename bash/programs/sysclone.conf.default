@@ -1,0 +1,13 @@
+CMD_MYSQL="/usr/bin/mysql"
+CMD_MYSQLDUMP="/usr/bin/mysqldump"
+
+HOST_SRC="impala.plutonia.nl"
+HOST_DST="localhost"
+
+DB_USER_DST="root"
+DB_PASS_DST=""
+DB_HOST_DST="${HOST_DST}"
+
+DB_USER_SRC="root"
+DB_PASS_SRC=""
+DB_HOST_SRC="${HOST_SRC}"
