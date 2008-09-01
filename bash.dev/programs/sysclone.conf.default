@@ -8,6 +8,10 @@ DB_PASS_SOURCE="xxxxxxxx"
 DB_USER_DEST="root"
 DB_PASS_DEST="xxxxxxxx"
 
+# Remove files at destination that don't exist on source
+# EXTREMELY DANGEROUS!!!
+CLEANSE=0
+
 # What to clone
 DO_SOURCES="0"
 DO_PACKAGES="0"

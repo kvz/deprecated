@@ -97,8 +97,6 @@ FILE_CONFIG=${DIR_ROOT}/sysclone.conf
 
 CMD_MYSQL="/usr/bin/mysql"
 CMD_MYSQLDUMP="/usr/bin/mysqldump"
-CMD_RSYNCDEL="rsync -a --itemize-changes --delete"
-CMD_RSYNC="rsync -a --itemize-changes"
 
 [ -f  ${FILE_CONFIG} ] || log "No config file found. Maybe: cp -af ${FILE_CONFIG}.default ${FILE_CONFIG} && nano ${FILE_CONFIG}" "EMERG"
 source ${FILE_CONFIG}
@@ -118,6 +116,14 @@ fi
 if [ "${HOST_SOURCE}" == "localhost" ] && [ "${HOST_DEST}" == "localhost" ]; then
     usage "Either HOST_SOURCE or HOST_DEST needs to be localhost. Can't sync locally. I'm not superman."
 fi
+
+# Rsync options
+CMD_RSYNC="rsync -a --itemize-changes"
+CMD_RSYNCDEL="${CMD_RSYNC}"
+if [ "${CLEANSE}" = 1 ]; then
+    CMD_RSYNCDEL="${CMD_RSYNCDEL} --delete"
+fi 
+
 
 # MySQL Order
 if [ "${HOST_SOURCE}" == "localhost" ] && [ -f /etc/mysql/debian.cnf ]; then
@@ -250,7 +256,7 @@ if [ "${DO_DATABASE}" = 1 ]; then
     fi
     
 	# Export everything
-    DATABASES=`echo "SHOW DATABASES;" | ${CMD_MYSQL_SOURCE}`
+    DATABASES=$(echo "SHOW DATABASES;" | ${CMD_MYSQL_SOURCE})
     for DATABASE in $DATABASES; do
         if [ "${DATABASE}" != "Database" ]; then
             log "transmitting ${DATABASE}"
