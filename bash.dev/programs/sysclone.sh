@@ -1,7 +1,7 @@
 #!/bin/bash
 #/**
 # * This program will totally destory your servers and ruin your carreer.
-# * Or it will try to copy all important packages, settings, and file from
+# * Or it will try to copy all important packages, settings, and files from
 # * one ubuntu server to another. Extremely dangerous!!! Only use in testing
 # * environments!
 # * 
@@ -32,11 +32,11 @@ function usage {
 	
 	if [ -n "${1}" ]; then
 	    echo "" 
-		echo "Cowardly resisted: ${1}"
+		echo "Error: ${1}"
 	fi
 	echo "";
     echo "This program will totally destory your servers and ruin your carreer."
-    echo "Or it will try to copy all important packages, settings, and file from"
+    echo "Or it will try to copy all important packages, settings, and files from"
     echo "one ubuntu server to another.  Extremely dangerous!!! Only use in testing"
     echo "environments!"
     echo ""
@@ -165,6 +165,8 @@ log "verifying connectivity of ${HOST_SSH}"
 OK=$(isPortOpen ${HOST_SSH} 22 1)
 if [ "${OK}" = "0" ]; then
 	log "Unable to reach ${HOST_SSH} at port 22" "EMERG"
+else
+    log " [okay]
 fi 
 
 # SSH Keys
@@ -176,6 +178,8 @@ if [ "${OK}" = "0" ]; then
 	OK=$(sshKeyVerify ${HOST_SSH} root)
 	if [ "${OK}" = "0" ]; then
 	    log "Unable to install ssh keys ${HOST_SSH} at port 22" "EMERG"
+	else
+	    log " [okay]
 	fi
 fi 
 
