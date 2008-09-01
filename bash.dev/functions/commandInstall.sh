@@ -13,7 +13,7 @@ function commandInstall() {
     # Show
     echo "Trying to install ${package}"
     
-    if [ -n "${CMD_APTITUDE}" ]; then
+    if [ -n "${CMD_APTITUDE}" ] && [ -x "${CMD_APTITUDE}" ]; then
         ${CMD_APTITUDE} -y install ${package}
     else
         echo "No supported package management tool found"

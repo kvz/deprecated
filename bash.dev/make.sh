@@ -33,7 +33,7 @@ commandTestHandle "sort"
 commandTestHandle "uniq"
 commandTestHandle "realpath"
 
-OUTPUT_DEBUG=1
+OUTPUT_DEBUG=0
 DIR_ROOT=$(getWorkingDir "/..");
 DIR_SORC="${DIR_ROOT}/bash.dev"
 DIR_DEST="${DIR_ROOT}/bash"
@@ -45,7 +45,7 @@ for filePathSource in $(find ${DIR_SORC}/*/ -type f -name '*.sh'); do
 	
     # Determine compiled version path
     filePathDest=$(echo "${filePathSource}" |sed "s#${DIR_SORC}#${DIR_DEST}#g")
-	log "${filePathSource} --> ${filePathDest}" "INFO"
+	log "${filePathSource} --> ${filePathDest}" "DEBUG"
     
     # Grep 'make::'includes
 	depTxt=$(cat ${filePathSource} |grep '# make::include')
@@ -93,7 +93,7 @@ for filePathSource in $(find ${DIR_SORC}/*/ -type f -name '*.sh'); do
 	done
 	
 	if [ "${depsAdded}" -gt 0 ]; then
-		log "Added ${depsAdded} includes for: '${fileSourceBase}'" "DEBUG"
+		log "Added ${depsAdded} includes for: '${fileSourceBase}'" "INFO"
 	fi
 	
     # Add remainder of original source
