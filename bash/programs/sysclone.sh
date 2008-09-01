@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set +x
 #/**
 # * Clones a system's: database, config, files, etc. Extremely dangerous!!!
 # * 

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set +x
 #/**
 # * Clones a system's: database, config, files, etc. Extremely dangerous!!!
 # * 
@@ -9,6 +9,7 @@ set -x
 # * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
 # */
+
 
 # Includes
 ###############################################################
@@ -20,6 +21,7 @@ source $(realpath "$(dirname ${0})/../functions/commandTestHandle.sh") # make::i
 source $(realpath "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 source $(realpath "$(dirname ${0})/../functions/installKeyAt.sh") # make::include
 
+
 # Check for program requirements
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
@@ -29,6 +31,7 @@ commandTestHandle "awk"
 commandTestHandle "sort"
 commandTestHandle "uniq"
 commandTestHandle "realpath"
+
 
 # Config
 ###############################################################
@@ -41,11 +44,8 @@ CMD_MYSQLDUMP="/usr/bin/mysqldump"
 CMD_RSYNCDEL="rsync -a --itemize-changes --delete"
 CMD_RSYNC="rsync -a --itemize-changes"
 
-[ -f  ${FILE_CONFIG} ] || log "No config file found. Maybe: cp -af ${FILE_CONFIG}.default ${FILE_CONFIG} && nano ${FILE_CONFIG}"
+[ -f  ${FILE_CONFIG} ] || log "No config file found. Maybe: cp -af ${FILE_CONFIG}.default ${FILE_CONFIG} && nano ${FILE_CONFIG}" "EMERG"
 source ${FILE_CONFIG}
-
-
-
 
 
 # Setup run parameters
@@ -60,6 +60,7 @@ if [ "${HOST_GET}" = "localhost" ]; then
     RSYNC_HOST_GET=""
     AT_HOST_GET=""
 else
+    HOST_SSH="${HOST_GET}"
 	RSYNC_HOST_GET="${HOST_GET}:"
 	AT_HOST_GET="ssh ${HOST_GET}"
 fi
@@ -68,12 +69,17 @@ if [ "${HOST_PUT}" = "localhost" ]; then
     RSYNC_HOST_PUT=""
     AT_HOST_PUT=""
 else
+    HOST_SSH="${HOST_PUT}"
 	RSYNC_HOST_PUT="${HOST_PUT}:"
 	AT_HOST_PUT="ssh ${HOST_PUT}"
 fi
 
+
 # Run
 ###############################################################
+
+echo "install ssh key at ${HOST_SSH}"
+installKeyAt ${HOST_SSH}
 
 echo -n "package sources sync"
 if [ "${DO_SOURCES}" = 1 ]; then
