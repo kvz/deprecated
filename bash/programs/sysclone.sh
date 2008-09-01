@@ -1,10 +1,9 @@
 #!/bin/bash
-set +x
 #/**
 # * Clones a system's: database, config, files, etc. Extremely dangerous!!!
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
-# * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+# * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
 # * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
@@ -268,7 +267,9 @@ CMD_RSYNC="rsync -a --itemize-changes"
 [ -f  ${FILE_CONFIG} ] || log "No config file found. Maybe: cp -af ${FILE_CONFIG}.default ${FILE_CONFIG} && nano ${FILE_CONFIG}"
 source ${FILE_CONFIG}
 
-
+CMD_MYSQL_GET="${CMD_MYSQL} -p${DB_PASS_GET} -u${DB_USER_GET} -h${DB_HOST_GET}"
+CMD_MYSQL_PUT="${CMD_MYSQL} -p${DB_PASS_PUT} -u${DB_USER_PUT} -h${DB_HOST_PUT}"
+CMD_MYSQLDUMP_GET="${CMD_MYSQLDUMP} -p${DB_PASS_GET} -u${DB_USER_GET} -h${DB_HOST_GET}"
 
 
 
@@ -357,12 +358,13 @@ fi
 
 echo "database sync"
 if [ "${DO_DATABASE}" = 1 ]; then
-    DATABASES=`echo "SHOW DATABASES;" | ${CMD_MYSQL} -p${DB_PASS_GET} -u ${DB_USER_GET} -h ${DB_HOST_GET}`
+    DATABASES=`echo "SHOW DATABASES;" | ${CMD_MYSQL_GET}`
     for DATABASE in $DATABASES; do
         if [ "${DATABASE}" != "Database" ]; then
             echo "transmitting ${DATABASE}"
-            echo "CREATE DATABASE IF NOT EXISTS ${DATABASE}" | ${CMD_MYSQL} -p${DB_PASS_PUT} -u ${DB_USER_PUT} -h ${DB_HOST_PUT}
-            ${CMD_MYSQLDUMP} -Q -B --create-options --delayed-insert --complete-insert --quote-names --add-drop-table -p${DB_PASS_GET} -u${DB_USER_GET} -h${DB_HOST_GET} ${DATABASE} | ${CMD_MYSQL} -p${DB_PASS_PUT} -u ${DB_USER_PUT} -h ${DB_HOST_PUT} ${DATABASE}
+            echo "CREATE DATABASE IF NOT EXISTS ${DATABASE}" | ${CMD_MYSQL_PUT}
+            ${CMD_MYSQLDUMP_GET} -Q -B --create-options --delayed-insert \
+                --complete-insert --quote-names --add-drop-table ${DATABASE} | ${CMD_MYSQL_PUT} ${DATABASE}
         fi
     done
     echo " [done] "

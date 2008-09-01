@@ -15,6 +15,22 @@
 # Includes
 ###############################################################
 source $(realpath "$(dirname ${0})/../functions/log.sh")     # make::include
-source $(realpath "$(dirname ${0})/../functions/installKeyAt.sh") # make::include
+source $(realpath "$(dirname ${0})/../functions/sshKeyInstall.sh") # make::include
+source $(realpath "$(dirname ${0})/../functions/toUpper.sh") # make::include
+source $(realpath "$(dirname ${0})/../functions/commandInstall.sh") # make::include
+source $(realpath "$(dirname ${0})/../functions/commandTest.sh") # make::include
+source $(realpath "$(dirname ${0})/../functions/commandTestHandle.sh") # make::include
+source $(realpath "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
+source $(realpath "$(dirname ${0})/../functions/isPortOpen.sh") # make::include
 
-installKeyAt ${1} ${2}
+# Check for program requirements
+###############################################################
+commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
+commandTestHandle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
+commandTestHandle "awk"
+commandTestHandle "uniq"
+commandTestHandle "realpath"
+commandTestHandle "whoami"
+commandTestHandle "ssh"
+
+sshKeyInstall ${1} ${2}

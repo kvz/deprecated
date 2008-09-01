@@ -86,7 +86,7 @@ for filePathSource in $(find ${DIR_SORC}/*/ -type f -name '*.sh'); do
 			# Add dependency
 			let depsAdded=depsAdded+1
 			echo "" |tee -a ${filePathDest} > /dev/null
-			echo "# ${realDepBase}() included from '${depFile}')" |tee -a ${filePathDest} > /dev/null
+			echo "# ${realDepBase}() was auto-included from '${depFile}' by make.sh" |tee -a ${filePathDest} > /dev/null
 			cat ${realDepFile}  |tee -a ${filePathDest} > /dev/null
 			echo "" |tee -a ${filePathDest} > /dev/null
 		fi
