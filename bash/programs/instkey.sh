@@ -62,7 +62,6 @@ function log(){
 }
 
 # ('installKeyAt' included from '/../functions/installKeyAt.sh')
-#!/bin/bash
 #/**
 # * Installs SSH Keys remotely
 # * 

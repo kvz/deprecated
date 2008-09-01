@@ -142,7 +142,7 @@ function commandInstall() {
     echo "Trying to install ${package}"
     
     if [ -n "${CMD_APTITUDE}" ]; then
-        aptitude -y install ${package}
+        ${CMD_APTITUDE} -y install ${package}
     else
         echo "No supported package management tool found"
     fi

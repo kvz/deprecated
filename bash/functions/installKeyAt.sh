@@ -1,5 +1,4 @@
 #!/bin/bash
-#/**
 # * Installs SSH Keys remotely
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>

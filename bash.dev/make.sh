@@ -57,12 +57,12 @@ for filePathSource in $(find ${DIR_SORC}/*/ -type f -name '*.sh'); do
     let linesRemain=srcLines-depAt
     
     # Reset destination file
-    echo "#!/bin/bash" |tee ${filePathDest}
+    echo "#!/bin/bash" |tee ${filePathDest} > /dev/null
     [ -f ${filePathDest} ] || log "Unable to create file: '${filePathDest}'" "EMERG"
     chmod a+x ${filePathDest}
     
     # Add head of original source
-    cat ${filePathSource} |head -n ${depAt} |egrep -v '(# make::include|#!/bin/bash)' |tee -a ${filePathDest} 
+    cat ${filePathSource} |head -n ${depAt} |egrep -v '(# make::include|#!/bin/bash)' |tee -a ${filePathDest} > /dev/null 
 	
 	# Walk through include lines
 	for depPart in ${depTxt}; do
@@ -85,10 +85,10 @@ for filePathSource in $(find ${DIR_SORC}/*/ -type f -name '*.sh'); do
 			
 			# Add dependency
 			let depsAdded=depsAdded+1
-			echo "" |tee -a ${filePathDest}
-			echo "# ('${realDepBase}' included from '${depFile}')" |tee -a ${filePathDest}
-			cat ${realDepFile}  |tee -a ${filePathDest}
-			echo "" |tee -a ${filePathDest}
+			echo "" |tee -a ${filePathDest} > /dev/null
+			echo "# ('${realDepBase}' included from '${depFile}')" |tee -a ${filePathDest} > /dev/null
+			cat ${realDepFile}  |tee -a ${filePathDest} > /dev/null
+			echo "" |tee -a ${filePathDest} > /dev/null
 		fi
 	done
 	
@@ -97,5 +97,5 @@ for filePathSource in $(find ${DIR_SORC}/*/ -type f -name '*.sh'); do
 	fi
 	
     # Add remainder of original source
-    cat ${filePathSource} |tail -n ${linesRemain} |egrep -v '(# make::include|#!/bin/bash)' |tee -a ${filePathDest} 
+    cat ${filePathSource} |tail -n ${linesRemain} |egrep -v '(# make::include|#!/bin/bash)' |tee -a ${filePathDest} > /dev/null
 done
