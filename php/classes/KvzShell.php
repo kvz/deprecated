@@ -72,20 +72,38 @@ class KvzShell {
     }
     
     public function exe($cmd) {
-        $numargs  = func_num_args();
-        $arg_list = func_get_args();
-        $args     = array();
         
-        $cmdE = $this->_cmds[$cmd];
-        if ($numargs > 1) {
-            for ($i = 1; $i < $numargs; $i++) {
-                $args[] = $arg_list[$i];
-            }        
+        if (false) {
+            $numargs  = func_num_args();
+            $arg_list = func_get_args();
+            $args     = array();
+            
+            if (!isset($args[0])) {
+                return false;
+            }
+            
+            if (strpos($args[0], " ") !== false) {
+                
+            }
+            
+            $cmdE = $this->_cmds[$cmd];
+            if ($numargs > 1) {
+                for ($i = 1; $i < $numargs; $i++) {
+                    $args[] = $arg_list[$i];
+                }        
+            }
+            
+            if (count($args)) {
+                $cmdE .= " ". implode(" ", $args); 
+            }
         }
         
-        if (count($args)) {
-            $cmdE .= " ". implode(" ", $args); 
-        }
+        $parts = preg_split("[\s]", $cmd, null, PREG_SPLIT_NO_EMPTY);
+        $base  = array_shift($parts);
+        $cmdE  = $cmd;
+        if (isset($this->_cmds[$base])) {
+            $cmdE = $this->_cmds[$base] ." ". implode(" ", $parts); 
+        } 
         
         $this->log($cmdE, KvzLib::LOG_DEBUG);
         
