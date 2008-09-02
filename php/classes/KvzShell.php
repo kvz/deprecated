@@ -61,10 +61,10 @@ class KvzShell {
     }
     
     
-    public function log($str, $level=KvzLib::LOG_INFO) {
+    public function log($str, $level=KvzShell::LOG_INFO) {
         echo $str."\n";
         
-        if ($level < KvzLib::LOG_CRIT) {
+        if ($level < KvzShell::LOG_CRIT) {
             die();
         }
         
@@ -105,7 +105,7 @@ class KvzShell {
             $cmdE = $this->_cmds[$base] ." ". implode(" ", $parts); 
         } 
         
-        $this->log($cmdE, KvzLib::LOG_DEBUG);
+        $this->log($cmdE, KvzShell::LOG_DEBUG);
         
         return $this->_exe($cmdE);
     }
@@ -122,7 +122,7 @@ class KvzShell {
         $cmdW = "which ".escapeshellcmd($cmd);
         if (($o = $this->_exe($cmdW)) === false) {
             if ($dieOnFail) {
-                $this->log("Command: '$cmd' ", KvzLib::LOG_EMERG);
+                $this->log("Command: '$cmd' ", KvzShell::LOG_EMERG);
             }
             return false;
         }
