@@ -113,12 +113,5 @@ class KvzShell {
         
         return true;
     }
-    
 }
-
-
-$KvzLib = new KvzLib(dirname(__FILE__));
-$KvzLib->test();
-
-
 ?>
