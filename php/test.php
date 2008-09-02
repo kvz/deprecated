@@ -27,7 +27,7 @@ class KvzLib extends KvzShell {
     }
     
     public function test(){
-        $x = $this->exe("phpdt", $this->_path);
+        $x = $this->exeGlue("phpdt", $this->_path);
         echo implode("\n", $x);
     }
 }

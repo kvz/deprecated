@@ -1,4 +1,7 @@
 <?php
+class KvzShell_Excpetion extends Exception {
+    
+}
 class KvzShell {
     
     /**
@@ -45,6 +48,9 @@ class KvzShell {
     protected $_cmds = array();
     protected $_path = "";
     
+    public $output = array();
+    public $command = "";
+    
     
     public function KvzShell() {
     }
@@ -60,7 +66,6 @@ class KvzShell {
         return true;
     }
     
-    
     public function log($str, $level=KvzShell::LOG_INFO) {
         echo $str."\n";
         
@@ -71,33 +76,37 @@ class KvzShell {
         return true;
     }
     
-    public function exe($cmd) {
-        
-        if (false) {
-            $numargs  = func_num_args();
-            $arg_list = func_get_args();
-            $args     = array();
-            
-            if (!isset($args[0])) {
-                return false;
-            }
-            
-            if (strpos($args[0], " ") !== false) {
-                
-            }
-            
-            $cmdE = $this->_cmds[$cmd];
-            if ($numargs > 1) {
-                for ($i = 1; $i < $numargs; $i++) {
-                    $args[] = $arg_list[$i];
-                }        
-            }
-            
-            if (count($args)) {
-                $cmdE .= " ". implode(" ", $args); 
-            }
+    public function exePect($cmd, $expect, $mode="REGEX_MULTILINE") {
+        if (($x = $this->exe($cmd)) === false) {
+            return false;
         }
         
+        $xn           = implode("\n", $x);
+        $expect_quote = preg_quote($expect);
+        
+        switch ($mode) {
+            case "REGEX_MULTILINE":
+                if (!preg_match('/'.$expect.'/Umi', $xn)) {
+                    return false; 
+                }
+                break;
+            default:
+                throw new KvzShell_Excpetion("Unsupported mode: $mode");
+                return false;
+                break;
+        }
+        
+        return $x;
+        
+    }
+    
+    public function exeGlue(){
+        $args = func_get_args();
+        $cmd = implode(" ", $args);
+        return $this->exe($cmd);
+    }
+    
+    public function exe($cmd) {
         $parts = preg_split("[\s]", $cmd, null, PREG_SPLIT_NO_EMPTY);
         $base  = array_shift($parts);
         $cmdE  = $cmd;
@@ -105,13 +114,15 @@ class KvzShell {
             $cmdE = $this->_cmds[$base] ." ". implode(" ", $parts); 
         } 
         
-        $this->log($cmdE, KvzShell::LOG_DEBUG);
-        
         return $this->_exe($cmdE);
     }
     
     protected function _exe($cmd) {
+        #$this->log($cmd, KvzShell::LOG_DEBUG);
+        
+        $this->command = $cmd;
         exec($cmd, $o, $r);
+        $this->output = $o;
         if ($r != 0) {
             return false;
         }
@@ -119,7 +130,7 @@ class KvzShell {
     }
     
     protected function _which($cmd, $dieOnFail=false) {
-        $cmdW = "which ".escapeshellcmd($cmd);
+        $cmdW = "/usr/bin/which ".escapeshellcmd($cmd);
         if (($o = $this->_exe($cmdW)) === false) {
             if ($dieOnFail) {
                 $this->log("Command: '$cmd' ", KvzShell::LOG_EMERG);
