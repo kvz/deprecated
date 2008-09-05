@@ -1,7 +1,8 @@
 #!/usr/bin/php -q
 <?php
 /*
- * pear install -f Testing_DocTest
+ * Requirements:
+ *  pear install -f Testing_DocTest
 */
 
 require_once "classes/KvzShell.php";

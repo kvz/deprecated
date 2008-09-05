@@ -133,7 +133,7 @@ class KvzShell {
         $cmdW = "/usr/bin/which ".escapeshellcmd($cmd);
         if (($o = $this->_exe($cmdW)) === false) {
             if ($dieOnFail) {
-                $this->log("Command: '$cmd' ", KvzShell::LOG_EMERG);
+                $this->log("Command: '$cmd' not found", KvzShell::LOG_EMERG);
             }
             return false;
         }
