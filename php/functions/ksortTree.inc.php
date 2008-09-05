@@ -76,11 +76,14 @@
  */
 function ksortTree( &$array )
 {
+    if (!is_array($array)) {
+        return true;
+    }
+    
     ksort($array);
     foreach ($array as $k=>$v) {
-        if (is_array($v)) {
-            ksortTree($array[$k]);
-        }
+        ksortTree($array[$k]);
     }
+    return true;
 }
 ?>
