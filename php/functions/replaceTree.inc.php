@@ -41,16 +41,21 @@
  */
 function replaceTree($search="", $replace="", $array=false, $keys_too=false)
 { 
+    if (!is_array($array)) {
+        // Regular replace
+        return str_replace($search, $replace, $array);
+    }
+    
     $newArr = array();
-    if (is_array($array)) {
-        foreach ($array as $k=>$v) {
-            $add_key = (!$keys_too?$k:str_replace($search, $replace, $k));
-            if (is_array($v)) {
-                $newArr[$add_key] = replaceTree($search, $replace, $v, $keys_too);
-            } else {
-                $newArr[$add_key] = str_replace($search, $replace, $v);
-            }
+    foreach ($array as $k=>$v) {
+        // Replace keys as well?
+        $add_key = $k;
+        if ($keys_too) {
+            $add_key = str_replace($search, $replace, $k);
         }
+        
+        // Recurse
+        $newArr[$add_key] = replaceTree($search, $replace, $v, $keys_too);
     }
     return $newArr;
 }
