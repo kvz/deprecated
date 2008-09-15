@@ -9,7 +9,7 @@ require_once "classes/KvzShell.php";
 
 class KvzLib extends KvzShell {
     protected $_path = "";
-    
+      
     public function KvzLib($path=false) {
         if (!$path) {
             $this->log("Path: '$path' is empty", KvzLib::LOG_EMERG);
