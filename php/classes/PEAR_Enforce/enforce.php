@@ -17,8 +17,9 @@ echo "str: ".$str."\n";
 die();
 */
 error_reporting(E_ALL);
+ini_set("include_path", "../../..:/usr/share/php:/usr/share/pear");
 
-
+require_once "../DocBlockWriter.php";
 require_once "Enforce.php";
 
 $file   = (!isset($argv[1])) ? "" : $argv[1];
@@ -81,26 +82,26 @@ switch ($action) {
         
         break;
     case "docblock":
-        $DocBlock = new DocBlock();
-        $DocBlock->setIndent(4);
+        $DocBlockWriter = new DocBlockWriter();
+        $DocBlockWriter->setIndent(4);
         
 /*        
-        $DocBlock->setHeader("Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! ");
+        $DocBlockWriter->setHeader("Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! Very nice docBlock! ");
         
-        $DocBlock->setRow("param", "\$strData", "string", "Used for processing");
-        $DocBlock->setRow("param", "\$no", "integer", "");
-        $DocBlock->setRow("param", "\$lines", "array");
+        $DocBlockWriter->setRow("param", "\$strData", "string", "Used for processing");
+        $DocBlockWriter->setRow("param", "\$no", "integer", "");
+        $DocBlockWriter->setRow("param", "\$lines", "array");
         
-        $DocBlock->setRow("return", "array");
-        print_r($DocBlock->getParams());
+        $DocBlockWriter->setRow("return", "array");
+        print_r($DocBlockWriter->getParams());
 */        
         
         
-        echo $DocBlock->generateFile();
+        echo $DocBlockWriter->generateFile();
         echo "\n";
         
-        if (count($DocBlock->errors)) {
-            print_r($DocBlock->errors);
+        if (count($DocBlockWriter->errors)) {
+            print_r($DocBlockWriter->errors);
         }
         
         break; 

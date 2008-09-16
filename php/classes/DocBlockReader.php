@@ -74,10 +74,10 @@ class DocBlockReader {
                 $keys[array_shift($parts)] = $parts;
             } else {
                 if ($headRecing) {
-                    $head .= $tline;
+                    $head .= $tline."\n";
                 }
                 
-                $text .= $tline;
+                $text .= $tline."\n";
             }
             
             if (!$tline) {
@@ -86,7 +86,7 @@ class DocBlockReader {
         }
         
         $parts = explode("\n", $head);
-        $title = reset($head);
+        $title = reset($parts);
         
         return compact("title", "head", "text", "keys");
     }

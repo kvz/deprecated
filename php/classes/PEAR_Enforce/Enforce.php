@@ -720,26 +720,26 @@ Class PEAR_Enforce {
                 
                 $indent = $CodeRow->getIndent();    
                 
-                $DocBlock = new DocBlock();
-                $DocBlock->setDocBLockDefaults($this->_docBlockDefaults);
-                $DocBlock->setIndent($indent);
-                $DocBlock->setNewLineChar($this->_getPostFormatAddNewline());
+                $DocBlockWriter = new DocBlockWriter();
+                $DocBlockWriter->setDocBLockDefaults($this->_docBlockDefaults);
+                $DocBlockWriter->setIndent($indent);
+                $DocBlockWriter->setNewLineChar($this->_getPostFormatAddNewline());
                 
                 if (!isset($expected)) {
                     $this->_fixedLog[$fixCode][$row]["error"] .= "var expected was not set!!!";
                 } elseif ($expected == "function") {
                     $CodeRow->insertAt($CodeRow->getIndent(+1), 
-                        $DocBlock->generateFunction($CodeRow->getCodeRow()));
+                        $DocBlockWriter->generateFunction($CodeRow->getCodeRow()));
                 } else if ($expected == "class") {
                     $CodeRow->insertAt($CodeRow->getIndent(+1), 
-                        $DocBlock->generateClass($CodeRow->getCodeRow()));
+                        $DocBlockWriter->generateClass($CodeRow->getCodeRow()));
                 } elseif ($expected == "file") {
                     $CodeRow->insertAt(1, 
-                        $DocBlock->generateFile());
+                        $DocBlockWriter->generateFile());
                 }
                 
-                if (count($DocBlock->errors)) {
-                    $this->_fixedLog[$fixCode][$row]["error"] .= "DocBlock Errors: ". implode('; ', $DocBlock->errors);
+                if (count($DocBlockWriter->errors)) {
+                    $this->_fixedLog[$fixCode][$row]["error"] .= "DocBlock Errors: ". implode('; ', $DocBlockWriter->errors);
                 }
                 
                 break;
