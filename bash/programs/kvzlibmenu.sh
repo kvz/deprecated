@@ -1,4 +1,16 @@
 #!/bin/bash
+#/**
+# * Interactive menu for installing KvzLib bash programs
+# *
+# * Just run: wget -qO- kvzlib.net/menu |bash
+# * 
+# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+# * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+# * @version   SVN: Release: $Id: instkey.sh 94 2008-09-16 09:24:10Z kevin $
+# * @link      http://kevin.vanzonneveld.net/
+# *
+# */
 
 # Includes
 ###############################################################
@@ -170,7 +182,7 @@ function commandTestHandle(){
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id$
+# * @version   SVN: Release: $Id: getWorkingDir.sh 89 2008-09-05 20:52:48Z kevin $
 # * @link      http://kevin.vanzonneveld.net/
 # * 
 # * @param string PATH Optional path to add
@@ -179,15 +191,85 @@ function getWorkingDir {
     echo $(realpath "$(dirname ${0})${1}")
 }
 
-# Config
-###############################################################
-OUTPUT_DEBUG=1
-FILTER=""
-FILTER="${FILTER} IndentStyles(style=k&r)"
-FILTER="${FILTER} NewLines(before=function:if:switch:T_CLASS,after=function)"
-FILTER="${FILTER} Pear(add_header=apache)"
-FILTER="${FILTER} ArrayNested()"
-FILTER="${FILTER} Lowercase()"
+# getTempFile() was auto-included from '/../functions/getTempFile.sh' by make.sh
+#/**
+# * Returns a unique temporary filename
+# * 
+# */
+function getTempFile(){
+	if [ -z "${CMD_TEMPFILE}" ]; then
+	    echo "Dialog command not found or not initialized"
+	    exit 1
+	fi
+	
+	tempFile=`${CMD_TEMPFILE} 2>/dev/null` || tempFile=/tmp/test$$
+	trap "rm -f $tempFile" 0 1 2 5 15
+	echo $tempFile
+}
+
+# boxList() was auto-included from '/../functions/boxList.sh' by make.sh
+#/**
+# * Displays a List dialog
+# * 
+# * @param string $1 Title
+# * @param string $2 Description
+# * @param string $3 Items
+# */
+function boxList(){
+    if [ -z "${CMD_DIALOG}" ]; then
+        echo "Dialog command not found or not initialized"
+        exit 1
+    fi
+
+    if [ -z "${CMD_SED}" ]; then
+        echo "Sed command not found or not initialized"
+        exit 1
+    fi
+
+	# Determine static arguments
+	TITLE="${1}"
+	DESCR="${2}"
+	ITEMS=""
+    
+    # Collect remaining arguments items
+    for i in `seq 3 2 $#`; do
+    	let "j = i + 1"
+    	
+    	eval key=\$${i}
+    	eval val=\$${j}
+    	
+    	combi=$(echo "echo \"${key} \\\"${val}\\\"\"" |bash)
+    	
+        ITEMS="${ITEMS}${combi} "
+    done
+    
+    tempFile=$(getTempFile)
+    echo ${tempFile}
+    
+    eval ${CMD_DIALOG} --clear --title \"${TITLE}\"  --menu \"${DESCR}\" 16 51 6 ${ITEMS}
+    
+    retval=$?
+    
+    choice=`cat $tempFile`
+    case ${retval} in
+        0)
+            dia_ret=${choice}
+        ;;
+        1)
+            #clear
+            echo "Cancel ${retval} pressed."
+            cat ${tempFile}
+            exit 0
+        ;;
+        255)
+            #clear
+            echo "ESC ${retval} pressed."
+            cat ${tempFile}
+            exit 0
+        ;;
+    esac
+}
+
 
 # Check for program requirements
 ###############################################################
@@ -198,13 +280,9 @@ commandTestHandle "awk"
 commandTestHandle "sort"
 commandTestHandle "uniq"
 commandTestHandle "realpath"
+commandTestHandle "sed"
 
-commandTestHandle "php_beautifier" "php-pear" "EMERG" "NOINSTALL"
- 
-# Run
-###############################################################
-if [ ! -n "${FILTERS}" ]; then
-	${CMD_PHP_BEAUTIFIER} -f ${1}
-else
-	${CMD_PHP_BEAUTIFIER} --filters "${FILTERS}" -f ${1}
-fi
+commandTestHandle "tempfile"
+commandTestHandle "dialog"
+
+boxList "Title" "Description" 1 "kevin van z" 2 "martijn"

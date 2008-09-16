@@ -11,11 +11,12 @@
 
 # Includes
 ###############################################################
-source $(realpath "$(dirname ${0})/../functions/log.sh")     # make::include
-source $(realpath "$(dirname ${0})/../functions/toUpper.sh") # make::include
-source $(realpath "$(dirname ${0})/../functions/commandTestHandle.sh") # make::include
-source $(realpath "$(dirname ${0})/../functions/commandInstall.sh") # make::include
-source $(realpath "$(dirname ${0})/../functions/commandTest.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/log.sh")     # make::include
+source $(echo "$(dirname ${0})/../functions/toUpper.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/commandInstall.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/commandTestHandle.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 
 # Config
 ###############################################################

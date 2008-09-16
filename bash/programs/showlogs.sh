@@ -68,6 +68,53 @@ function toUpper(){
    echo "$(echo ${1} |tr '[:lower:]' '[:upper:]')"
 }
 
+# commandInstall() was auto-included from '/../functions/commandInstall.sh' by make.sh
+#/**
+# * Tries to install a package
+# * Also saved command location in CMD_XXX
+# *
+# * @param string $1 Command name
+# * @param string $1 Package name
+# */
+function commandInstall() {
+    # Init
+    local command=${1}
+    local package=${2}
+    
+    # Show
+    echo "Trying to install ${package}"
+    
+    if [ -n "${CMD_APTITUDE}" ] && [ -x "${CMD_APTITUDE}" ]; then
+        ${CMD_APTITUDE} -y install ${package}
+    else
+        echo "No supported package management tool found"
+    fi
+}
+
+# commandTest() was auto-included from '/../functions/commandTest.sh' by make.sh
+#/**
+# * Tests if a command exists, and returns it's location or an error string.
+# * Also saved command location in CMD_XXX.
+# *
+# * @param string $1 Command name
+# * @param string $2 Package name
+# */
+function commandTest(){
+    # Init
+    local command=${1}
+    local package=${2}
+    local located=$(which ${command})
+    
+    # Checks
+    if [ ! -n "${located}" ]; then
+        echo "Command ${command} not found at all, please install before running this program."
+    elif [ ! -x "${located}" ]; then
+        echo "Command ${command} not executable at ${located}, please install before running this program."
+    else
+        echo "${located}" 
+    fi
+}
+
 # commandTestHandle() was auto-included from '/../functions/commandTestHandle.sh' by make.sh
 #/**
 # * Tests if a command exists, tries to install package,
@@ -125,51 +172,20 @@ function commandTestHandle(){
     fi
 }
 
-# commandInstall() was auto-included from '/../functions/commandInstall.sh' by make.sh
+# getWorkingDir() was auto-included from '/../functions/getWorkingDir.sh' by make.sh
 #/**
-# * Tries to install a package
-# * Also saved command location in CMD_XXX
-# *
-# * @param string $1 Command name
-# * @param string $1 Package name
+# * Determines script's working directory
+# * 
+# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+# * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+# * @version   SVN: Release: $Id$
+# * @link      http://kevin.vanzonneveld.net/
+# * 
+# * @param string PATH Optional path to add
 # */
-function commandInstall() {
-    # Init
-    local command=${1}
-    local package=${2}
-    
-    # Show
-    echo "Trying to install ${package}"
-    
-    if [ -n "${CMD_APTITUDE}" ] && [ -x "${CMD_APTITUDE}" ]; then
-        ${CMD_APTITUDE} -y install ${package}
-    else
-        echo "No supported package management tool found"
-    fi
-}
-
-# commandTest() was auto-included from '/../functions/commandTest.sh' by make.sh
-#/**
-# * Tests if a command exists, and returns it's location or an error string.
-# * Also saved command location in CMD_XXX.
-# *
-# * @param string $1 Command name
-# * @param string $2 Package name
-# */
-function commandTest(){
-    # Init
-    local command=${1}
-    local package=${2}
-    local located=$(which ${command})
-    
-    # Checks
-    if [ ! -n "${located}" ]; then
-        echo "Command ${command} not found at all, please install before running this program."
-    elif [ ! -x "${located}" ]; then
-        echo "Command ${command} not executable at ${located}, please install before running this program."
-    else
-        echo "${located}" 
-    fi
+function getWorkingDir {
+    echo $(realpath "$(dirname ${0})${1}")
 }
 
 # Config
@@ -184,7 +200,8 @@ commandTestHandle "egrep" "pcregrep"
 commandTestHandle "awk"
 commandTestHandle "sort"
 commandTestHandle "uniq"
-commandTestHandle "awk"
+commandTestHandle "realpath"
+
 commandTestHandle "lsof"
 
 # Run

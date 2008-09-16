@@ -15,13 +15,13 @@
 # Includes
 ###############################################################
 source $(echo "$(dirname ${0})/../functions/log.sh")     # make::include
-source $(echo "$(dirname ${0})/../functions/sshKeyInstall.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/toUpper.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandInstall.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandTestHandle.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/getTempFile.sh") # make::include
+
 source $(echo "$(dirname ${0})/../functions/boxList.sh") # make::include
 
 # Check for program requirements
