@@ -16,18 +16,12 @@ function boxYesNo(){
     # Determine static arguments
     local TITLE="${1}"
     local DESCR="${2}"
-    local OPTIONS="${2}"
+    local OPTIONS="${3}"
     
     local retVal=""
     
-    # Proces remaining arguments
-    xtra=""
-    if [ "${OPTIONS}" = "0" ]; then
-        xtra="--defaultno"
-    fi
-    
     # Open dialog    
-    ${CMD_DIALOG} ${xtra} --title "${1}" --clear --yesno "${2}" 10 70
+    ${CMD_DIALOG} ${OPTIONS} --title "${1}" --clear --yesno "${2}" 10 70
     retVal=$?
     
     if [ "${retVal}" = 1 ]; then

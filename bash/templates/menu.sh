@@ -76,7 +76,7 @@ function toUpper(){
 # * Also saved command location in CMD_XXX
 # *
 # * @param string $1 Command name
-# * @param string $1 Package name
+# * @param string $2 Package name
 # */
 function commandInstall() {
     # Init
@@ -207,6 +207,46 @@ function getTempFile(){
 	echo $tempFile
 }
 
+# kvzProgInstall() was auto-included from '/../functions/kvzProgInstall.sh' by make.sh
+#/**
+# * Tries to install a bash program from KvzLib
+# * to /root/bin/
+# *
+# * @param string $1 KvzLib Program name
+# */
+function kvzProgInstall() {
+    # Check if dependencies are initialized
+    if [ -z "${CMD_WGET}" ]; then
+        echo "wget command not found or not initialized" >&2
+        exit 1
+    fi
+
+    if [ -z "${CMD_PWD}" ]; then
+        echo "pwd command not found or not initialized" >&2
+        exit 1
+    fi
+
+	
+    # Init
+    local PROGRAM=${1}
+    local KVZLIBURL="http://kvzlib.net/b"
+    local INSTALLDIR="/root/bin"
+    local OLDDIR=$(${CMD_PWD})
+    local URL=${KVZLIBURL}/${PROGRAM}
+    
+    [ -d "${INSTALLDIR}" ] || mkdir -p ${INSTALLDIR}
+    cd ${INSTALLDIR}
+    
+    # Show
+    ${CMD_WGET} -q ${URL}
+    cd ${OLDDIR}  
+    
+    if [ $? != 0 ];
+        echo "download of ${URL} failed" >&2
+        exit 1
+    fi
+}
+
 # boxList() was auto-included from '/../functions/boxList.sh' by make.sh
 #/**
 # * Displays a List dialog
@@ -307,18 +347,12 @@ function boxYesNo(){
     # Determine static arguments
     local TITLE="${1}"
     local DESCR="${2}"
-    local OPTIONS="${2}"
+    local OPTIONS="${3}"
     
     local retVal=""
     
-    # Proces remaining arguments
-    xtra=""
-    if [ "${OPTIONS}" = "0" ]; then
-        xtra="--defaultno"
-    fi
-    
     # Open dialog    
-    ${CMD_DIALOG} ${xtra} --title "${1}" --clear --yesno "${2}" 10 70
+    ${CMD_DIALOG} ${OPTIONS} --title "${1}" --clear --yesno "${2}" 10 70
     retVal=$?
     
     if [ "${retVal}" = 1 ]; then
@@ -338,6 +372,7 @@ function boxYesNo(){
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
 commandTestHandle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
 commandTestHandle "egrep" "pcregrep"
+commandTestHandle "pwd"
 commandTestHandle "awk"
 commandTestHandle "sort"
 commandTestHandle "uniq"
@@ -356,4 +391,4 @@ commandTestHandle "dialog"
 # echo ${boxReturn}
 
 #set -x 
-#boxList "Title" "Description" "instkey=Installs SSH Keys remotely|setaptsources=Resets Ubuntu APT sources lists|showlogs=Shows all important logs|sysclone=a"
+boxList "Title" "Description" "instkey=Installs SSH Keys remotely|setaptsources=Resets Ubuntu APT sources lists|showlogs=Shows all important logs|sysclone=a"

@@ -21,6 +21,7 @@ source $(echo "$(dirname ${0})/../functions/commandTestHandle.sh") # make::inclu
 source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/getTempFile.sh") # make::include
 
+source $(echo "$(dirname ${0})/../functions/kvzProgInstall.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/boxList.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/boxYesNo.sh") # make::include
 
@@ -29,6 +30,7 @@ source $(echo "$(dirname ${0})/../functions/boxYesNo.sh") # make::include
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
 commandTestHandle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
 commandTestHandle "egrep" "pcregrep"
+commandTestHandle "pwd"
 commandTestHandle "awk"
 commandTestHandle "sort"
 commandTestHandle "uniq"
@@ -47,4 +49,4 @@ commandTestHandle "dialog"
 # echo ${boxReturn}
 
 #set -x 
-#boxList "Title" "Description" "instkey=Installs SSH Keys remotely|setaptsources=Resets Ubuntu APT sources lists|showlogs=Shows all important logs|sysclone=a"
+boxList "Title" "Description" "instkey=Installs SSH Keys remotely|setaptsources=Resets Ubuntu APT sources lists|showlogs=Shows all important logs|sysclone=a"

@@ -77,7 +77,7 @@ function toUpper(){
 # * Also saved command location in CMD_XXX
 # *
 # * @param string $1 Command name
-# * @param string $1 Package name
+# * @param string $2 Package name
 # */
 function commandInstall() {
     # Init
