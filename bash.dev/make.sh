@@ -21,6 +21,10 @@ source $(echo "$(dirname ${0})/functions/commandInstall.sh")
 source $(echo "$(dirname ${0})/functions/toUpper.sh")
 source $(echo "$(dirname ${0})/functions/getWorkingDir.sh")
 
+# Essential config
+###############################################################
+OUTPUT_DEBUG=0
+
 # Check for program requirements
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
@@ -33,10 +37,14 @@ commandTestHandle "sort"
 commandTestHandle "uniq"
 commandTestHandle "realpath"
 
-OUTPUT_DEBUG=0
+# Config
+###############################################################
 DIR_ROOT=$(getWorkingDir "/..");
 DIR_SORC="${DIR_ROOT}/bash.dev"
 DIR_DEST="${DIR_ROOT}/bash"
+
+# Run
+###############################################################
 
 # Loop through BASH 'programs'
 for filePathSource in $(find ${DIR_SORC}/*/ -type f -name '*.sh'); do

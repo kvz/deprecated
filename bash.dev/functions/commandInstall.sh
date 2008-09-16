@@ -14,7 +14,7 @@ function commandInstall() {
     echo "Trying to install ${package}"
     
     if [ -n "${CMD_APTITUDE}" ] && [ -x "${CMD_APTITUDE}" ]; then
-        ${CMD_APTITUDE} -y install ${package}
+        apt-get -qy install ${package}
     else
         echo "No supported package management tool found"
     fi

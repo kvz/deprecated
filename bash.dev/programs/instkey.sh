@@ -24,6 +24,10 @@ source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/isPortOpen.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/sshKeyInstall.sh") # make::include
 
+# Essential config
+###############################################################
+OUTPUT_DEBUG=1
+
 # Check for program requirements
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"

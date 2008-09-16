@@ -50,6 +50,9 @@ commandTestHandle "uname"
 #   Wscript.Echo "Serial Number: " & objSMBIOS.SerialNumber
 # Next
 
+# Run
+###############################################################
+
 # If available, dmidecode delivers valuable data like Service Tags
 if [ -x /usr/sbin/dmidecode ]; then
     /usr/sbin/dmidecode \

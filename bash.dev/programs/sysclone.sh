@@ -70,7 +70,11 @@ function exeDest {
     fi
 }
 
-
+# Essential config
+###############################################################
+OUTPUT_DEBUG=1
+DIR_ROOT=$(getWorkingDir)
+FILE_CONFIG=${DIR_ROOT}/sysclone.conf
 
 # Check for program requirements
 ###############################################################
@@ -87,11 +91,8 @@ commandTestHandle "netcat"
 commandTestHandle "ssh"
 commandTestHandle "tail"
 
-# Essential Config
+# Config
 ###############################################################
-OUTDEST_DEBUG=1
-DIR_ROOT=$(getWorkingDir)
-FILE_CONFIG=${DIR_ROOT}/sysclone.conf
 
 CMD_MYSQL="/usr/bin/mysql"
 CMD_MYSQLDUMP="/usr/bin/mysqldump"

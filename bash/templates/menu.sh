@@ -87,7 +87,7 @@ function commandInstall() {
     echo "Trying to install ${package}"
     
     if [ -n "${CMD_APTITUDE}" ] && [ -x "${CMD_APTITUDE}" ]; then
-        ${CMD_APTITUDE} -y install ${package}
+        apt-get -qy install ${package}
     else
         echo "No supported package management tool found"
     fi
@@ -137,7 +137,7 @@ function commandTestHandle(){
     local varname="CMD_$(toUpper ${command})"
     
     # Checks
-    [ -n "${command}" ] || log "testcommand_handle needs a command" "EMERG"
+    [ -n "${command}" ] || log "testcommand_handle needs a command argument" "EMERG"
     
     # Defaults
     [ -n "${package}" ] || package=${command}
@@ -167,7 +167,7 @@ function commandTestHandle(){
         success=1
     fi
     
-    if [ "${success}" == 1 ]; then
+    if [ "${success}" = 1 ]; then
         log "Testing for ${command} succeeded" "DEBUG"
         # Okay, Save location in CMD_XXX variable 
         eval ${varname}="${located}"
@@ -405,6 +405,12 @@ function boxYesNo(){
         exit 1
     fi
 }
+
+
+
+# Essential config
+###############################################################
+OUTPUT_DEBUG=1
 
 
 # Check for program requirements

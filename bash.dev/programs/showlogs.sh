@@ -18,9 +18,9 @@ source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandTestHandle.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 
-# Config
+# Essential config
 ###############################################################
-OUTPUT_DEBUG=0
+OUTPUT_DEBUG=1
 
 # Check for program requirements
 ###############################################################

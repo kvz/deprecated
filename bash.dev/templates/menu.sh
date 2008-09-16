@@ -26,6 +26,12 @@ source $(echo "$(dirname ${0})/../functions/kvzProgExecute.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/boxList.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/boxYesNo.sh") # make::include
 
+
+# Essential config
+###############################################################
+OUTPUT_DEBUG=1
+
+
 # Check for program requirements
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
