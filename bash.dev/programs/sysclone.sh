@@ -93,7 +93,6 @@ commandTestHandle "tail"
 
 # Config
 ###############################################################
-
 CMD_MYSQL="/usr/bin/mysql"
 CMD_MYSQLDUMP="/usr/bin/mysqldump"
 
