@@ -412,6 +412,7 @@ commandTestHandle "realpath"
 commandTestHandle "sed"
 commandTestHandle "tee"
 
+commandTestHandle "wget" "pcregrep"
 commandTestHandle "tempfile"
 commandTestHandle "dialog"
 
