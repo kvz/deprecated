@@ -51,7 +51,7 @@ function boxList(){
     done
     
     # Open dialog
-    eval ${CMD_DIALOG} --clear --title "${TITLE}" --menu "${DESCR}" 16 51 6 ${ITEMSNEW} 2> ${answerFile}
+    eval ${CMD_DIALOG} --clear --title \"${TITLE}\" --menu \"${DESCR}\" 16 51 6 ${ITEMSNEW} 2> ${answerFile}
     retVal=$?
     
     # OK?
@@ -66,13 +66,13 @@ function boxList(){
         1)
             #clear
             echo "Cancel ${retVal} pressed. Result:" >&2
-            cat ${answerFile} >&2
+            [ -f "${answerFile}" ] && cat ${answerFile} >&2
             exit 1
         ;;
         255)
             #clear
             echo "ESC ${retVal} pressed. Result:" >&2
-            cat ${answerFile} >&2
+            [ -f "${answerFile}" ] && cat ${answerFile} >&2 
             exit 1
         ;;
     esac

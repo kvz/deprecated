@@ -48,6 +48,3 @@ commandTestHandle "dialog"
 # 
 # boxYesNo "Title" "Do you want to say no?" "0"
 # echo ${boxReturn}
-
-#set -x 
-boxList "Title" "Description" "instkey=Installs SSH Keys remotely|setaptsources=Resets Ubuntu APT sources lists|showlogs=Shows all important logs|sysclone=a"

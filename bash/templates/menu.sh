@@ -225,7 +225,6 @@ function kvzProgInstall() {
         echo "pwd command not found or not initialized" >&2
         exit 1
     fi
-
 	
     # Init
     local PROGRAM=${1}
@@ -334,7 +333,7 @@ function boxList(){
     done
     
     # Open dialog
-    eval ${CMD_DIALOG} --clear --title "${TITLE}" --menu "${DESCR}" 16 51 6 ${ITEMSNEW} 2> ${answerFile}
+    eval ${CMD_DIALOG} --clear --title \"${TITLE}\" --menu \"${DESCR}\" 16 51 6 ${ITEMSNEW} 2> ${answerFile}
     retVal=$?
     
     # OK?
@@ -349,13 +348,13 @@ function boxList(){
         1)
             #clear
             echo "Cancel ${retVal} pressed. Result:" >&2
-            cat ${answerFile} >&2
+            [ -f "${answerFile}" ] && cat ${answerFile} >&2
             exit 1
         ;;
         255)
             #clear
             echo "ESC ${retVal} pressed. Result:" >&2
-            cat ${answerFile} >&2
+            [ -f "${answerFile}" ] && cat ${answerFile} >&2 
             exit 1
         ;;
     esac
@@ -394,7 +393,7 @@ function boxYesNo(){
         boxReturn=1
     else
         #clear
-        echo "ESC ${retVal} pressed. Result:" >&2
+        echo "ESC ${retVal} pressed or invalid response" >&2
         exit 1
     fi
 }
@@ -422,6 +421,3 @@ commandTestHandle "dialog"
 # 
 # boxYesNo "Title" "Do you want to say no?" "0"
 # echo ${boxReturn}
-
-#set -x 
-boxList "Title" "Description" "instkey=Installs SSH Keys remotely|setaptsources=Resets Ubuntu APT sources lists|showlogs=Shows all important logs|sysclone=a"

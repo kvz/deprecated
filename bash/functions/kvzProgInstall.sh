@@ -15,7 +15,6 @@ function kvzProgInstall() {
         echo "pwd command not found or not initialized" >&2
         exit 1
     fi
-
 	
     # Init
     local PROGRAM=${1}

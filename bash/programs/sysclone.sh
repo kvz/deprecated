@@ -407,7 +407,7 @@ FILE_CONFIG=${DIR_ROOT}/sysclone.conf
 CMD_MYSQL="/usr/bin/mysql"
 CMD_MYSQLDUMP="/usr/bin/mysqldump"
 
-[ -f  ${FILE_CONFIG} ] || log "No config file found. Maybe: cp -af ${FILE_CONFIG}.default ${FILE_CONFIG} && nano ${FILE_CONFIG}" "EMERG"
+[ -f ${FILE_CONFIG} ] || log "No config file found. Maybe: cp -af ${FILE_CONFIG}.default ${FILE_CONFIG} && nano ${FILE_CONFIG}" "EMERG"
 source ${FILE_CONFIG}
 
 # Setup run parameters

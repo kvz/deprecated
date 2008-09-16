@@ -30,7 +30,7 @@ function boxYesNo(){
         boxReturn=1
     else
         #clear
-        echo "ESC ${retVal} pressed. Result:" >&2
+        echo "ESC ${retVal} pressed or invalid response" >&2
         exit 1
     fi
 }
