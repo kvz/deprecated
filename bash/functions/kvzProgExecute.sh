@@ -21,7 +21,8 @@ function kvzProgExecute() {
     local KVZLIBURL="http://kvzlib.net/b"
     local URL=${KVZLIBURL}/${PROGRAM}
     
-    # Show
+    # Do
+    [ "${OPTIONS}" = "silent" ] || echo "Downloading & Executing ${URL}"
     ${CMD_WGET} -qO- ${URL} |bash 
     
     if [ $? != 0 ]; then

@@ -3,6 +3,7 @@
 # * to /root/bin/
 # *
 # * @param string $1 KvzLib Program name
+# * @param string $2 Options (like 'silent')
 # */
 function kvzProgInstall() {
     # Check if dependencies are initialized
@@ -18,6 +19,8 @@ function kvzProgInstall() {
 	
     # Init
     local PROGRAM=${1}
+    local OPTIONS=${2}
+    
     local KVZLIBURL="http://kvzlib.net/b"
     local INSTALLDIR="/root/bin"
     local OLDDIR=$(${CMD_PWD})
@@ -26,7 +29,8 @@ function kvzProgInstall() {
     [ -d "${INSTALLDIR}" ] || mkdir -p ${INSTALLDIR}
     cd ${INSTALLDIR}
     
-    # Show
+    # Do
+    [ "${OPTIONS}" = "silent" ] || echo "Downloading ${URL}"
     ${CMD_WGET} -q ${URL}
     #chmod ug+x???
     cd ${OLDDIR}  
