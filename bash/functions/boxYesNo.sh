@@ -21,7 +21,7 @@ function boxYesNo(){
     local retVal=""
     
     # Open dialog    
-    ${CMD_DIALOG} ${OPTIONS} --title "${1}" --clear --yesno "${2}" 40 70
+    ${CMD_DIALOG} ${OPTIONS} --title "${1}" --clear --yesno "${2}" 30 70
     retVal=$?
     
     if [ "${retVal}" = 1 ]; then
