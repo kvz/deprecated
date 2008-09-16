@@ -34,13 +34,17 @@ commandTestHandle "sort"
 commandTestHandle "uniq"
 commandTestHandle "realpath"
 commandTestHandle "sed"
+commandTestHandle "tee"
 
 commandTestHandle "tempfile"
 commandTestHandle "dialog"
 
 # Usage:
-# boxList "Title" "Description" "option1" "One, a good choice" "option2" "Two, maybe even better"
+# boxList "Title" "Description" "option1=One, a good choice|option2=Two, maybe even better"
 # echo ${boxReturn}
 # 
 # boxYesNo "Title" "Do you want to say no?" "0"
 # echo ${boxReturn}
+
+#set -x 
+#boxList "Title" "Description" "instkey=Installs SSH Keys remotely|setaptsources=Resets Ubuntu APT sources lists|showlogs=Shows all important logs|sysclone=a"

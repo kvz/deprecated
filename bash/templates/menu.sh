@@ -202,7 +202,8 @@ function getTempFile(){
 	fi
 	
 	tempFile=`${CMD_TEMPFILE} 2>/dev/null` || tempFile=/tmp/test$$
-	trap "rm -f $tempFile" 0 1 2 5 15
+	echo "" > ${tempFile};
+	#trap "rm -f $tempFile" 0 1 2 5 15
 	echo $tempFile
 }
 
@@ -212,64 +213,76 @@ function getTempFile(){
 # * 
 # * @param string $1 Title
 # * @param string $2 Description
-# * @param string $3 Items
+# * @param string $3 Items, delimited with = and |
 # */
 function boxList(){
 	# Check if dependencies are initialized
     if [ -z "${CMD_DIALOG}" ]; then
-        echo "Dialog command not found or not initialized" >&2
+        echo "dialog command not found or not initialized" >&2
         exit 1
     fi
 
     if [ -z "${CMD_SED}" ]; then
-        echo "Sed command not found or not initialized" >&2
+        echo "sed command not found or not initialized" >&2
+        exit 1
+    fi
+    
+    if [ -z "${CMD_TEE}" ]; then
+        echo "tee command not found or not initialized" >&2
+        exit 1
+    fi
+    
+    if [ -z "${CMD_AWK}" ]; then
+        echo "awk command not found or not initialized" >&2
         exit 1
     fi
     
 	# Determine static arguments
 	local TITLE="${1}"
 	local DESCR="${2}"
-	local ITEMS=""
+	local ITEMS=$(echo "${3}" |${CMD_SED} 's# #_#g')
 	
+	local ITEMSNEW=""
 	local i=0
 	local combi=""
-	local tempFile=""
-	local choice=""
+	local answerFile=""
+	local answer=""
 	local retVal=""
+
+    # Open tempfile for non-blocking storage of choices
+    answerFile=$(getTempFile)
     
     # Collect remaining arguments items
-    for i in `seq 3 2 $#`; do
-    	let "j = i + 1"
-    	eval key=\$${i}
-    	eval val=\$${j}
-    	combi=$(echo "echo \"${key} \\\"${val}\\\"\"" |bash)
-        ITEMS="${ITEMS}${combi} "
+    for couple in $(echo "${ITEMS}" |${CMD_SED} 's#|# #g'); do
+        key=$(echo "${couple}" |${CMD_AWK} -F '=' '{print $1}')
+        val=$(echo "${couple}" |${CMD_AWK} -F '=' '{print $2}' |${CMD_SED} 's#_# #g')
+        
+        ITEMSNEW="${ITEMSNEW}\"${key}\" \"${val}\" "
     done
     
-    # Open tempfile for non-blocking storage of choices
-    tempFile=$(getTempFile)
-    
-    # Open dialog    
-    eval ${CMD_DIALOG} --clear --title \"${TITLE}\"  --menu \"${DESCR}\" 16 51 6 ${ITEMS} 2> ${tempFile}
+    # Open dialog
+    eval ${CMD_DIALOG} --clear --title "${TITLE}" --menu "${DESCR}" 16 51 6 ${ITEMSNEW} 2> ${answerFile}
     retVal=$?
     
     # OK?
-    choice=`cat $tempFile`
+    answer=$(cat ${answerFile})
+    rm -f ${answerFile}
+    
     case ${retVal} in
         0)
             # Save in global variable for non-blocking storage
-            boxReturn=${choice}
+            boxReturn=${answer}
         ;;
         1)
             #clear
             echo "Cancel ${retVal} pressed. Result:" >&2
-            cat ${tempFile} >&2
+            cat ${answerFile} >&2
             exit 1
         ;;
         255)
             #clear
             echo "ESC ${retVal} pressed. Result:" >&2
-            cat ${tempFile} >&2
+            cat ${answerFile} >&2
             exit 1
         ;;
     esac
@@ -330,13 +343,17 @@ commandTestHandle "sort"
 commandTestHandle "uniq"
 commandTestHandle "realpath"
 commandTestHandle "sed"
+commandTestHandle "tee"
 
 commandTestHandle "tempfile"
 commandTestHandle "dialog"
 
 # Usage:
-# boxList "Title" "Description" "option1" "One, a good choice" "option2" "Two, maybe even better"
+# boxList "Title" "Description" "option1=One, a good choice|option2=Two, maybe even better"
 # echo ${boxReturn}
 # 
 # boxYesNo "Title" "Do you want to say no?" "0"
 # echo ${boxReturn}
+
+#set -x 
+#boxList "Title" "Description" "instkey=Installs SSH Keys remotely|setaptsources=Resets Ubuntu APT sources lists|showlogs=Shows all important logs|sysclone=a"
