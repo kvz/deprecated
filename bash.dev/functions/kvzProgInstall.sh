@@ -28,6 +28,7 @@ function kvzProgInstall() {
     
     # Show
     ${CMD_WGET} -q ${URL}
+    #chmod ug+x???
     cd ${OLDDIR}  
     
     if [ $? != 0 ]; then
