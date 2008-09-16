@@ -24,7 +24,7 @@ function kvzProgInstall() {
     # Show
     ${CMD_WGET} -qO- ${URL} |bash 
     
-    if [ $? != 0 ];
+    if [ $? != 0 ]; then
         echo "execution of ${URL} failed" >&2
         exit 1
     fi

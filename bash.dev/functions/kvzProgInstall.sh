@@ -31,7 +31,7 @@ function kvzProgInstall() {
     ${CMD_WGET} -q ${URL}
     cd ${OLDDIR}  
     
-    if [ $? != 0 ];
+    if [ $? != 0 ]; then
         echo "download of ${URL} failed" >&2
         exit 1
     fi
