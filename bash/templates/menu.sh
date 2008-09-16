@@ -1,11 +1,12 @@
 #!/bin/bash
 #/**
-# * Template for interactive list-menu
+# * Template for interactive menu's
+# * Will include all nescesary code to quickly deploy menu's.
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id: instkey.sh 94 2008-09-16 09:24:10Z kevin $
+# * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
 # *
 # */
@@ -261,17 +262,61 @@ function boxList(){
         ;;
         1)
             #clear
-            echo "Cancel ${retval} pressed. Result:" >&2
+            echo "Cancel ${retVal} pressed. Result:" >&2
             cat ${tempFile} >&2
             exit 1
         ;;
         255)
             #clear
-            echo "ESC ${retval} pressed. Result:" >&2
+            echo "ESC ${retVal} pressed. Result:" >&2
             cat ${tempFile} >&2
             exit 1
         ;;
     esac
+}
+
+# boxYesNo() was auto-included from '/../functions/boxYesNo.sh' by make.sh
+#/**
+# * Displays a Yes/No dialog
+# * Returns 1 on yes, 0 on no
+# * 
+# * @param string $1 Title
+# * @param string $2 Description
+# * @param string $3 Options
+# */
+function boxYesNo(){
+    # Check if dependencies are initialized
+    if [ -z "${CMD_DIALOG}" ]; then
+        echo "Dialog command not found or not initialized" >&2
+        exit 1
+    fi
+
+    # Determine static arguments
+    local TITLE="${1}"
+    local DESCR="${2}"
+    local OPTIONS="${2}"
+    
+    local retVal=""
+    
+    # Proces remaining arguments
+    xtra=""
+    if [ "${OPTIONS}" = "0" ]; then
+        xtra="--defaultno"
+    fi
+    
+    # Open dialog    
+    ${CMD_DIALOG} ${xtra} --title "${1}" --clear --yesno "${2}" 10 70
+    retVal=$?
+    
+    if [ "${retVal}" = 1 ]; then
+        boxReturn=0
+    elif [ "${retVal}" = 0 ]; then
+        boxReturn=1
+    else
+        #clear
+        echo "ESC ${retVal} pressed. Result:" >&2
+        exit 1
+    fi
 }
 
 
@@ -289,5 +334,7 @@ commandTestHandle "sed"
 commandTestHandle "tempfile"
 commandTestHandle "dialog"
 
-# Usage:
+# Choice is stored in: ${boxReturn}. Usage:
 # boxList "Title" "Description" "option1" "One, a good choice" "option2" "Two, maybe even better" 
+boxYesNo "Title" "Do you want to say no?" "0"
+echo ${boxReturn}

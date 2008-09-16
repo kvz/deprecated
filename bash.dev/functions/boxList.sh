@@ -53,13 +53,13 @@ function boxList(){
         ;;
         1)
             #clear
-            echo "Cancel ${retval} pressed. Result:" >&2
+            echo "Cancel ${retVal} pressed. Result:" >&2
             cat ${tempFile} >&2
             exit 1
         ;;
         255)
             #clear
-            echo "ESC ${retval} pressed. Result:" >&2
+            echo "ESC ${retVal} pressed. Result:" >&2
             cat ${tempFile} >&2
             exit 1
         ;;

@@ -1,11 +1,12 @@
 #!/bin/bash
 #/**
-# * Template for interactive list-menu
+# * Template for interactive menu's
+# * Will include all nescesary code to quickly deploy menu's.
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id: instkey.sh 94 2008-09-16 09:24:10Z kevin $
+# * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
 # *
 # */
@@ -21,6 +22,7 @@ source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/getTempFile.sh") # make::include
 
 source $(echo "$(dirname ${0})/../functions/boxList.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/boxYesNo.sh") # make::include
 
 # Check for program requirements
 ###############################################################
@@ -36,5 +38,7 @@ commandTestHandle "sed"
 commandTestHandle "tempfile"
 commandTestHandle "dialog"
 
-# Usage:
+# Choice is stored in: ${boxReturn}. Usage:
 # boxList "Title" "Description" "option1" "One, a good choice" "option2" "Two, maybe even better" 
+boxYesNo "Title" "Do you want to say no?" "0"
+echo ${boxReturn}
