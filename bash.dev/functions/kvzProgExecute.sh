@@ -4,7 +4,7 @@
 # *
 # * @param string $1 KvzLib Program name
 # */
-function kvzProgInstall() {
+function kvzProgExecute() {
     # Check if dependencies are initialized
     if [ -z "${CMD_WGET}" ]; then
         echo "wget command not found or not initialized" >&2
