@@ -38,7 +38,9 @@ commandTestHandle "sed"
 commandTestHandle "tempfile"
 commandTestHandle "dialog"
 
-# Choice is stored in: ${boxReturn}. Usage:
-# boxList "Title" "Description" "option1" "One, a good choice" "option2" "Two, maybe even better" 
-boxYesNo "Title" "Do you want to say no?" "0"
-echo ${boxReturn}
+# Usage:
+# boxList "Title" "Description" "option1" "One, a good choice" "option2" "Two, maybe even better"
+# echo ${boxReturn}
+# 
+# boxYesNo "Title" "Do you want to say no?" "0"
+# echo ${boxReturn}
