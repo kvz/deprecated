@@ -25,6 +25,7 @@ class DocBlockReader {
     public function getDocBlocks($str, $options=false) {
         if (!$options) $options = array();
         if (!isset($options["bash_support"])) $options["bash_support"] = false;
+        if (!isset($options["one"])) $options["one"] = false;
         
         if ($options["bash_support"]) {
             $pat = '/[\#]?\/\*\*(.+)[\#]? \*\//isUm';
@@ -58,12 +59,12 @@ class DocBlockReader {
      * @return array
      */
     public function parseDocBlock($str) {
-        $keyChars   = array("@");
-        $lines      = explode("\n", $str);
-        $head       = "";
-        $text       = "";
-        $headRecing = true;
-        $keys       = array();
+        $keyChars      = array("@");
+        $lines         = explode("\n", $str);
+        $head          = "";
+        $text          = "";
+        $headRecing    = true;
+        $keys          = array();
         
         foreach ($lines as $i=>$line) {
             $tline = trim($line);
@@ -71,7 +72,7 @@ class DocBlockReader {
             
             if (in_array($firstChar, $keyChars)) {
                 $parts = preg_split('/[\s]+/', $tline,  -1, PREG_SPLIT_NO_EMPTY);
-                $keys[array_shift($parts)] = $parts;
+                $keys[array_shift($parts)][] = $parts;
             } else {
                 if ($headRecing) {
                     $head .= $tline."\n";
@@ -85,10 +86,13 @@ class DocBlockReader {
             }
         }
         
-        $parts = explode("\n", $head);
-        $title = reset($parts);
+        $parts    = explode("\n", $head);
+        $title    = trim(array_shift($parts));
+        $subtitle = trim(implode("\n", $parts));
+        $head     = trim($head);
+        $text     = trim($text);
         
-        return compact("title", "head", "text", "keys");
+        return compact("title", "subtitle", "head", "text", "keys");
     }
 }
 ?>
