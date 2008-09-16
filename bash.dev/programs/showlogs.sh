@@ -1,6 +1,6 @@
 #!/bin/bash
 #/**
-# * Shows all important logs
+# * Shows all active logs
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
