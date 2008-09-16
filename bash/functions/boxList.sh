@@ -51,7 +51,7 @@ function boxList(){
     done
     
     # Open dialog
-    eval ${CMD_DIALOG} --clear --title \"${TITLE}\" --menu \"${DESCR}\" 16 51 6 ${ITEMSNEW} 2> ${answerFile}
+    eval ${CMD_DIALOG} --clear --title \"${TITLE}\" --menu \"${DESCR}\" 16 51 20 ${ITEMSNEW} 2> ${answerFile}
     retVal=$?
     
     # OK?
