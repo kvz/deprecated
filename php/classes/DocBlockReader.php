@@ -24,9 +24,13 @@ class DocBlockReader {
      */
     public function getDocBlocks($str, $options=false) {
         if (!$options) $options = array();
-        if (!isset($options[""]))
+        if (!isset($options["bash_support"])) $options["bash_support"] = false;
         
-        $pat = '/[\#]?\/\*\*(.+)[\#]? \*\//isUm';
+        if ($options["bash_support"]) {
+            $pat = '/[\#]?\/\*\*(.+)[\#]? \*\//isUm';
+        } else {
+            $pat = '/\/\*\*(.+)[\#]? \*\//isUm';
+        }
         
         $blocks = array();
         preg_match_all($pat, $str, $m);
