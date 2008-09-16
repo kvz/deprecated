@@ -265,7 +265,7 @@ function getWorkingDir {
 
 # isPortOpen() was auto-included from '/../functions/isPortOpen.sh' by make.sh
 #/**
-# * Connects to host & post, validating connectivity and returns 0 or 1 based on success 
+# * Connects to host & port, validating connectivity and returns 0 or 1 based on success 
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
