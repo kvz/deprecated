@@ -34,14 +34,17 @@ class DocBlockReader {
         }
         
         $blocks = array();
-        preg_match_all($pat, $str, $m);
+        if (!preg_match_all($pat, $str, $m)) {
+            throw new DocBlockReader_Exception("Unable to parse $str");
+        }
         
         foreach ($m[1] as $blockNr=>$rawBlock) {
+            echo $rawBlock;
             $rawLines = explode("\n", trim($rawBlock));
+
             $txtLines = array();
             foreach ($rawLines as $rawLine) {
-                $txtLine = trim(preg_replace('/^[\s|#|\*]*/', '', $rawLine));
-                $txtLines[] = $txtLine; 
+                $txtLines[] = trim(preg_replace('/^[\s|#|\*]*/', '', $rawLine)); 
             }
             
             $block = $this->parseDocBlock(implode("\n", $txtLines)); 
@@ -98,5 +101,8 @@ class DocBlockReader {
         
         return compact("title", "subtitle", "head", "text", "keys");
     }
+}
+class DocBlockReader_Exception extends Exception {
+    
 }
 ?>

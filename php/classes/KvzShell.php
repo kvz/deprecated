@@ -1,5 +1,5 @@
 <?php
-class KvzShell_Excpetion extends Exception {
+class KvzShell_Exception extends Exception {
     
 }
 class KvzShell {
@@ -91,7 +91,7 @@ class KvzShell {
                 }
                 break;
             default:
-                throw new KvzShell_Excpetion("Unsupported mode: $mode");
+                throw new KvzShell_Exception("Unsupported mode: $mode");
                 return false;
                 break;
         }
