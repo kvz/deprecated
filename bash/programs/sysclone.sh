@@ -1,6 +1,6 @@
 #!/bin/bash
 #/**
-# * Will destroy your servers and ruin your career.
+# * Will destroy your servers and ruin your career
 # * Or it will try to copy all important packages, settings, and files from
 # * one ubuntu server to another. Extremely dangerous!!! Only use in testing
 # * environments!
