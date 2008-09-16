@@ -29,7 +29,8 @@ commandTestHandle "egrep" "pcregrep"
 commandTestHandle "awk"
 commandTestHandle "sort"
 commandTestHandle "uniq"
-commandTestHandle "awk"
+commandTestHandle "realpath"
+
 commandTestHandle "lsof"
 
 # Run

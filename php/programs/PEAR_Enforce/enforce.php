@@ -1,6 +1,8 @@
 #!/usr/bin/php -q
 <?php
 error_reporting(E_ALL);
+set_time_limit(0);
+ini_set("memory_limit", "32M");
 
 define('DIR_KVZLIB', realpath(dirname(__FILE__)."/../../../"));
 ini_set("include_path", DIR_KVZLIB.":/usr/share/php:/usr/share/pear");
