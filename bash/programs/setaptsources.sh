@@ -1,6 +1,7 @@
 #!/bin/bash
 #/**
-# * Resets Ubuntu APT sources.list
+# * Resets Ubuntu APT sources lists
+# *
 # * And enables all the standard types: main restricted universe multiverse
 # * Makes a backup to /etc/apt/sources.list.bak
 # * 
