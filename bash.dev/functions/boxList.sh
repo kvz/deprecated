@@ -6,56 +6,62 @@
 # * @param string $3 Items
 # */
 function boxList(){
+	# Check if dependencies are initialized
     if [ -z "${CMD_DIALOG}" ]; then
-        echo "Dialog command not found or not initialized"
+        echo "Dialog command not found or not initialized" >&2
         exit 1
     fi
 
     if [ -z "${CMD_SED}" ]; then
-        echo "Sed command not found or not initialized"
+        echo "Sed command not found or not initialized" >&2
         exit 1
     fi
-
+    
 	# Determine static arguments
-	TITLE="${1}"
-	DESCR="${2}"
-	ITEMS=""
+	local TITLE="${1}"
+	local DESCR="${2}"
+	local ITEMS=""
+	
+	local i=0
+	local combi=""
+	local tempFile=""
+	local choice=""
+	local retVal=""
     
     # Collect remaining arguments items
     for i in `seq 3 2 $#`; do
     	let "j = i + 1"
-    	
     	eval key=\$${i}
     	eval val=\$${j}
-    	
     	combi=$(echo "echo \"${key} \\\"${val}\\\"\"" |bash)
-    	
         ITEMS="${ITEMS}${combi} "
     done
     
+    # Open tempfile for non-blocking storage of choices
     tempFile=$(getTempFile)
-    echo ${tempFile}
     
-    eval ${CMD_DIALOG} --clear --title \"${TITLE}\"  --menu \"${DESCR}\" 16 51 6 ${ITEMS}
+    # Open dialog    
+    eval ${CMD_DIALOG} --clear --title \"${TITLE}\"  --menu \"${DESCR}\" 16 51 6 ${ITEMS} 2> ${tempFile}
+    retVal=$?
     
-    retval=$?
-    
+    # OK?
     choice=`cat $tempFile`
-    case ${retval} in
+    case ${retVal} in
         0)
-            dia_ret=${choice}
+            # Save in global variable for non-blocking storage
+            boxReturn=${choice}
         ;;
         1)
             #clear
-            echo "Cancel ${retval} pressed."
-            cat ${tempFile}
-            exit 0
+            echo "Cancel ${retval} pressed. Result:" >&2
+            cat ${tempFile} >&2
+            exit 1
         ;;
         255)
             #clear
-            echo "ESC ${retval} pressed."
-            cat ${tempFile}
-            exit 0
+            echo "ESC ${retval} pressed. Result:" >&2
+            cat ${tempFile} >&2
+            exit 1
         ;;
     esac
 }

@@ -1,8 +1,6 @@
 #!/bin/bash
 #/**
-# * Interactive menu for installing KvzLib bash programs
-# *
-# * Just run: wget -qO- kvzlib.net/menu |bash
+# * Template for interactive list-menu
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -38,3 +36,5 @@ commandTestHandle "sed"
 commandTestHandle "tempfile"
 commandTestHandle "dialog"
 
+# Usage:
+# boxList "Title" "Description" "option1" "One, a good choice" "option2" "Two, maybe even better" 
