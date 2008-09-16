@@ -343,7 +343,7 @@ function boxList(){
     done
     
     # Open dialog
-    eval ${CMD_DIALOG} --clear --title \"${TITLE}\" --menu \"${DESCR}\" 30 70 40 ${ITEMSNEW} 2> ${answerFile}
+    eval ${CMD_DIALOG} --clear --title \"${TITLE}\" --menu \"${DESCR}\" 40 70 40 ${ITEMSNEW} 2> ${answerFile}
     retVal=$?
     
     # OK?
@@ -394,7 +394,7 @@ function boxYesNo(){
     local retVal=""
     
     # Open dialog    
-    ${CMD_DIALOG} ${OPTIONS} --title "${1}" --clear --yesno "${2}" 10 70
+    ${CMD_DIALOG} ${OPTIONS} --title "${1}" --clear --yesno "${2}" 40 70
     retVal=$?
     
     if [ "${retVal}" = 1 ]; then
