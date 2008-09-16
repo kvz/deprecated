@@ -16,10 +16,13 @@ echo "str: ".$str."\n";
 
 die();
 */
-error_reporting(E_ALL);
-ini_set("include_path", "../../..:/usr/share/php:/usr/share/pear");
 
-require_once "../DocBlockWriter.php";
+define('DIR_KVZLIB', realpath(dirname(__FILE__)."/../../../"));
+
+error_reporting(E_ALL);
+ini_set("include_path", DIR_KVZLIB.":/usr/share/php:/usr/share/pear");
+
+require_once "php/small_classes.php";
 require_once "Enforce.php";
 
 $file   = (!isset($argv[1])) ? "" : $argv[1];
