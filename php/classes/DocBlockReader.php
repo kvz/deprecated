@@ -39,7 +39,6 @@ class DocBlockReader {
         }
         
         foreach ($m[1] as $blockNr=>$rawBlock) {
-            echo $rawBlock;
             $rawLines = explode("\n", trim($rawBlock));
 
             $txtLines = array();
