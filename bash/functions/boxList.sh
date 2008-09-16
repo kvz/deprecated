@@ -65,9 +65,7 @@ function boxList(){
         ;;
         1)
             #clear
-            echo "Cancel ${retVal} pressed. Result:" >&2
-            [ -f "${answerFile}" ] && cat ${answerFile} >&2
-            exit 1
+            boxReturn="cancel"
         ;;
         255)
             #clear
