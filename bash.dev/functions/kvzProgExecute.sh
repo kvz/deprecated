@@ -1,6 +1,6 @@
-#!/bin/bash
-# * Tries to install a bash program from remote KvzLib repository
-# * to /root/bin/
+#/**
+# * Tries to execute a bash program from remote KvzLib repository
+# * directly
 # *
 # * @param string $1 KvzLib Program name
 # */
@@ -16,23 +16,16 @@ function kvzProgInstall() {
         exit 1
     fi
 
-	
     # Init
     local PROGRAM=${1}
     local KVZLIBURL="http://kvzlib.net/b"
-    local INSTALLDIR="/root/bin"
-    local OLDDIR=$(${CMD_PWD})
     local URL=${KVZLIBURL}/${PROGRAM}
     
-    [ -d "${INSTALLDIR}" ] || mkdir -p ${INSTALLDIR}
-    cd ${INSTALLDIR}
-    
     # Show
-    ${CMD_WGET} -q ${URL}
-    cd ${OLDDIR}  
+    ${CMD_WGET} -qO- ${URL} |bash 
     
     if [ $? != 0 ];
-        echo "download of ${URL} failed" >&2
+        echo "execution of ${URL} failed" >&2
         exit 1
     fi
 }

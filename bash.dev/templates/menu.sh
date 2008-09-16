@@ -22,6 +22,7 @@ source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/getTempFile.sh") # make::include
 
 source $(echo "$(dirname ${0})/../functions/kvzProgInstall.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/kvzProgExecute.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/boxList.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/boxYesNo.sh") # make::include
 

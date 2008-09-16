@@ -1,5 +1,5 @@
 #/**
-# * Tries to install a bash program from KvzLib
+# * Tries to install a bash program from remote KvzLib repository
 # * to /root/bin/
 # *
 # * @param string $1 KvzLib Program name

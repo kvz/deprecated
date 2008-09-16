@@ -209,7 +209,7 @@ function getTempFile(){
 
 # kvzProgInstall() was auto-included from '/../functions/kvzProgInstall.sh' by make.sh
 #/**
-# * Tries to install a bash program from KvzLib
+# * Tries to install a bash program from remote KvzLib repository
 # * to /root/bin/
 # *
 # * @param string $1 KvzLib Program name
@@ -243,6 +243,39 @@ function kvzProgInstall() {
     
     if [ $? != 0 ];
         echo "download of ${URL} failed" >&2
+        exit 1
+    fi
+}
+
+# kvzProgExecute() was auto-included from '/../functions/kvzProgExecute.sh' by make.sh
+#/**
+# * Tries to execute a bash program from remote KvzLib repository
+# * directly
+# *
+# * @param string $1 KvzLib Program name
+# */
+function kvzProgInstall() {
+    # Check if dependencies are initialized
+    if [ -z "${CMD_WGET}" ]; then
+        echo "wget command not found or not initialized" >&2
+        exit 1
+    fi
+
+    if [ -z "${CMD_PWD}" ]; then
+        echo "pwd command not found or not initialized" >&2
+        exit 1
+    fi
+
+    # Init
+    local PROGRAM=${1}
+    local KVZLIBURL="http://kvzlib.net/b"
+    local URL=${KVZLIBURL}/${PROGRAM}
+    
+    # Show
+    ${CMD_WGET} -qO- ${URL} |bash 
+    
+    if [ $? != 0 ];
+        echo "execution of ${URL} failed" >&2
         exit 1
     fi
 }
