@@ -38,4 +38,3 @@ commandTestHandle "sed"
 commandTestHandle "tempfile"
 commandTestHandle "dialog"
 
-boxList "Title" "Description" 1 "kevin van z" 2 "martijn"
