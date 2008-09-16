@@ -46,6 +46,10 @@ class DocBlockReader {
             
             $block = $this->parseDocBlock(implode("\n", $txtLines)); 
             $blocks[] = $block; 
+            
+            if ($options["one"]) {
+                break;
+            }
         }
         
         return $blocks;
