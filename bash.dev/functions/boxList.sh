@@ -29,7 +29,6 @@ function boxList(){
     	eval val=\$${j}
     	
     	combi=$(echo "echo \"${key} \\\"${val}\\\"\"" |bash)
-        eval combi="\${key} \${val}"
     	
         ITEMS="${ITEMS}${combi} "
     done

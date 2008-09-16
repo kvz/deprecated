@@ -1,4 +1,15 @@
 #!/bin/bash
+#/**
+# * Resets Ubuntu APT sources.list
+# * And enables all the standard types: main restricted universe multiverse
+# * Makes a backup to /etc/apt/sources.list.bak
+# * 
+# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+# * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+# * @version   SVN: Release: $Id$
+# * @link      http://kevin.vanzonneveld.net/
+# */
 MIRROR="nl"
 
 # Find lsb-release
@@ -44,4 +55,4 @@ deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-security main re
 # Update package list
 sudo echo "Updating package list..."
 sudo aptitude -y update > /dev/null
-sudo echo "Sources are now full and up to date!"
+sudo echo "Sources are now complete and up to date!"
