@@ -1,25 +1,8 @@
 #!/usr/bin/php -q
 <?php
-
-/*$foo = "kevin martijn erwin disable1dennis";
-$result = preg_replace('#(?!disable1|disable2)[a-z0-9]+#is', '$1X', $foo);
-
-echo "result: ".$result."\n";
-*/
-/*$exc = "kevin|jp|martijn|erwin";
-$str = "dennis> kevin> jp> martijn> erwin>";
-$pat = '(?!(kevin>)+)';
-$str = preg_replace('/'.$pat.'/', 'XXX', $str);
-
-echo "pat: ".$pat."\n";
-echo "str: ".$str."\n";
-
-die();
-*/
+error_reporting(E_ALL);
 
 define('DIR_KVZLIB', realpath(dirname(__FILE__)."/../../../"));
-
-error_reporting(E_ALL);
 ini_set("include_path", DIR_KVZLIB.":/usr/share/php:/usr/share/pear");
 
 require_once "php/small_classes.php";
