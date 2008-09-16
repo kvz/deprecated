@@ -222,8 +222,8 @@ function kvzProgInstall() {
         exit 1
     fi
 
-    if [ -z "${CMD_PWD}" ]; then
-        echo "pwd command not found or not initialized" >&2
+    if [ -z "${CMD_CHMOD}" ]; then
+        echo "chmod command not found or not initialized" >&2
         exit 1
     fi
 	
@@ -233,22 +233,26 @@ function kvzProgInstall() {
     
     local KVZLIBURL="http://kvzlib.net/b"
     local INSTALLDIR="/root/bin"
-    local OLDDIR=$(${CMD_PWD})
     local URL=${KVZLIBURL}/${PROGRAM}
+    local DEST=${INSTALLDIR}/${PROGRAM}.sh
     
-    [ -d "${INSTALLDIR}" ] || mkdir -p ${INSTALLDIR}
-    cd ${INSTALLDIR}
+    if [ ! -d "${INSTALLDIR}" ]; then
+    	mkdir -p ${INSTALLDIR}
+    	[ "${OPTIONS}" = "silent" ] || echo "Created ${INSTALLDIR}"
+    fi
     
     # Do
     [ "${OPTIONS}" = "silent" ] || echo "Downloading ${URL}"
-    ${CMD_WGET} -q ${URL}
-    #chmod ug+x???
-    cd ${OLDDIR}  
-    
+    ${CMD_WGET} -qO ${DEST}  ${URL}
     if [ $? != 0 ]; then
         echo "download of ${URL} failed" >&2
         exit 1
     fi
+    
+    [ "${OPTIONS}" = "silent" ] || echo "Saved as ${DEST}"
+    ${CMD_CHMOD} ug+x ${DEST}
+     
+    cd ${OLDDIR}  
 }
 
 # kvzProgExecute() was auto-included from '/../functions/kvzProgExecute.sh' by make.sh
@@ -418,7 +422,8 @@ commandTestHandle "realpath"
 commandTestHandle "sed"
 commandTestHandle "tee"
 
-commandTestHandle "wget" "pcregrep"
+commandTestHandle "wget"
+commandTestHandle "chmod"
 commandTestHandle "tempfile"
 commandTestHandle "dialog"
 
@@ -428,3 +433,4 @@ commandTestHandle "dialog"
 # 
 # boxYesNo "Title" "Do you want to say no?" "0"
 # echo ${boxReturn}
+

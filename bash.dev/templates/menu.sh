@@ -39,7 +39,8 @@ commandTestHandle "realpath"
 commandTestHandle "sed"
 commandTestHandle "tee"
 
-commandTestHandle "wget" "pcregrep"
+commandTestHandle "wget"
+commandTestHandle "chmod"
 commandTestHandle "tempfile"
 commandTestHandle "dialog"
 
@@ -49,3 +50,4 @@ commandTestHandle "dialog"
 # 
 # boxYesNo "Title" "Do you want to say no?" "0"
 # echo ${boxReturn}
+
