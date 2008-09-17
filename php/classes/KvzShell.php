@@ -54,6 +54,8 @@ class KvzShell {
     
     /**
      * Holds output of last command
+     * Usefull when exe has returned false on error, and you 
+     * want to analyze the output.
      *
      * @var array
      */
