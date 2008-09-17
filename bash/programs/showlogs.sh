@@ -209,4 +209,4 @@ commandTestHandle "logtail"
 
 # Run
 ###############################################################
-${CMD_LSOF} |${CMD_EGREP} '\.log$' |${CMD_AWK} '{print $NF}' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \"\" && echo \""$0":\" && ${CMD_LOGTAIL} " $0}' |bash
+${CMD_LSOF} |${CMD_EGREP} '\.log$' |${CMD_AWK} '{print $NF}' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \"\" && echo \""$0":\" && logtail " $0}' |bash
