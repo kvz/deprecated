@@ -87,7 +87,8 @@ function commandInstall() {
     echo "Trying to install ${package}"
     
     if [ -n "${CMD_APTITUDE}" ] && [ -x "${CMD_APTITUDE}" ]; then
-        apt-get -qy install ${package} > /dev/null
+    	# A new bash session is needed, otherwise apt will break the program flow
+        aptRes=$(echo "${CMD_APTITUDE} -yq install ${package}" |bash)
     else
         echo "No supported package management tool found"
     fi
@@ -103,9 +104,10 @@ function commandInstall() {
 # */
 function commandTest(){
     # Init
+    local test="/usr/bin/which"; [ -x "${test}" ] && [ -z "${CMD_WHICH}" ] && CMD_WHICH="${test}"
     local command=${1}
     local package=${2}
-    local located=$(which ${command})
+    local located=$(${CMD_WHICH} ${command})
     
     # Checks
     if [ ! -n "${located}" ]; then

@@ -8,7 +8,6 @@
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
 # * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
-# *
 # */
 
 # Includes
@@ -87,7 +86,8 @@ function commandInstall() {
     echo "Trying to install ${package}"
     
     if [ -n "${CMD_APTITUDE}" ] && [ -x "${CMD_APTITUDE}" ]; then
-        apt-get -qy install ${package} > /dev/null
+    	# A new bash session is needed, otherwise apt will break the program flow
+        aptRes=$(echo "${CMD_APTITUDE} -yq install ${package}" |bash)
     else
         echo "No supported package management tool found"
     fi
@@ -103,9 +103,10 @@ function commandInstall() {
 # */
 function commandTest(){
     # Init
+    local test="/usr/bin/which"; [ -x "${test}" ] && [ -z "${CMD_WHICH}" ] && CMD_WHICH="${test}"
     local command=${1}
     local package=${2}
-    local located=$(which ${command})
+    local located=$(${CMD_WHICH} ${command})
     
     # Checks
     if [ ! -n "${located}" ]; then
@@ -410,7 +411,7 @@ function boxYesNo(){
 
 # Essential config
 ###############################################################
-OUTPUT_DEBUG=1
+OUTPUT_DEBUG=0
 
 
 # Check for program requirements
@@ -437,4 +438,3 @@ commandTestHandle "dialog"
 # 
 # boxYesNo "Title" "Do you want to say no?" "0"
 # echo ${boxReturn}
-

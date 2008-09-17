@@ -7,9 +7,10 @@
 # */
 function commandTest(){
     # Init
+    local test="/usr/bin/which"; [ -x "${test}" ] && [ -z "${CMD_WHICH}" ] && CMD_WHICH="${test}"
     local command=${1}
     local package=${2}
-    local located=$(which ${command})
+    local located=$(${CMD_WHICH} ${command})
     
     # Checks
     if [ ! -n "${located}" ]; then
