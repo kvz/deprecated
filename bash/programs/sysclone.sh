@@ -385,7 +385,7 @@ function exeDest {
 
 # Essential config
 ###############################################################
-OUTPUT_DEBUG=1
+OUTPUT_DEBUG=0
 DIR_ROOT=$(getWorkingDir)
 FILE_CONFIG=${DIR_ROOT}/sysclone.conf
 

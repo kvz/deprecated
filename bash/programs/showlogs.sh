@@ -192,7 +192,7 @@ function getWorkingDir {
 
 # Essential config
 ###############################################################
-OUTPUT_DEBUG=1
+OUTPUT_DEBUG=0
 
 # Check for program requirements
 ###############################################################

@@ -192,6 +192,10 @@ function getWorkingDir {
     echo $(realpath "$(dirname ${0})${1}")
 }
 
+# Essential config
+###############################################################
+OUTPUT_DEBUG=0
+
 # Check for program requirements
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"

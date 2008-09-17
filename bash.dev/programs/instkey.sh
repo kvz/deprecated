@@ -26,7 +26,7 @@ source $(echo "$(dirname ${0})/../functions/sshKeyInstall.sh") # make::include
 
 # Essential config
 ###############################################################
-OUTPUT_DEBUG=1
+OUTPUT_DEBUG=0
 
 # Check for program requirements
 ###############################################################

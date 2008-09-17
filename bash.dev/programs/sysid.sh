@@ -20,6 +20,10 @@ source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandTestHandle.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 
+# Essential config
+###############################################################
+OUTPUT_DEBUG=0
+
 # Check for program requirements
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
