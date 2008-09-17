@@ -91,5 +91,5 @@ deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-security main re
 
 # Update package list
 ${CMD_SUDO} echo "Updating package list..."
-${CMD_SUDO} aptitude -y update > /dev/null
+${CMD_SUDO} ${CMD_APTITUDE} -y update > /dev/null
 ${CMD_SUDO} echo "Sources are now complete and up to date!"
