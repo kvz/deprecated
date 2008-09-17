@@ -193,14 +193,14 @@ class KvzShell {
      */
     public function exe($cmd) {
         $parts = preg_split("[\s]", $cmd, null, PREG_SPLIT_NO_EMPTY);
-        $base  = array_shift($parts);
+        $base  = basename(array_shift($parts));
         $cmdE  = $cmd;
         
         if (isset($this->_cmds[$base])) {
             $cmdE = $this->_cmds[$base] ." ". implode(" ", $parts); 
         } else {
             if (isset($this->_cmds) && is_array($this->_cmds) && count($this->_cmds)) {
-                $this->log("Command: ".$cmd." has not been initialized yet, but other commands have.", KvzShell::LOG_WARNING);
+                $this->log("Command: ".$base." has not been initialized yet, but other commands have.", KvzShell::LOG_WARNING);
             }
         }
         
@@ -215,6 +215,7 @@ class KvzShell {
      * @return mixed array on success or boolean on failure
      */
     protected function _exe($cmd) {
+        $this->output = "";
         $this->command = $cmd;
         exec($cmd, $o, $r);
         $this->output = $o;
