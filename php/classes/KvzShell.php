@@ -45,16 +45,50 @@ class KvzShell {
     const LOG_DEBUG = 7;
         
     
+    /**
+     * Holds paths of commands
+     *
+     * @var array
+     */
     protected $_cmds = array();
-    protected $_path = "";
     
+    /**
+     * Holds output of last command
+     *
+     * @var array
+     */
     public $output = array();
+    
+    
+    /**
+     * Holds last command
+     *
+     * @var unknown_type
+     */
     public $command = "";
     
     
+    
+    /**
+     * Constructor
+     *
+     * @return KvzShell
+     */
     public function KvzShell() {
+        
     }
     
+    
+    
+    /**
+     * Tries to which all commands in $cmds, so later on, full
+     * paths will be used when executing commands.
+     *
+     * @param array   $cmds
+     * @param boolean $dieOnFail
+     * 
+     * @return boolean
+     */
     public function initCommands($cmds = false, $dieOnFail=false) {
         if (!$cmds) $cmds = array();
         foreach($cmds as $cmd) {
@@ -66,6 +100,14 @@ class KvzShell {
         return true;
     }
     
+    /**
+     * Logs a message
+     *
+     * @param string  $str
+     * @param integer $level
+     * 
+     * @return boolean
+     */
     public function log($str, $level=KvzShell::LOG_INFO) {
         echo $str."\n";
         
@@ -76,6 +118,15 @@ class KvzShell {
         return true;
     }
     
+    /**
+     * Wrapper around exe, will expect something in return, or will produce false
+     *
+     * @param string $cmd    Fully qualifed command
+     * @param string $expect What to expect
+     * @param string $mode   Type of expectation
+     * 
+     * @return mixed array on success or boolean on failure
+     */
     public function exePect($cmd, $expect, $mode="REGEX_MULTILINE") {
         if (($x = $this->exe($cmd)) === false) {
             return false;
@@ -97,29 +148,51 @@ class KvzShell {
         }
         
         return $x;
-        
     }
     
+    /**
+     * Combines arguments to form a fully qualified command, then forwards it to exe
+     *
+     * @return mixed array on success or boolean on failure
+     */
     public function exeGlue(){
         $args = func_get_args();
         $cmd = implode(" ", $args);
         return $this->exe($cmd);
     }
     
+    /**
+     * Executes commands and returns false or output. 
+     * Uses fullpath if command has been initialized with initCommands
+     *
+     * @param string $cmd
+     * 
+     * @return mixed array on success or boolean on failure
+     */
     public function exe($cmd) {
         $parts = preg_split("[\s]", $cmd, null, PREG_SPLIT_NO_EMPTY);
         $base  = array_shift($parts);
         $cmdE  = $cmd;
+        
         if (isset($this->_cmds[$base])) {
             $cmdE = $this->_cmds[$base] ." ". implode(" ", $parts); 
-        } 
+        } else {
+            if (isset($this->_cmds) && is_array($this->_cmds) && count($this->_cmds)) {
+                $this->log("Command: ".$cmd." has not been initialized yet, but other commands have.", KvzShell::LOG_WARNING);
+            }
+        }
         
         return $this->_exe($cmdE);
     }
     
+    /**
+     * Internally used exe function. 
+     *
+     * @param unknown_type $cmd
+     * 
+     * @return mixed array on success or boolean on failure
+     */
     protected function _exe($cmd) {
-        #$this->log($cmd, KvzShell::LOG_DEBUG);
-        
         $this->command = $cmd;
         exec($cmd, $o, $r);
         $this->output = $o;
@@ -129,6 +202,14 @@ class KvzShell {
         return $o;
     }
     
+    /**
+     * Tries to locate command and saves exact location for later use by exe
+     *
+     * @param string $cmd
+     * @param boolean $dieOnFail
+     * 
+     * @return boolean
+     */
     protected function _which($cmd, $dieOnFail=false) {
         $cmdW = "/usr/bin/which ".escapeshellcmd($cmd);
         if (($o = $this->_exe($cmdW)) === false) {
