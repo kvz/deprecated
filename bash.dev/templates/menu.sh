@@ -8,7 +8,6 @@
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
 # * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
-# *
 # */
 
 # Includes
@@ -29,7 +28,7 @@ source $(echo "$(dirname ${0})/../functions/boxYesNo.sh") # make::include
 
 # Essential config
 ###############################################################
-OUTPUT_DEBUG=1
+OUTPUT_DEBUG=0
 
 
 # Check for program requirements
@@ -56,4 +55,3 @@ commandTestHandle "dialog"
 # 
 # boxYesNo "Title" "Do you want to say no?" "0"
 # echo ${boxReturn}
-
