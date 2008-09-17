@@ -11,15 +11,51 @@
 # * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
 # */
+
+# Includes
+###############################################################
+source $(echo "$(dirname ${0})/../functions/log.sh")     # make::include
+source $(echo "$(dirname ${0})/../functions/toUpper.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/commandInstall.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/commandTestHandle.sh") # make::include
+source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
+
+# Essential config
+###############################################################
+OUTPUT_DEBUG=0
+
+# Check for program requirements
+###############################################################
+commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
+commandTestHandle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
+commandTestHandle "egrep" "pcregrep"
+commandTestHandle "awk"
+commandTestHandle "cat"
+commandTestHandle "tail"
+commandTestHandle "head"
+commandTestHandle "sort"
+commandTestHandle "uniq"
+commandTestHandle "realpath"
+
+commandTestHandle "sudo" "sudo" "EMERG" "NOINSTALL"
+commandTestHandle "aptitude" "aptitude" "EMERG" "NOINSTALL"
+commandTestHandle "cp" "coreutils" "EMERG" "NOINSTALL"
+
+# Config
+###############################################################
 MIRROR="nl"
 
+# Run
+###############################################################
+
 # Find lsb-release
-sudo echo "Determining Ubuntu Release"
+${CMD_SUDO} echo "Determining Ubuntu Release"
 if [ ! -f /etc/lsb-release ]; then
-	sudo echo "File /etc/lsb-release not found"
+	${CMD_SUDO} echo "File /etc/lsb-release not found"
 	exit 1
 fi
-UBUNTU_DISTR=$(sudo cat /etc/lsb-release| sudo awk -F'=' '/CODENAME/ {print $2}')
+UBUNTU_DISTR=$(${CMD_SUDO} ${CMD_CAT} /etc/lsb-release| ${CMD_SUDO} ${CMD_AWK} -F'=' '/CODENAME/ {print $2}')
 
 # For added safety, only perform on known versions
 UBUNTU_FOUND=0
@@ -34,26 +70,26 @@ UBUNTU_FOUND=0
 [ "intrepid" = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
  
 if [ "${UBUNTU_FOUND}" = 0 ]; then
-    sudo echo "Version: '${UBUNTU_DISTR}' is not supported (yet)"
+    ${CMD_SUDO} echo "Version: '${UBUNTU_DISTR}' is not supported (yet)"
     exit 1
 fi
 	
 # Backup sources.list	
 if [ ! -f /etc/apt/sources.list ]; then
-	sudo echo "File /etc/apt/sources.list not found. Cannot backup file."
+	${CMD_SUDO} echo "File /etc/apt/sources.list not found. Cannot backup file."
 else
-	sudo echo "Backing up /etc/apt/sources.list to /etc/apt/sources.list.bak"
-	sudo cp -af /etc/apt/sources.list{,.bak}
+	${CMD_SUDO} echo "Backing up /etc/apt/sources.list to /etc/apt/sources.list.bak"
+	${CMD_SUDO} ${CMD_CP} -af /etc/apt/sources.list{,.bak}
 fi
 
 # Write sources.list
-sudo echo "Writing new /etc/apt/sources.list"
-sudo echo "deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR} main restricted universe multiverse
+${CMD_SUDO} echo "Writing new /etc/apt/sources.list"
+${CMD_SUDO} echo "deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR} main restricted universe multiverse
 deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-updates main restricted universe multiverse
 deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-backports main restricted universe multiverse
-deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-security main restricted universe multiverse" | sudo tee /etc/apt/sources.list
+deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-security main restricted universe multiverse" | ${CMD_SUDO} tee /etc/apt/sources.list
 
 # Update package list
-sudo echo "Updating package list..."
-sudo aptitude -y update > /dev/null
-sudo echo "Sources are now complete and up to date!"
+${CMD_SUDO} echo "Updating package list..."
+${CMD_SUDO} aptitude -y update > /dev/null
+${CMD_SUDO} echo "Sources are now complete and up to date!"
