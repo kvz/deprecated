@@ -164,6 +164,18 @@ class KvzShell {
     }
     
     /**
+     * Combines arguments to form a fully qualified command, then forwards it to exePect
+     *
+     * @return mixed array on success or boolean on failure
+     */
+    public function exePectGlue(){
+        $args = func_get_args();
+        $expect = array_pop($args);
+        $cmd = implode(" ", $args);
+        return $this->exePect($cmd, $expect);
+    }    
+    
+    /**
      * Executes commands and returns false or output. 
      * Uses fullpath if command has been initialized with initCommands
      *
