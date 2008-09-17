@@ -129,7 +129,7 @@ class KvzShell {
      * 
      * @return mixed array on success or boolean on failure
      */
-    public function exePect($cmd, $expect, $mode="REGEX_MULTILINE") {
+    public function exePect($cmd, $expect, $mode="LIKE") {
         if (($x = $this->exe($cmd)) === false) {
             return false;
         }
@@ -139,7 +139,14 @@ class KvzShell {
         
         switch ($mode) {
             case "REGEX_MULTILINE":
-                if (!preg_match('/'.$expect.'/Umi', $xn)) {
+                $pattern = '@'.$expect.'@Umi';
+                if (!preg_match($pattern, $xn)) {
+                    return false; 
+                }
+                break;
+            case "LIKE":
+                $pattern = '@(.*)'.preg_quote($expect).'(.*)@Umi';
+                if (!preg_match($pattern, $xn)) {
                     return false; 
                 }
                 break;
@@ -165,6 +172,7 @@ class KvzShell {
     
     /**
      * Combines arguments to form a fully qualified command, then forwards it to exePect
+     * Only works with exePects' LIKE mode
      *
      * @return mixed array on success or boolean on failure
      */
@@ -200,7 +208,7 @@ class KvzShell {
     }
     
     /**
-     * Internally used exe function. 
+     * Main exe function. Used internally by all other function 
      *
      * @param unknown_type $cmd
      * 
