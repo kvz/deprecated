@@ -362,8 +362,8 @@ function boxList(){
         ;;
         255)
             #clear
-            echo "Dialog aborted. " >&2
-            [ -n "${answer}" ] && echo "Result: ${answer}"  
+            echo "Dialog aborted. ${answer}" >&2
+            #[ -n "${answer}" ] && echo "${answer}"  
             exit 1
         ;;
     esac
