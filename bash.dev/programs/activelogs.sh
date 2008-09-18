@@ -22,7 +22,6 @@ source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 ###############################################################
 OUTPUT_DEBUG=0
 FIRST_RUN=0
-XTRA_ARGS="";
 
 # Check for program requirements
 ###############################################################
@@ -50,15 +49,15 @@ FILE_RAN=${DIR_ROOT}/$(${FILE_BASE} |${CMD_SED} 's#.sh$#.ran#g')
 if [ ! -f "${FILE_RAN}" ]; then
 	echo "First time running ${FILE_BASE}. Indexing all logs, may take a long time... "
 	FIRST_RUN=1
-	XTRA_ARGS=" > /dev/null"
 fi 
 
 # Run
 ###############################################################
-${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' ${XTRA_ARGS} |${CMD_BASH}
+[ "${FIRST_RUN}" = 1 ] && ${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' |${CMD_BASH}
+[ "${FIRST_RUN}" = 1 ] || ${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' |${CMD_BASH} > /dev/null
 
 # Error
-if [ "$?" = 1 ]; then
+if [ "${?}" = 1 ]; then
 	echo "Error while showing active logs" >&2
     exit 1
 fi
