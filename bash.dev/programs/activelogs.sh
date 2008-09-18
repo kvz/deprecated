@@ -21,6 +21,8 @@ source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 # Essential config
 ###############################################################
 OUTPUT_DEBUG=0
+FIRST_RUN=0
+XTRA_ARGS="";
 
 # Check for program requirements
 ###############################################################
@@ -31,13 +33,38 @@ commandTestHandle "grep" "grep" "EMERG"
 commandTestHandle "awk" "gawk" "EMERG"
 commandTestHandle "sort" "coreutils" "EMERG"
 commandTestHandle "uniq" "coreutils" "EMERG"
+commandTestHandle "dirname" "coreutils" "EMERG"
 commandTestHandle "realpath" "realpath" "EMERG"
 commandTestHandle "sed" "sed" "EMERG"
 
+commandTestHandle "basename" "coreutils" "EMERG"
 commandTestHandle "touch" "coreutils" "EMERG"
 commandTestHandle "lsof" "lsof" "EMERG"
 commandTestHandle "logtail" "logtail" "EMERG"
 
+# Config
+###############################################################
+DIR_ROOT=$(getWorkingDir)
+FILE_BASE="${CMD_BASENAME} ${0}"
+FILE_RAN=${DIR_ROOT}/$(${FILE_BASE} |${CMD_SED} 's#.sh$#.ran#g')
+if [ ! -f "${FILE_RAN}" ]; then
+	echo "First time running ${FILE_BASE}. Indexing all logs, may take a long time... "
+	FIRST_RUN=1
+	XTRA_ARGS=" > /dev/null"
+fi 
+
 # Run
 ###############################################################
-${CMD_LSOF} |${CMD_EGREP} '\.log$' |${CMD_AWK} '{print $NF}' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \"\" && echo \""$0":\" && logtail " $0}' |${CMD_BASH}
+${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' |${CMD_BASH} ${XTRA_ARGS}
+
+# Error
+if [ "$?" = 1 ]; then
+	echo "Error while showing active logs" >&2
+    exit 1
+fi
+
+# Success
+if [ "${FIRST_RUN}" = 1 ]; then
+	echo "Indexing done. Run again to show recent log activity."
+	${CMD_TOUCH} ${FILE_RAN}  
+fi

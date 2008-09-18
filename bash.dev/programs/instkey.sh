@@ -37,6 +37,7 @@ commandTestHandle "grep" "grep" "EMERG"
 commandTestHandle "awk" "gawk" "EMERG"
 commandTestHandle "sort" "coreutils" "EMERG"
 commandTestHandle "uniq" "coreutils" "EMERG"
+commandTestHandle "dirname" "coreutils" "EMERG"
 commandTestHandle "realpath" "realpath" "EMERG"
 commandTestHandle "sed" "sed" "EMERG"
 
