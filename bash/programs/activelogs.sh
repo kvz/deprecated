@@ -5,7 +5,7 @@
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id: activelogs.sh 161 2008-09-18 11:28:44Z kevin $
+# * @version   SVN: Release: $Id: activelogs.sh 162 2008-09-18 11:33:04Z kevin $
 # * @link      http://kevin.vanzonneveld.net/
 # */
 
@@ -225,8 +225,8 @@ fi
 
 # Run
 ###############################################################
-[ "${FIRST_RUN}" = 1 ] && ${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' |${CMD_BASH}
-[ "${FIRST_RUN}" = 1 ] || ${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' |${CMD_BASH} > /dev/null
+[ "${FIRST_RUN}" = 1 ] && ${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' |${CMD_BASH} > /dev/null
+[ "${FIRST_RUN}" = 1 ] || ${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' |${CMD_BASH}
 
 # Error
 if [ "${?}" = 1 ]; then

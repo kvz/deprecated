@@ -53,8 +53,8 @@ fi
 
 # Run
 ###############################################################
-[ "${FIRST_RUN}" = 1 ] && ${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' |${CMD_BASH}
-[ "${FIRST_RUN}" = 1 ] || ${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' |${CMD_BASH} > /dev/null
+[ "${FIRST_RUN}" = 1 ] && ${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' |${CMD_BASH} > /dev/null
+[ "${FIRST_RUN}" = 1 ] || ${CMD_LSOF} -bw |${CMD_AWK} '{print $NF}' |${CMD_EGREP} '(\.log$|^/var/log/)' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \">> "$0":\" && logtail "$0" && echo \"\""}' |${CMD_BASH}
 
 # Error
 if [ "${?}" = 1 ]; then
