@@ -362,8 +362,8 @@ function boxList(){
         ;;
         255)
             #clear
-            echo "ESC ${retVal} pressed. Result:" >&2
-            [ -f "${answerFile}" ] && cat ${answerFile} >&2 
+            echo "Dialog aborted. " >&2
+            [ -n "${answer}" ] && echo "Result: ${answer}"  
             exit 1
         ;;
     esac
