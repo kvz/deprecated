@@ -22,6 +22,7 @@ source $(echo "$(dirname ${0})/../functions/getWorkingDir.sh") # make::include
 ###############################################################
 OUTPUT_DEBUG=0
 FIRST_RUN=0
+PROGRAM="activelogs"
 
 # Check for program requirements
 ###############################################################
@@ -36,7 +37,6 @@ commandTestHandle "dirname" "coreutils" "EMERG"
 commandTestHandle "realpath" "realpath" "EMERG"
 commandTestHandle "sed" "sed" "EMERG"
 
-commandTestHandle "basename" "coreutils" "EMERG"
 commandTestHandle "touch" "coreutils" "EMERG"
 commandTestHandle "lsof" "lsof" "EMERG"
 commandTestHandle "logtail" "logtail" "EMERG"
@@ -44,10 +44,9 @@ commandTestHandle "logtail" "logtail" "EMERG"
 # Config
 ###############################################################
 DIR_ROOT=$(getWorkingDir)
-FILE_BASE="${CMD_BASENAME} ${0}"
-FILE_RAN=${DIR_ROOT}/$(${FILE_BASE} |${CMD_SED} 's#.sh$#.ran#g')
+FILE_RAN=${DIR_ROOT}/${PROGRAM}.ran) # Not using basename cause that will frustrate Execute menu
 if [ ! -f "${FILE_RAN}" ]; then
-	echo "First time running ${FILE_BASE}. Indexing all logs, may take a long time... "
+	echo "First time running ${PROGRAM}. Indexing all logs, may take a long time... "
 	FIRST_RUN=1
 fi 
 

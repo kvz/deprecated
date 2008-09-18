@@ -5,7 +5,7 @@
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id: activelogs.sh 162 2008-09-18 11:33:04Z kevin $
+# * @version   SVN: Release: $Id: activelogs.sh 163 2008-09-18 11:50:45Z kevin $
 # * @link      http://kevin.vanzonneveld.net/
 # */
 
@@ -194,6 +194,7 @@ function getWorkingDir {
 ###############################################################
 OUTPUT_DEBUG=0
 FIRST_RUN=0
+PROGRAM="activelogs"
 
 # Check for program requirements
 ###############################################################
@@ -208,7 +209,6 @@ commandTestHandle "dirname" "coreutils" "EMERG"
 commandTestHandle "realpath" "realpath" "EMERG"
 commandTestHandle "sed" "sed" "EMERG"
 
-commandTestHandle "basename" "coreutils" "EMERG"
 commandTestHandle "touch" "coreutils" "EMERG"
 commandTestHandle "lsof" "lsof" "EMERG"
 commandTestHandle "logtail" "logtail" "EMERG"
@@ -216,10 +216,9 @@ commandTestHandle "logtail" "logtail" "EMERG"
 # Config
 ###############################################################
 DIR_ROOT=$(getWorkingDir)
-FILE_BASE="${CMD_BASENAME} ${0}"
-FILE_RAN=${DIR_ROOT}/$(${FILE_BASE} |${CMD_SED} 's#.sh$#.ran#g')
+FILE_RAN=${DIR_ROOT}/${PROGRAM}.ran) # Not using basename cause that will frustrate Execute menu
 if [ ! -f "${FILE_RAN}" ]; then
-	echo "First time running ${FILE_BASE}. Indexing all logs, may take a long time... "
+	echo "First time running ${PROGRAM}. Indexing all logs, may take a long time... "
 	FIRST_RUN=1
 fi 
 
