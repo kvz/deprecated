@@ -1,9 +1,9 @@
 #!/bin/bash
 #/**
-# * Resets Ubuntu APT sources lists
+# * Resets Ubuntu APT sources lists to enable
 # *
 # * And enables all the standard types: main restricted universe multiverse
-# * Makes a backup to /etc/apt/sources.list.bak
+# * Makes a backup to /etc/apt/sources.list.{date}
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -40,6 +40,7 @@ commandTestHandle "sed" "sed" "EMERG"
 commandTestHandle "sudo" "sudo" "EMERG" "NOINSTALL"
 commandTestHandle "aptitude" "aptitude" "EMERG" "NOINSTALL" # aptitude is a hard-dependency in this case
 commandTestHandle "cp" "coreutils" "EMERG" "NOINSTALL"
+commandTestHandle "date" "coreutils" "EMERG" "NOINSTALL"
 
 # Config
 ###############################################################
@@ -69,7 +70,7 @@ UBUNTU_FOUND=0
 [ "intrepid" = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
  
 if [ "${UBUNTU_FOUND}" = 0 ]; then
-    ${CMD_SUDO} echo "Version: '${UBUNTU_DISTR}' is not supported (yet)"
+    ${CMD_SUDO} echo "Version: '${UBUNTU_DISTR}' is not supported (yet)" > &2
     exit 1
 fi
 	
@@ -77,8 +78,9 @@ fi
 if [ ! -f /etc/apt/sources.list ]; then
 	${CMD_SUDO} echo "File /etc/apt/sources.list not found. Cannot backup file."
 else
-	${CMD_SUDO} echo "Backing up /etc/apt/sources.list to /etc/apt/sources.list.bak"
-	${CMD_SUDO} ${CMD_CP} -af /etc/apt/sources.list{,.bak}
+    CURDATE=$(${CMD_DATE} '+%Y%m%d%H%M%S')
+	${CMD_SUDO} echo "Backing up /etc/apt/sources.list to /etc/apt/sources.list.${CURDATE}"
+	${CMD_SUDO} ${CMD_CP} -af /etc/apt/sources.list{,.${CURDATE}}
 fi
 
 # Write sources.list
