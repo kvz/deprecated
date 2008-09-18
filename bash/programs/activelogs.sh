@@ -5,7 +5,7 @@
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id: activelogs.sh 163 2008-09-18 11:50:45Z kevin $
+# * @version   SVN: Release: $Id: activelogs.sh 164 2008-09-18 12:03:11Z kevin $
 # * @link      http://kevin.vanzonneveld.net/
 # */
 
