@@ -44,7 +44,7 @@ commandTestHandle "logtail" "logtail" "EMERG"
 # Config
 ###############################################################
 DIR_ROOT=$(getWorkingDir)
-FILE_RAN=${DIR_ROOT}/${PROGRAM}.ran) # Not using basename cause that will frustrate Execute menu
+FILE_RAN="${DIR_ROOT}/${PROGRAM}.ran" # Not using basename cause that will frustrate Execute menu
 if [ ! -f "${FILE_RAN}" ]; then
 	echo "First time running ${PROGRAM}. Indexing all logs, may take a long time... "
 	FIRST_RUN=1
