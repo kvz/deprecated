@@ -40,6 +40,7 @@ commandTestHandle "sed" "sed" "EMERG"
 commandTestHandle "sudo" "sudo" "EMERG" "NOINSTALL"
 commandTestHandle "aptitude" "aptitude" "EMERG" "NOINSTALL" # aptitude is a hard-dependency in this case
 commandTestHandle "cp" "coreutils" "EMERG" "NOINSTALL"
+commandTestHandle "cat" "coreutils" "EMERG" "NOINSTALL"
 commandTestHandle "date" "coreutils" "EMERG" "NOINSTALL"
 
 # Config
@@ -48,7 +49,6 @@ MIRROR="nl"
 
 # Run
 ###############################################################
-
 # Find lsb-release
 ${CMD_SUDO} echo "Determining Ubuntu Release"
 if [ ! -f /etc/lsb-release ]; then
@@ -70,7 +70,7 @@ UBUNTU_FOUND=0
 [ "intrepid" = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
  
 if [ "${UBUNTU_FOUND}" = 0 ]; then
-    ${CMD_SUDO} echo "Version: '${UBUNTU_DISTR}' is not supported (yet)" > &2
+    ${CMD_SUDO} echo "Version: '${UBUNTU_DISTR}' is not supported (yet)" >&2
     exit 1
 fi
 	
