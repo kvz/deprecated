@@ -35,19 +35,20 @@ OUTPUT_DEBUG=0
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
 commandTestHandle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
-commandTestHandle "egrep" "pcregrep"
-commandTestHandle "pwd"
-commandTestHandle "awk"
-commandTestHandle "sort"
-commandTestHandle "uniq"
-commandTestHandle "realpath"
-commandTestHandle "sed"
-commandTestHandle "tee"
+commandTestHandle "egrep" "grep" "EMERG"
+commandTestHandle "grep" "grep" "EMERG"
+commandTestHandle "awk" "gawk" "EMERG"
+commandTestHandle "sort" "coreutils" "EMERG"
+commandTestHandle "uniq" "coreutils" "EMERG"
+commandTestHandle "realpath" "realpath" "EMERG"
+commandTestHandle "sed" "sed" "EMERG"
 
-commandTestHandle "wget"
-commandTestHandle "chmod"
-commandTestHandle "tempfile"
-commandTestHandle "dialog"
+commandTestHandle "tee" "coreutils" "EMERG"
+commandTestHandle "pwd" "coreutils" "EMERG"
+commandTestHandle "wget" "wget" "EMERG"
+commandTestHandle "chmod" "coreutils" "EMERG"
+commandTestHandle "tempfile" "debianutils:" "EMERG"
+commandTestHandle "dialog" "dialog" "EMERG"
 
 # Usage:
 # boxList "Title" "Description" "option1=One, a good choice|option2=Two, maybe even better"

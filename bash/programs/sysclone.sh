@@ -393,16 +393,19 @@ FILE_CONFIG=${DIR_ROOT}/sysclone.conf
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
 commandTestHandle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
-commandTestHandle "realpath"
-commandTestHandle "egrep" "pcregrep"
-commandTestHandle "awk"
-commandTestHandle "ping"
-commandTestHandle "sort"
-commandTestHandle "uniq"
-commandTestHandle "whoami"
-commandTestHandle "netcat"
-commandTestHandle "ssh"
-commandTestHandle "tail"
+commandTestHandle "egrep" "grep" "EMERG"
+commandTestHandle "grep" "grep" "EMERG"
+commandTestHandle "awk" "gawk" "EMERG"
+commandTestHandle "sort" "coreutils" "EMERG"
+commandTestHandle "uniq" "coreutils" "EMERG"
+commandTestHandle "realpath" "realpath" "EMERG"
+commandTestHandle "sed" "sed" "EMERG"
+
+commandTestHandle "ping" "iputils-ping" "EMERG"
+commandTestHandle "whoami" "coreutils" "EMERG"
+commandTestHandle "netcat" "coreutils" "EMERG"
+commandTestHandle "ssh" "openssh-client" "EMERG"
+commandTestHandle "tail" "coreutils" "EMERG"
 
 # Config
 ###############################################################

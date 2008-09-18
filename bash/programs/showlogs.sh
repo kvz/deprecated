@@ -198,15 +198,18 @@ OUTPUT_DEBUG=0
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
 commandTestHandle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
-commandTestHandle "egrep" "pcregrep"
-commandTestHandle "awk"
-commandTestHandle "sort"
-commandTestHandle "uniq"
-commandTestHandle "realpath"
+commandTestHandle "egrep" "grep" "EMERG"
+commandTestHandle "grep" "grep" "EMERG"
+commandTestHandle "awk" "gawk" "EMERG"
+commandTestHandle "sort" "coreutils" "EMERG"
+commandTestHandle "uniq" "coreutils" "EMERG"
+commandTestHandle "realpath" "realpath" "EMERG"
+commandTestHandle "sed" "sed" "EMERG"
 
-commandTestHandle "lsof"
-commandTestHandle "logtail"
+commandTestHandle "touch" "coreutils" "EMERG"
+commandTestHandle "lsof" "lsof" "EMERG"
+commandTestHandle "logtail" "logtail" "EMERG"
 
 # Run
 ###############################################################
-${CMD_LSOF} |${CMD_EGREP} '\.log$' |${CMD_AWK} '{print $NF}' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \"\" && echo \""$0":\" && logtail " $0}' |bash
+${CMD_LSOF} |${CMD_EGREP} '\.log$' |${CMD_AWK} '{print $NF}' |${CMD_SORT} |${CMD_UNIQ} |${CMD_AWK} '{print "echo \"\" && echo \""$0":\" && logtail " $0}' |${CMD_BASH}

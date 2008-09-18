@@ -29,13 +29,16 @@ OUTPUT_DEBUG=0
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
 commandTestHandle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
-commandTestHandle "egrep" "pcregrep"
-commandTestHandle "awk"
-commandTestHandle "tail"
-commandTestHandle "head"
-commandTestHandle "sort"
-commandTestHandle "uniq"
-commandTestHandle "realpath"
+commandTestHandle "egrep" "grep" "EMERG"
+commandTestHandle "grep" "grep" "EMERG"
+commandTestHandle "awk" "gawk" "EMERG"
+commandTestHandle "sort" "coreutils" "EMERG"
+commandTestHandle "uniq" "coreutils" "EMERG"
+commandTestHandle "realpath" "realpath" "EMERG"
+commandTestHandle "sed" "sed" "EMERG"
+
+commandTestHandle "tail" "coreutils" "EMERG"
+commandTestHandle "head" "coreutils" "EMERG"
 
 # Config
 ###############################################################
