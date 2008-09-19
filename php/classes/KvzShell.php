@@ -53,6 +53,13 @@ class KvzShell {
     protected $_cmds = array();
     
     /**
+     * Holds trace of refering code
+     *
+     * @var array
+     */
+    protected $_trace = array();
+    
+    /**
      * Holds output of last command
      * Usefull when exe has returned false on error, and you 
      * want to analyze the output.
@@ -60,7 +67,6 @@ class KvzShell {
      * @var array
      */
     public $output = array();
-    
     
     /**
      * Holds last command
@@ -70,16 +76,79 @@ class KvzShell {
     public $command = "";
     
     
-    
     /**
      * Constructor
      *
      * @return KvzShell
      */
-    public function KvzShell() {
-        
+    public function KvzShell($options = false) {
+        $this->setOptions($options);
     }
     
+
+    /**
+     * Sets option array with options like enable_trace
+     *
+     * @param array $options
+     * 
+     * @return boolean
+     */
+    public function setOptions($options=false) {
+        if (!$options) $options = array();
+        if (!isset($options["enable_trace"])) $options["enable_trace"] = false;
+        
+        $this->_options = $options;
+        return true;
+    }
+    
+    /**
+     * Retrieves trace of refering code  
+     *
+     * @return array
+     */
+    public function getTrace() {
+        if (!$this->_options["enable_trace"]) {
+            $this->log("Tracing not enabled. Set the enable_trace option. ", KvzShell::LOG_WARNING);
+            return false;
+        }
+        
+        return $this->_trace;
+    }
+    
+    /**
+     * Finds trace of refering code and saves it internally
+     *
+     * @return boolean
+     */
+    protected function _setTrace() {
+        if (!$this->_options["enable_trace"]) {
+            return false;
+        }
+        
+        $traces    = debug_backtrace();
+        $use_trace = array();
+        
+        // Both original & extended classnames should be excluded from
+        // our search for calling boject
+        $classNames = array(get_class($this), get_class());
+        
+        foreach ($traces as $i=>$trace) {
+            if (!isset($trace["class"]) || !in_array($trace["class"], $classNames)) {
+                // This is the last position outside our class. So the refering code.
+                $use_trace = $trace;
+                break; 
+            }
+        }
+        
+        if (!count($use_trace)) {
+            // Only internal class info in trace
+            return false;
+        }
+        
+        $this->_trace = $trace;
+        
+        return true;
+    }
      
     /**
      * Enter description here...
@@ -235,6 +304,8 @@ class KvzShell {
      * @return mixed array on success or boolean on failure
      */
     protected function _exe($cmd) {
+        $this->_setTrace();
+        
         $this->output = "";
         $this->command = $cmd;
         exec($cmd, $o, $r);
