@@ -43,7 +43,7 @@ class KvzShell {
      * Debug-level messages
      */
     const LOG_DEBUG = 7;
-        
+    
     
     /**
      * Holds paths of commands
@@ -85,7 +85,7 @@ class KvzShell {
         $this->setOptions($options);
     }
     
-
+    
     /**
      * Sets option array with options like enable_trace
      *
@@ -108,7 +108,15 @@ class KvzShell {
      */
     public function getTrace() {
         if (!$this->_options["enable_trace"]) {
-            $this->log("Tracing not enabled. Set the enable_trace option. ", KvzShell::LOG_WARNING);
+            $this->log("Tracing not enabled. Set the enable_trace option. ", self::LOG_WARNING);
+            return false;
+        }
+        
+        if (!is_array($this->_trace)) {
+            return false;
+        }
+        
+        if (!count($this->_trace)) {
             return false;
         }
         
@@ -125,8 +133,9 @@ class KvzShell {
             return false;
         }
         
-        $traces    = debug_backtrace();
-        $use_trace = array();
+        $traces     = debug_backtrace();
+        $use_trace  = array();
+        $prev_trace = array();
         
         // Both original & extended classnames should be excluded from
         // our search for calling boject
@@ -135,9 +144,12 @@ class KvzShell {
         foreach ($traces as $i=>$trace) {
             if (!isset($trace["class"]) || !in_array($trace["class"], $classNames)) {
                 // This is the last position outside our class. So the refering code.
-                $use_trace = $trace;
+                $use_trace = $prev_trace;
                 break; 
             }
+            // Remember previous trace.
+            // We don't want to work with (i-1);
+            $prev_trace = $trace;
         }
         
         if (!count($use_trace)) {
@@ -145,7 +157,8 @@ class KvzShell {
             return false;
         }
         
-        $this->_trace = $trace;
+        $use_trace["filebase"] = basename($use_trace["file"]); 
+        $this->_trace = $use_trace;
         
         return true;
     }
@@ -162,7 +175,7 @@ class KvzShell {
     public function initCommand($cmd="", $path=false, $dieOnFail=false) {
         if (!$cmd || !$path || !is_file($path)) {
             if ($dieOnFail) {
-                $this->log("Command: '".$cmd."' ('".$path."') not found", KvzShell::LOG_EMERG);
+                $this->log("Command: '".$cmd."' ('".$path."') not found", self::LOG_EMERG);
             }
             return false;
         }
@@ -202,7 +215,7 @@ class KvzShell {
     public function log($str, $level=KvzShell::LOG_INFO) {
         echo $str."\n";
         
-        if ($level < KvzShell::LOG_CRIT) {
+        if ($level < self::LOG_CRIT) {
             die();
         }
         
@@ -289,7 +302,7 @@ class KvzShell {
             $cmdE = $this->_cmds[$base] ." ". implode(" ", $parts); 
         } else {
             if (isset($this->_cmds) && is_array($this->_cmds) && count($this->_cmds)) {
-                $this->log("Command: ".$base." has not been initialized yet, but other commands have.", KvzShell::LOG_WARNING);
+                $this->log("Command: ".$base." has not been initialized yet, but other commands have.", self::LOG_WARNING);
             }
         }
         
@@ -304,16 +317,16 @@ class KvzShell {
      * @return mixed array on success or boolean on failure
      */
     protected function _exe($cmd) {
+        //$this->log($cmd, self::LOG_DEBUG);
         $this->_setTrace();
         
-        $this->output = "";
+        $this->output  = "";
         $this->command = $cmd;
-        exec($cmd, $o, $r);
-        $this->output = $o;
+        exec($cmd, $this->output, $r);
         if ($r != 0) {
             return false;
         }
-        return $o;
+        return $this->output;
     }
     
     /**

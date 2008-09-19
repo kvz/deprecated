@@ -37,6 +37,7 @@ commandTestHandle "dirname" "coreutils" "EMERG"
 commandTestHandle "realpath" "realpath" "EMERG"
 commandTestHandle "sed" "sed" "EMERG"
 
+commandTestHandle "cat" "coreutils" "EMERG"
 commandTestHandle "head" "coreutils" "EMERG"
 commandTestHandle "free" "procps" "WARNING"
 commandTestHandle "df" "coreutils" "WARNING"
@@ -72,7 +73,7 @@ commandTestHandle "dmidecode" "dmidecode" "WARNING"
     |${CMD_UNIQ}
 
 # Memory
-[ -x "${CMD_FREE}"] && ${CMD_FREE} -b |${CMD_AWK} '/Mem/ {printf "Memory Netto Size: %1.1f GB\n", ($2/(1024*1024*1024))}'
+[ -x "${CMD_FREE}" ] && ${CMD_FREE} -b |${CMD_AWK} '/Mem/ {printf "Memory Netto Size: %1.1f GB\n", ($2/(1024*1024*1024))}'
 
 # Disk
 [ -x "${CMD_DF}" ] && ${CMD_DF} -lTP |${CMD_GREP} '/dev/' |${CMD_AWK} '/ext2|ext3|xfs/ {sum+=$3} END {printf "Disk Netto Size: %1.1f GB\n", (sum/(1024*1024))}'
