@@ -80,7 +80,25 @@ class KvzShell {
         
     }
     
-    
+     
+    /**
+     * Enter description here...
+     *
+     * @param string  $cmd
+     * @param string  $path
+     * @param boolean $dieOnFail
+     * 
+     * @return boolean
+     */
+    public function initCommand($cmd="", $path=false, $dieOnFail=false) {
+        if (!$cmd || !$path || !is_file($path)) {
+            if ($dieOnFail) {
+                $this->log("Command: '".$cmd."' ('".$path."') not found", KvzShell::LOG_EMERG);
+            }
+            return false;
+        }
+        $this->_cmds[$cmd] = $path;
+    }
     
     /**
      * Tries to which all commands in $cmds, so later on, full
@@ -94,7 +112,9 @@ class KvzShell {
     public function initCommands($cmds = false, $dieOnFail=false) {
         if (!$cmds) $cmds = array();
         foreach($cmds as $cmd) {
-            if (!$this->_which($cmd, $dieOnFail)) {
+            $path = $this->_which($cmd);
+            
+            if (false === $this->initCommand($cmd, $path, $dieOnFail)) {
                 return false;
                 break;
             }
@@ -229,22 +249,16 @@ class KvzShell {
      * Tries to locate command and saves exact location for later use by exe
      *
      * @param string $cmd
-     * @param boolean $dieOnFail
      * 
      * @return boolean
      */
-    protected function _which($cmd, $dieOnFail=false) {
+    protected function _which($cmd) {
         $cmdW = "/usr/bin/which ".escapeshellcmd($cmd);
         if (($o = $this->_exe($cmdW)) === false) {
-            if ($dieOnFail) {
-                $this->log("Command: '$cmd' not found", KvzShell::LOG_EMERG);
-            }
             return false;
         }
         
-        $this->_cmds[$cmd] = implode("\n", $o);
-        
-        return true;
+        return trim(implode("\n", $o));
     }
 }
 ?>
