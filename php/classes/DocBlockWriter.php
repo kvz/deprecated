@@ -154,7 +154,7 @@ class DocBlockWriter {
         return $this->_generate();
     }
 
-    public function generateClass() {
+    public function generateClass($info=false) {
         $this->addHeader("Unknown Class");
         $this->setFields($info);
         return $this->_generate();
