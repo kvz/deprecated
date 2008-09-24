@@ -3,7 +3,7 @@
  * Generates docBlocks
  *
  */
-class DocBlock {
+class DocBlockWriter {
     protected $_params;
     protected $_header;
     protected $_tables;
