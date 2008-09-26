@@ -183,6 +183,7 @@ class KvzShell {
             return false;
         }
         $this->_cmds[$cmd] = $path;
+        return true;
     }
     
     /**
