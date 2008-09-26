@@ -175,8 +175,11 @@ class KvzShell {
     public function initCommand($cmd="", $path=false, $dieOnFail=false) {
         if (!$cmd || !$path || !is_file($path)) {
             if ($dieOnFail) {
-                $this->log("Command: '".$cmd."' ('".$path."') not found", self::LOG_EMERG);
+                $level = self::LOG_EMERG;
+            } else {
+                $level = self::LOG_WARNING;
             }
+            $this->log("Command: '".$cmd."' ('".$path."') not found", $level);
             return false;
         }
         $this->_cmds[$cmd] = $path;
