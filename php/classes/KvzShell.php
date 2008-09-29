@@ -341,12 +341,25 @@ class KvzShell {
      * @return boolean
      */
     protected function _which($cmd) {
-        $cmdW = "/usr/bin/which ".escapeshellcmd($cmd);
-        if (($o = $this->_exe($cmdW)) === false) {
-            return false;
+        
+        $possiblePaths = array(
+            "/usr/local/sbin",
+            "/usr/local/bin", 
+            "/usr/sbin",
+            "/usr/bin", 
+            "/sbin",
+            "/bin",
+            "/usr/games",
+        );
+        
+        foreach ($possiblePaths as $possiblePath) {
+            $testPath = $possiblePath."/".escapeshellcmd($cmd);
+            if (file_exists($testPath)) {
+                return $testPath;
+            }
         }
         
-        return trim(implode("\n", $o));
+        return false;
     }
 }
 ?>
