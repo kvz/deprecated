@@ -8,7 +8,7 @@
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id: clonesys.sh 165 2008-09-18 12:04:17Z kevin $
+# * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
 # */
 
@@ -184,7 +184,7 @@ function commandTestHandle(){
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id: getWorkingDir.sh 89 2008-09-05 20:52:48Z kevin $
+# * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
 # * 
 # * @param string PATH Optional path to add
@@ -200,7 +200,7 @@ function getWorkingDir {
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id: sshKeyInstall.sh 89 2008-09-05 20:52:48Z kevin $
+# * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
 # *
 # * @param string REMOTE_HOST The host to install the key at
@@ -272,7 +272,7 @@ function sshKeyInstall {
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id: sshKeyVerify.sh 89 2008-09-05 20:52:48Z kevin $
+# * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
 # *
 # * @param string REMOTE_HOST The host to install the key at
@@ -313,7 +313,7 @@ function sshKeyVerify {
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id: isPortOpen.sh 94 2008-09-16 09:24:10Z kevin $
+# * @version   SVN: Release: $Id$
 # * @link      http://kevin.vanzonneveld.net/
 # *
 # * @param string  REMOTE_HOST The host to connect to
