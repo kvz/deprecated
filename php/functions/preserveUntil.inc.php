@@ -3,6 +3,8 @@
  * Returns new array and preserves until a specific line is found in the old one.
  * Ideal for rewriting config files with dynamic content, but still allowing
  * custom rules above that. 
+ * 
+ * Tip, in combination with file(), consider using the FILE_IGNORE_NEW_LINES flag
  *
  * @param array $original
  * @param array $dynamic
