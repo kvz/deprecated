@@ -24,11 +24,13 @@ function preserveUntil($original=array(), $dynamic=array(), $splitLine = "# PLEA
     }
     
     if (is_numeric($splitLineAt)) {
-        $new = array_slice($original, 0, ($splitLineAt-1));
+        $new = array_slice($original, 0, ($splitLineAt));
     } else {
         // Failsafe. No splitLine found. Preserve entire original.
         $new = $original;
     }
+    
+    #print_r($new);
     
     $new[] = $splitLine;
     $new   = array_merge($new, $dynamic);
