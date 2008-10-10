@@ -23,7 +23,7 @@ function preserveUntil($original=array(), $dynamic=array(), $splitLine = "# PLEA
         }
     }
     
-    if (is_numeric($splitLineAt) && $splitLineAt) {
+    if (is_numeric($splitLineAt)) {
         $new = array_slice($original, 0, ($splitLineAt-1));
     } else {
         // Failsafe. No splitLine found. Preserve entire original.
