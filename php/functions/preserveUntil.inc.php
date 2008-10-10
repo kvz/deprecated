@@ -30,8 +30,6 @@ function preserveUntil($original=array(), $dynamic=array(), $splitLine = "# PLEA
         $new = $original;
     }
     
-    #print_r($new);
-    
     $new[] = $splitLine;
     $new   = array_merge($new, $dynamic);
     
