@@ -27,10 +27,10 @@
  * @return array
  */
 function arrayTrim($array) {
+    // Escapes
     if (!is_array($array)) {
         return false;
     }
-    
     if (!count($array)) {
         return $array;
     }
