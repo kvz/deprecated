@@ -27,6 +27,14 @@
  * @return array
  */
 function arrayTrim($array) {
+    if (!is_array($array)) {
+        return false;
+    }
+    if (!count($array)) {
+        return $array;
+    }
+    
+    
     while (strlen(reset($array)) === 0) {
         array_shift($array);
     }
