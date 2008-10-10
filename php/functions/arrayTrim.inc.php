@@ -30,17 +30,29 @@ function arrayTrim($array) {
     if (!is_array($array)) {
         return false;
     }
+    
     if (!count($array)) {
         return $array;
     }
     
+    // Trim beginning of array
+    while (true) {
+        if (false === ($item = reset($array)) || 0 === strlen(trim($item))) {
+            array_shift($array);
+        } else {
+            break;
+        }
+    }
     
-    while (strlen(reset($array)) === 0) {
-        array_shift($array);
+    // Trim end of array
+    while (true) {
+        if (false === ($item = end($array)) || 0 === strlen(trim($item))) {
+            array_pop($array);
+        } else {
+            break;
+        }
     }
-    while (strlen(end($array)) === 0) {
-        array_pop($array);
-    }
+    
     return $array;
 }   
 ?>
