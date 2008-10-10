@@ -37,7 +37,7 @@ function arrayTrim($array) {
     
     // Trim beginning of array
     while (true) {
-        if (false === ($item = reset($array)) || 0 === strlen(trim($item))) {
+        if (false !== ($item = reset($array)) && 0 === strlen(trim($item))) {
             array_shift($array);
         } else {
             break;
@@ -46,8 +46,7 @@ function arrayTrim($array) {
     
     // Trim end of array
     while (true) {
-        if (false === ($item = end($array)) || 0 === strlen(trim($item))) {
-            array_pop($array);
+        if (false !== ($item = end($array)) && 0 === strlen(trim($item))) {
         } else {
             break;
         }
