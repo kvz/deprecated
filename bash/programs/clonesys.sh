@@ -89,7 +89,7 @@ function commandInstall() {
     
     if [ -n "${CMD_APTITUDE}" ] && [ -x "${CMD_APTITUDE}" ]; then
     	# A new bash session is needed, otherwise apt will break the program flow
-        aptRes=$(echo "${CMD_APTITUDE} -yq install ${package}" |bash)
+        aptRes=$(echo "${CMD_APTITUDE} -y install ${package}" |bash)
     else
         echo "No supported package management tool found"
     fi
