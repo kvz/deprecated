@@ -39,7 +39,7 @@ commandTestHandle "realpath" "realpath" "EMERG"
 commandTestHandle "sed" "sed" "EMERG"
 
 commandTestHandle "sudo" "sudo" "EMERG" "NOINSTALL"
-commandTestHandle "aptitude" "aptitude" "EMERG" "NOINSTALL" # aptitude is a hard-dependency in this case
+commandTestHandle "aptitude" "aptitude" "EMERG" "NOINSTALL" # aptitude also is a hard-dependency in this case
 commandTestHandle "cp" "coreutils" "EMERG" "NOINSTALL"
 commandTestHandle "cat" "coreutils" "EMERG" "NOINSTALL"
 commandTestHandle "date" "coreutils" "EMERG" "NOINSTALL"
@@ -94,4 +94,4 @@ deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-security main re
 # Update package list
 ${CMD_SUDO} echo "Updating package list..."
 ${CMD_SUDO} ${CMD_APTITUDE} -y update > /dev/null
-${CMD_SUDO} echo "Sources are now complete and up to date!"
+${CMD_SUDO} echo "Sources are now complete and up to date! You can directly use apt."
