@@ -69,6 +69,15 @@ class KvzShell {
     public $output = array();
     
     /**
+     * Holds return_var of last command
+     * Usefull when exe has returned false on error, and you 
+     * want to analyze the output.
+     *
+     * @var array
+     */
+    public $return_var = 0;    
+    
+    /**
      * Holds last command
      *
      * @var unknown_type
@@ -316,7 +325,7 @@ class KvzShell {
     /**
      * Main exe function. Used internally by all other function 
      *
-     * @param unknown_type $cmd
+     * @param string $cmd
      * 
      * @return mixed array on success or boolean on failure
      */
@@ -326,8 +335,8 @@ class KvzShell {
         
         $this->output  = "";
         $this->command = $cmd;
-        exec($cmd, $this->output, $r);
-        if ($r != 0) {
+        exec($cmd, $this->output, $this->return_var);
+        if ($this->return_var != 0) {
             return false;
         }
         return $this->output;
