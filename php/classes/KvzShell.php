@@ -60,6 +60,13 @@ class KvzShell {
     protected $_trace = array();
     
     /**
+     * Holds options like enable_trace
+     *
+     * @var array
+     */
+    protected $_options = array();
+        
+    /**
      * Holds output of last command
      * Usefull when exe has returned false on error, and you 
      * want to analyze the output.
