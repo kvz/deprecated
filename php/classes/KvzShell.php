@@ -90,7 +90,7 @@ class KvzShell {
      *
      * @return KvzShell
      */
-    public function KvzShell($options = false) {
+    public function __constructor($options = false) {
         $this->setOptions($options);
     }
     
