@@ -97,7 +97,7 @@ class KvzShell {
      *
      * @return KvzShell
      */
-    public function __constructor($options = false) {
+    public function __construct($options = false) {
         $this->setOptions($options);
     }
     
@@ -118,12 +118,39 @@ class KvzShell {
     }
     
     /**
+     * Retrieves option
+     *
+     * @param string $optionName
+     * 
+     * @return mixed
+     */
+    public function getOption($optionName) {
+        if (!isset($this->_options[$optionName])) {
+            $this->log("Option: ".$optionName." has not been initialized!", self::LOG_ERR);
+            return null;
+        }
+        
+        return $this->_options[$optionName];
+    }
+    
+    /**
+     * Retrieves options
+     *
+     * @return array
+     */
+    public function getOptions() {
+        return $this->_options;
+    }
+    
+        
+    
+    /**
      * Retrieves trace of refering code  
      *
      * @return array
      */
     public function getTrace() {
-        if (!$this->_options["enable_trace"]) {
+        if (!$this->getOption("enable_trace")) {
             $this->log("Tracing not enabled. Set the enable_trace option. ", self::LOG_WARNING);
             return false;
         }
@@ -145,7 +172,7 @@ class KvzShell {
      * @return boolean
      */
     protected function _setTrace() {
-        if (!$this->_options["enable_trace"]) {
+        if (!$this->getOption("enable_trace")) {
             return false;
         }
         
