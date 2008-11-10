@@ -447,6 +447,7 @@ commandTestHandle "tempfile" "debianutils" "EMERG"
 commandTestHandle "dialog" "dialog" "EMERG"
 commandTestHandle "clear" "ncurses-bin" "EMERG"
 commandTestHandle "date" "coreutils" "EMERG" "NOINSTALL"
+commandTestHandle "ps" "procps" "EMERG" "NOINSTALL"
 
 commandTestHandle "firefox" "firefox" "EMERG" "NOINSTALL" # No use without Firefox
 commandTestHandle "gnome-terminal" "gnome-terminal" "EMERG" "NOINSTALL"
@@ -475,6 +476,10 @@ if [ "${1}" = "help" ] || [ "${1}" = "--help" ] || [ -z "${1}" ]; then
 elif [ "${1}" = "setup" ]; then
     if [ "$(${CMD_WHOAMI})" != "root" ]; then
         log "Setup should be ran as root" "EMERG"
+    fi
+
+    if [ "$(${CMD_PS} auxf |${CMD_GREP} 'firefox' |${CMD_GREP} -v 'grep' |${CMD_WC} -l)" != "0" ]; then
+        log "Please shut down firefox first. Otherwise the about:config will changes will be overwritten." "EMERG"
     fi
 
     # Users
