@@ -45,6 +45,7 @@ commandTestHandle "dirname" "coreutils" "EMERG"
 commandTestHandle "realpath" "realpath" "EMERG"
 commandTestHandle "sed" "sed" "EMERG"
 
+commandTestHandle "whoami" "coreutils" "EMERG"
 commandTestHandle "mkdir" "coreutils" "EMERG"
 commandTestHandle "cat" "coreutils" "EMERG"
 commandTestHandle "tee" "coreutils" "EMERG"
@@ -57,6 +58,7 @@ commandTestHandle "find" "findutils" "EMERG"
 commandTestHandle "tempfile" "debianutils" "EMERG"
 commandTestHandle "dialog" "dialog" "EMERG"
 commandTestHandle "clear" "ncurses-bin" "EMERG"
+commandTestHandle "date" "coreutils" "EMERG" "NOINSTALL"
 
 commandTestHandle "firefox" "firefox" "EMERG" "NOINSTALL" # No use without Firefox
 commandTestHandle "gnome-terminal" "gnome-terminal" "EMERG" "NOINSTALL"
@@ -75,17 +77,24 @@ DIR_FFOXSUF="/.mozilla/firefox"
 # Run
 ###############################################################
 
-if [ "${1}" = "help" ] || [ "${1}" = "--help" ]; then
+if [ "${1}" = "help" ] || [ "${1}" = "--help" ] || [ -z "${1}" ]; then
+    echo ""
     echo "Usage: "
-    echo "   ${0} setup"
-    echo "   ${0} test ssh://root@your.server.com"
-    echo "   ${0} test rdp://root@your.server.com"
+    echo "   ${0} help                             This page"
+    echo "   ${0} setup                            Install firefox handler"
+    echo "   ${0} test ssh://root@your.server.com  Test if it works"
     echo ""
 elif [ "${1}" = "setup" ]; then
+    if [ "$(${CMD_WHOAMI})" != "root" ]; then
+        log "Setup should be ran as root" "EMERG"
+    fi
+
+    # Users
     USERS=$($CMD_FIND /home -maxdepth 1 -mindepth 1 |$CMD_GREP -v ftp |$CMD_AWK -F '/' '{print $NF"=/home/"$NF"|"}')
     boxList "User" "For who should we setup firefox ssh handling? Found:" "${USERS}"
     USER="${boxReturn}"
     
+    # Pref files
     DIR_FFOXPREF="/home/${USER}${DIR_FFOXSUF}"
     [ -d "${DIR_FFOXPREF}" ] || log "Unable to locate ${DIR_FFOXPREF}" "EMERG"
     
@@ -94,22 +103,28 @@ elif [ "${1}" = "setup" ]; then
     FILE_PREFS="${DIR_FFOXPREF}${boxReturn}"
     
     ${CMD_CLEAR}
-    
     [ -f "${FILE_PREFS}" ] || log "Unable to locate ${FILE_PREFS}" "EMERG"
     
+    # Bin dir
     DIR_BIN="/home/${USER}/bin"
     [ -d "${DIR_BIN}" ] || ${CMD_MKDIR} -p ${DIR_BIN} && ${CMD_CHOWN} ${USER}.${USER} ${DIR_BIN}
     [ -d "${DIR_BIN}" ] || log "Unable to create ${DIR_BIN}" "EMERG"
     
+    # Store this program
     FILE_FOXS="${DIR_BIN}/${PROGRAM}.sh"
     ${CMD_CP} -af ${0} ${FILE_FOXS}
+    [ "${?}" = 0 ] || log "Unable to copy ${0} to ${FILE_FOXS}" "EMERG"
     ${CMD_CHOWN} ${USER}.${USER} ${FILE_FOXS}
     ${CMD_CHMOD} ug+x ${FILE_FOXS}
     
-    [ "${?}" = 0 ] || log "Unable to copy ${0} to ${FILE_FOXS}" "EMERG"
+    # Backup
+    CURDATE=$(${CMD_DATE} '+%Y%m%d%H%M%S')
+    ${CMD_SUDO} echo "Backing up ${FILE_PREFS} to ${FILE_PREFS}.${CURDATE}"
+    ${CMD_CP} -af ${FILE_PREFS}{,.${CURDATE}}
+    [ "${?}" = 0 ] || log "Unable to backup ${FILE_PREFS}" "EMERG"
     
+    # Add line
     LINE="user_pref(\"network.protocol-handler.app.ssh\", \"${FILE_FOXS}\");"
-    
     FOUND_ALREADY=$(${CMD_CAT} ${FILE_PREFS} |${CMD_GREP} 'network.protocol-handler.app.ssh' |${CMD_WC} -l)
     if [ "${FOUND_ALREADY}" = 1 ]; then
         log "Firefox preferences file was already adjusted" "INFO"
