@@ -433,6 +433,7 @@ commandTestHandle "dirname" "coreutils" "EMERG"
 commandTestHandle "realpath" "realpath" "EMERG"
 commandTestHandle "sed" "sed" "EMERG"
 
+commandTestHandle "mkdir" "coreutils" "EMERG"
 commandTestHandle "cat" "coreutils" "EMERG"
 commandTestHandle "tee" "coreutils" "EMERG"
 commandTestHandle "pwd" "coreutils" "EMERG"
@@ -485,12 +486,14 @@ elif [ "${1}" = "setup" ]; then
     [ -f "${FILE_PREFS}" ] || log "Unable to locate ${FILE_PREFS}" "EMERG"
     
     DIR_BIN="/home/${USER}/bin"
-    [ -d "${DIR_BIN}" ] || mkdir -p ${DIR_BIN}
+    [ -d "${DIR_BIN}" ] || ${CMD_MKDIR} -p ${DIR_BIN} && ${CMD_CHOWN} ${USER}.${USER} ${DIR_BIN}
     [ -d "${DIR_BIN}" ] || log "Unable to create ${DIR_BIN}" "EMERG"
     
     FILE_FOXS="${DIR_BIN}/${PROGRAM}.sh"
-    ${CMD_CHOWN} -R ${USER}.${USER} ${DIR_BIN}
     ${CMD_CP} -af ${0} ${FILE_FOXS}
+    ${CMD_CHOWN} ${USER}.${USER} ${FILE_FOXS}
+    ${CMD_CHMOD} ug+x ${FILE_FOXS}
+    
     [ "${?}" = 0 ] || log "Unable to copy ${0} to ${FILE_FOXS}" "EMERG"
     
     LINE="user_pref(\"network.protocol-handler.app.ssh\", \"${FILE_FOXS}\");"
