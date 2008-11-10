@@ -138,6 +138,11 @@ function commandTestHandle(){
     local success="0"
     local varname="CMD_$(toUpper ${command})"
     
+    # Only if sed has been found already, use it to replace dashes with underscores
+    if [ -n "${CMD_SED}" ] && [ -x "${CMD_SED}" ]; then
+        varname=$(echo "${varname}" |${CMD_SED} 's#-#_#g')
+    fi
+    
     # Checks
     [ -n "${command}" ] || log "testcommand_handle needs a command argument" "EMERG"
     
@@ -200,6 +205,7 @@ OUTPUT_DEBUG=0
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
 commandTestHandle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
+commandTestHandle "sed" "sed" "DEBUG" "NOINSTALL" # Just try to set CMD_SED, helps with locating CMDs with dashes in it
 commandTestHandle "egrep" "grep" "EMERG"
 commandTestHandle "grep" "grep" "EMERG"
 commandTestHandle "awk" "gawk" "EMERG"
@@ -222,7 +228,7 @@ DO_NOATIME=0
 echo "Starting optimization... "
 
 if [ "${DO_NOHWCAP}" = 1 ]; then
-    ${CMD_TOUCH}  /etc/ld.so.nohwcap
+    ${CMD_TOUCH} /etc/ld.so.nohwcap
 fi
 
 if [ "${DO_NOATIME}" = 1 ]; then

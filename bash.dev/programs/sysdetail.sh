@@ -28,6 +28,7 @@ OUTPUT_DEBUG=0
 ###############################################################
 commandTestHandle "bash" "bash" "EMERG" "NOINSTALL"
 commandTestHandle "aptitude" "aptitude" "DEBUG" "NOINSTALL" # Just try to set CMD_APTITUDE, produces DEBUG msg if not found
+commandTestHandle "sed" "sed" "DEBUG" "NOINSTALL" # Just try to set CMD_SED, helps with locating CMDs with dashes in it
 commandTestHandle "egrep" "grep" "EMERG"
 commandTestHandle "grep" "grep" "EMERG"
 commandTestHandle "awk" "gawk" "EMERG"

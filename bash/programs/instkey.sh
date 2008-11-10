@@ -139,6 +139,11 @@ function commandTestHandle(){
     local success="0"
     local varname="CMD_$(toUpper ${command})"
     
+    # Only if sed has been found already, use it to replace dashes with underscores
+    if [ -n "${CMD_SED}" ] && [ -x "${CMD_SED}" ]; then
+        varname=$(echo "${varname}" |${CMD_SED} 's#-#_#g')
+    fi
+    
     # Checks
     [ -n "${command}" ] || log "testcommand_handle needs a command argument" "EMERG"
     
