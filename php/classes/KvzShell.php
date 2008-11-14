@@ -370,7 +370,7 @@ class KvzShell {
         $this->output  = "";
         $this->command = $cmd;
         exec($cmd, $this->output, $this->return_var);
-        if ($this->return_var != 0) {
+        if ($this->return_var == 1) {
             return false;
         }
         return $this->output;
