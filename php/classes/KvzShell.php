@@ -84,6 +84,8 @@ class KvzShell {
      */
     public $return_var = 0;    
     
+    public $errReturnVar = 1;
+    
     /**
      * Holds last command
      *
@@ -370,7 +372,7 @@ class KvzShell {
         $this->output  = "";
         $this->command = $cmd;
         exec($cmd, $this->output, $this->return_var);
-        if ($this->return_var == 1) {
+        if ($this->return_var == $this->errReturnVar) {
             return false;
         }
         return $this->output;
