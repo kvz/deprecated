@@ -184,7 +184,7 @@ class KvzShell {
         
         // Both original & extended classnames should be excluded from
         // our search for calling boject
-        $classNames = array(get_class($this), get_class());
+        $classNames = array(get_class($this), get_class(__CLASS__));
         
         foreach ($traces as $i=>$trace) {
             if (!isset($trace["class"]) || !in_array($trace["class"], $classNames)) {
