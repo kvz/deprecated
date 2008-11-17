@@ -1,6 +1,6 @@
 #!/bin/bash
 #/**
-# * (NOT READY!) Detect if your machine is being DDoS-attacked
+# * Detect if your machine is being DDoS-attacked
 # *
 # * Shows an ordered list of IP addresses that have connections 
 # * with your server 
