@@ -349,7 +349,7 @@ function boxList(){
     
     # Open dialog
     # --menu <text> <height> <width> <menu height> <tag1> <item1>...
-    eval ${CMD_DIALOG} --clear --title \"${TITLE}\" --menu \"${DESCR}\" 20 58 16 ${ITEMSNEW} 2> ${answerFile}
+    eval ${CMD_DIALOG} --clear --title \"${TITLE}\" --menu \"${DESCR}\" 36 76 26 ${ITEMSNEW} 2> ${answerFile}
     retVal=$?
     
     # OK?
