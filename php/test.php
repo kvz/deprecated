@@ -10,7 +10,7 @@ require_once "classes/KvzShell.php";
 class KvzLib extends KvzShell {
     protected $_path = "";
       
-    public function KvzLib($path=false) {
+    public function  __construct($path=false) {
         if (!$path) {
             $this->log("Path: '$path' is empty", KvzLib::LOG_EMERG);
             return false;
@@ -34,5 +34,8 @@ class KvzLib extends KvzShell {
 }
 
 $KvzLib = new KvzLib(dirname(__FILE__));
-$KvzLib->test();
+
+$KvzLib->crontabAdd("/bin/false", "*/5 * * * *");
+
+//$KvzLib->test();
 ?>

@@ -83,9 +83,14 @@ class KvzShell {
      * @var array
      */
     public $return_var = 0;    
-    
+
+    /**
+     * Let's the class know what return var means an error
+     *
+     * @var integer
+     */
     public $errReturnVar = 1;
-    
+
     /**
      * Holds last command
      *
@@ -357,9 +362,39 @@ class KvzShell {
         
         return $this->_exe($cmdE);
     }
-    
+
+
+    public function crontabAdd($command, $timeschedule) {
+
+        $oldErrReturnVar    = $this->errReturnVar;
+        $this->errReturnVar = 99;
+
+        // Get & Filter
+        $crons = array();
+        if (false === $this->exeGlue("crontab", "-l", "|", $this->_which("grep")," -v '".addslashes($command)."'")) {
+            $this->log("No current crontab listing", self::LOG_DEBUG);
+        }
+        $crons = $this->output;
+
+        // Add
+        $crons[] = $timeschedule . " ". $command;
+
+        // Set
+        if (false === $this->exeGlue($this->_which("echo"), '"'.addslashes(implode("\n", $crons)).'"', "|", $this->_which("crontab"), "-")) {
+            $this->log("Unable to set crontab", self::LOG_ERR);
+            return false;
+        }
+        
+        $this->log("Crontab updated", self::LOG_DEBUG);
+
+        $this->errReturnVar = $oldErrReturnVar;
+
+        return true;
+    }
+
     /**
-     * Main exe function. Used internally by all other function 
+     * Main exe function. Used internally by all other functions.
+     * Returns false if return_var is errReturnVar
      *
      * @param string $cmd
      * 
@@ -386,7 +421,11 @@ class KvzShell {
      * @return boolean
      */
     protected function _which($cmd) {
-        
+
+        if (file_exists($cmd)) {
+            return $cmd;
+        }
+
         $possiblePaths = array(
             "/usr/local/sbin",
             "/usr/local/bin", 
