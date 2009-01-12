@@ -1,4 +1,19 @@
 <?php
+/**
+ * PEAR_Enforce cleans up PHP Scripts.
+ *
+ * Analyzes PHPCS output and creates a new version of your
+ * source file with many of the PHPCS suggestions already fixed.
+ *
+ * PHP version 5
+ *
+ * @package   PEAR_Enforce
+ * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+ * @copyright 2009 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+ * @version   SVN: Release: $Id$
+ * @link      http://kevin.vanzonneveld.net/code/php_programs_PEAR_Enforce/
+ */
 
 // Autoloader borrowed from PHP_CodeSniffer, see function for credits
 spl_autoload_register(array("PEAR_Enforce", "autoload"));

@@ -1,4 +1,16 @@
 <?php
+/**
+ * Abstracts a single Row in sourcecode
+ *
+ * PHP version 5
+ *
+ * @package   CodeRow
+ * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+ * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+ * @version   SVN: Release: $Id$
+ * @link      http://kevin.vanzonneveld.net/code/
+ */
 Class CodeRow {
     private $_codeRow = '';
     private $_length = 0;

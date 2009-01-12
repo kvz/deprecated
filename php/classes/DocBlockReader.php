@@ -1,8 +1,15 @@
 <?php
 /**
- * Reads docBlocks from string and returns an array
- * with usefull information.
+ * Collects and parses docBlocks
  *
+ * PHP version 5
+ *
+ * @package   DocBlockReader
+ * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+ * @copyright 2009 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+ * @version   SVN: Release: $Id$
+ * @link      http://kevin.vanzonneveld.net/code/
  */
 class DocBlockReader {
 
@@ -37,6 +44,8 @@ class DocBlockReader {
         // Overwrite default options temporarily
         if (is_array($curOptions)) {
             $curOptions = array_merge($this->_options, $curOptions);
+        } else {
+            $curOptions = $this->_options;
         }
 
         if ($curOptions["bash_support"]) {
@@ -80,6 +89,7 @@ class DocBlockReader {
         $keyChars      = array("@");
         $lines         = explode("\n", $str);
         $head          = "";
+        $body          = "";
         $text          = "";
         $headRecing    = true;
         $keys          = array();
@@ -94,8 +104,10 @@ class DocBlockReader {
             } else {
                 if ($headRecing) {
                     $head .= $tline."\n";
+                } else {
+                    $body .= $tline."\n";
                 }
-                
+
                 $text .= $tline."\n";
             }
             
@@ -118,7 +130,7 @@ class DocBlockReader {
             }
         }
         
-        return compact("title", "subtitle", "head", "text", "keys", "codetags");
+        return compact("title", "subtitle", "head", "body", "text", "keys", "codetags");
     }
 }
 class DocBlockReader_Exception extends Exception {

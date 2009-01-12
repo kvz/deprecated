@@ -36,9 +36,17 @@ define('T_THIS', 1033);
 define('T_REGULAR_EXPRESSION', 1034);
 
 /**
- * Wrapper around token_get_all(). Borrows heavily from 
+ * Wrapper around token_get_all(). Borrows heavily from
  * PHP_CodeSniffer.
  *
+ * PHP version 5
+ *
+ * @package   Token
+ * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+ * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+ * @version   SVN: Release: $Id$
+ * @link      http://kevin.vanzonneveld.net/code/
  */
 Class Token {
     

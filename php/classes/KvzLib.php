@@ -2,15 +2,17 @@
 require_once dirname(__FILE__)."/KvzShell.php";
 require_once dirname(__FILE__)."/DocBlockReader.php";
 
-
-class KvzLib_Exception extends KvzShell_Exception {
-
-}
-
- /**
- * Description of KvzLib
+/**
+ * Indexes all code in the KvzLib repository
  *
- * @author kevin
+ * PHP version 5
+ *
+ * @package   KvzLib
+ * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+ * @copyright 2009 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+ * @version   SVN: Release: $Id$
+ * @link      http://kevin.vanzonneveld.net/code/
  */
 class KvzLib extends KvzShell {
     protected $_path = "";
@@ -70,8 +72,7 @@ class KvzLib extends KvzShell {
         return $this->getEntityByX("id", $value);
     }
 
-
-    public function &getEntityByName($entityName) {
+    public function &getEntityByName($value) {
         return $this->getEntityByX("name", $value);
     }
 
@@ -115,7 +116,7 @@ class KvzLib extends KvzShell {
         $info["path"]     = $pathEntity;
         $info["language"] = $baseLanguage;
         $info["type"]     = $baseType;
-        $info["id"]       = $info["language"]."_".reset(explode(".", $info["name"]));
+        $info["id"]       = $info["language"]."_".$info["type"]."_".reset(explode(".", $info["name"]));
 
         $pathSource = $pathEntity;
         if (is_dir($pathSource)) {
@@ -154,4 +155,9 @@ class KvzLib extends KvzShell {
         }
     }
 }
+
+class KvzLib_Exception extends KvzShell_Exception {
+
+}
+
 ?>

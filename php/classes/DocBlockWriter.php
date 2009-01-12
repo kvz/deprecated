@@ -1,7 +1,15 @@
 <?php
 /**
- * Generates docBlocks
+ * Writes docBlocks based on input
  *
+ * PHP version 5
+ *
+ * @package   DocBlockWriter
+ * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+ * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+ * @version   SVN: Release: $Id$
+ * @link      http://kevin.vanzonneveld.net/code/
  */
 class DocBlockWriter {
     protected $_params;
