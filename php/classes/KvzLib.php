@@ -52,7 +52,30 @@ class KvzLib extends KvzShell {
         $x = $this->exeGlue("phpdt", $this->_path);
         echo implode("\n", $x);
     }
-    
+
+    public function &getEntityByX($field, $value) {
+        foreach($this->languages as $language=>$types){
+            foreach($types as $type=>$entities) {
+                foreach ($entities as $entityName=>$entity) {
+                    if ($this->languages[$language][$type][$entityName][$field] == $value) {
+                        return $this->languages[$language][$type][$entityName];
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public function &getEntityByID($value) {
+        return $this->getEntityByX("id", $value);
+    }
+
+
+    public function &getEntityByName($entityName) {
+        return $this->getEntityByX("name", $value);
+    }
+
+
     /**
      * Find largest source file if entity is directory
      *
@@ -64,10 +87,7 @@ class KvzLib extends KvzShell {
         // Find largest source file if entity is directory
         $sourceFiles = array();
 
-        echo "Scanning: ".$pathSource."\n";
-
         foreach(glob($pathSource."/*") as $file) {
-            echo "$file\n";
             if (is_dir($file)) {
                 continue;
             }
@@ -79,7 +99,6 @@ class KvzLib extends KvzShell {
         }
 
         uksort($sourceFiles, "strnatcmp");
-        print_r($sourceFiles);
         $pathSource = end($sourceFiles);
 
         return $pathSource;
@@ -92,19 +111,17 @@ class KvzLib extends KvzShell {
         }
 
         $info = array();
-        $info["entity"]    = basename($pathEntity);
-        $info["path"]      = $pathEntity;
-        $info["language"]  = $baseLanguage;
-        $info["type"]      = $baseType;
+        $info["name"]     = basename($pathEntity);
+        $info["path"]     = $pathEntity;
+        $info["language"] = $baseLanguage;
+        $info["type"]     = $baseType;
+        $info["id"]       = $info["language"]."_".reset(explode(".", $info["name"]));
 
         $pathSource = $pathEntity;
         if (is_dir($pathSource)) {
             // Find largest source file if entity is directory
             $pathSource = $this->findSourceInDir($pathSource);
         }
-
-
-        echo $pathSource . "\n";
 
         $source = file_get_contents($pathSource);
         try {
