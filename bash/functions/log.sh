@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Logs a message
 # * 
 # * @param string $1 String

@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Returns a unique temporary filename
 # * 
 # */

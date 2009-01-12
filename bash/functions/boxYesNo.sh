@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Displays a Yes/No dialog
 # * Returns 1 on yes, 0 on no
 # * 

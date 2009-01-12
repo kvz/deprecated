@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Determines script's working directory
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>

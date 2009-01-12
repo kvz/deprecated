@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Tries to execute a bash program from remote KvzLib repository
 # * directly
 # *

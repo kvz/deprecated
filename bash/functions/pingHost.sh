@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Ping a hostname, testing connectivity and returns 0 or 1 
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>

@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Verifies SSH Keys remotely
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>

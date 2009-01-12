@@ -61,53 +61,60 @@ for filePathSource in $(find ${DIR_SORC}/*/ -type f -name '*.sh'); do
     
     # Grep 'make::'includes
 	depTxt=$(cat ${filePathSource} |grep '# make::include')
-	depsAdded=0
+    depsAdded=0
 
-    srcLines=$(cat ${filePathSource} |wc -l)
-    depAt=$(cat ${filePathSource} |grep -n '# make::include' |head -n1 |awk -F':' '{print $1}')
-    [ -n "${depAt}" ] || depAt=0
-    let linesRemain=srcLines-depAt
-    
-    # Reset destination file
-    echo "#!/bin/bash" |tee ${filePathDest} > /dev/null
-    [ -f ${filePathDest} ] || log "Unable to create file: '${filePathDest}'" "EMERG"
-    chmod a+x ${filePathDest}
-    
-    # Add head of original source
-    cat ${filePathSource} |head -n ${depAt} |egrep -v '(# make::include|#!/bin/bash)' |tee -a ${filePathDest} > /dev/null 
-	
 	# Walk through include lines
-	for depPart in ${depTxt}; do
-		# Extract filename 
-		[[ ${depPart} =~ (/([\.a-zA-Z0-9\/]+)+) ]]
-		depFile=${BASH_REMATCH[1]}
-		
-		# Include filename matched?
-		if [ -n "${depFile}" ]; then
-			# Create real path from include reference
-		    realDepFile=$(realpath ${DIR_SORC}/programs/${depFile})
-		    realDepBase=$(basename ${realDepFile} ".sh")
-		    
-		    # Real include path exists? 
-			if [ ! -f "${realDepFile}" ]; then
-				log "Include path '${realDepFile}' does not exist!" "EMERG"
-			else
-			    log "Added include: '${realDepBase}' to '${fileSourceBase}'" "DEBUG"
-			fi
-			
-			# Add dependency
-			let depsAdded=depsAdded+1
-			echo "" |tee -a ${filePathDest} > /dev/null
-			echo "# ${realDepBase}() was auto-included from '${depFile}' by make.sh" |tee -a ${filePathDest} > /dev/null
-			cat ${realDepFile}  |tee -a ${filePathDest} > /dev/null
-			echo "" |tee -a ${filePathDest} > /dev/null
-		fi
-	done
+    if [ -z "${depTxt}" ]; then
+        cp -af ${filePathSource} ${filePathDest}
+        log "No includes for: '${fileSourceBase}', just copied to ${filePathDest}" "INFO"
+    else
+
+        srcLines=$(cat ${filePathSource} |wc -l)
+        depAt=$(cat ${filePathSource} |grep -n '# make::include' |head -n1 |awk -F':' '{print $1}')
+        [ -n "${depAt}" ] || depAt=0
+        let linesRemain=srcLines-depAt
+
+        # Reset destination file
+        echo "#!/bin/bash" |tee ${filePathDest} > /dev/null
+        [ -f ${filePathDest} ] || log "Unable to create file: '${filePathDest}'" "EMERG"
+        chmod a+x ${filePathDest}
+
+        # Add head of original source
+        cat ${filePathSource} |head -n ${depAt} |egrep -v '(# make::include|#!/bin/bash)' |tee -a ${filePathDest} > /dev/null
+
+        for depPart in ${depTxt}; do
+            # Extract filename
+            [[ ${depPart} =~ (/([\.a-zA-Z0-9\/]+)+) ]]
+            depFile=${BASH_REMATCH[1]}
+
+            # Include filename matched?
+            if [ -n "${depFile}" ]; then
+                # Create real path from include reference
+                realDepFile=$(realpath ${DIR_SORC}/programs/${depFile})
+                realDepBase=$(basename ${realDepFile} ".sh")
+
+                # Real include path exists?
+                if [ ! -f "${realDepFile}" ]; then
+                    log "Include path '${realDepFile}' does not exist!" "EMERG"
+                else
+                    log "Added include: '${realDepBase}' to '${fileSourceBase}'" "DEBUG"
+                fi
+
+                # Add dependency
+                let depsAdded=depsAdded+1
+                echo "" |tee -a ${filePathDest} > /dev/null
+                echo "# ${realDepBase}() was auto-included from '${depFile}' by make.sh" |tee -a ${filePathDest} > /dev/null
+                cat ${realDepFile}  |tee -a ${filePathDest} > /dev/null
+                echo "" |tee -a ${filePathDest} > /dev/null
+            fi
+        done
+
+        if [ "${depsAdded}" -gt 0 ]; then
+            log "Added ${depsAdded} includes for: '${fileSourceBase}'" "INFO"
+        fi
+
+        # Add remainder of original source
+        cat ${filePathSource} |tail -n ${linesRemain} |egrep -v '(# make::include|#!/bin/bash)' |tee -a ${filePathDest} > /dev/null
+    fi
 	
-	if [ "${depsAdded}" -gt 0 ]; then
-		log "Added ${depsAdded} includes for: '${fileSourceBase}'" "INFO"
-	fi
-	
-    # Add remainder of original source
-    cat ${filePathSource} |tail -n ${linesRemain} |egrep -v '(# make::include|#!/bin/bash)' |tee -a ${filePathDest} > /dev/null
 done

@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Tries to install a package
 # * Also saved command location in CMD_XXX
 # *

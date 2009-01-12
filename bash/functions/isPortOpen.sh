@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Connects to host & port, validating connectivity and returns 0 or 1 based on success 
 # * 
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>

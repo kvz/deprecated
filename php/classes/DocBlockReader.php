@@ -5,13 +5,24 @@
  *
  */
 class DocBlockReader {
+
+    protected $_options = array();
+
     /**
      * Constructor
      *
      * @return DocBlockReader
      */
-    public function DocBlockReader() {
-        
+    public function  __construct($options = false) {
+        $this->_options = array(
+            "bash_support" => true,
+            "one" => true
+        );
+
+        // Overwrite default options
+        if (is_array($options)) {
+            $this->_options = array_merge($this->_options, $options);
+        }
     }
     
     /**
@@ -22,12 +33,13 @@ class DocBlockReader {
      * 
      * @return array
      */
-    public function getDocBlocks($str, $options=false) {
-        if (!$options) $options = array();
-        if (!isset($options["bash_support"])) $options["bash_support"] = false;
-        if (!isset($options["one"])) $options["one"] = false;
-        
-        if ($options["bash_support"]) {
+    public function getDocBlocks($str, $curOptions=false) {
+        // Overwrite default options temporarily
+        if (is_array($curOptions)) {
+            $curOptions = array_merge($this->_options, $curOptions);
+        }
+
+        if ($curOptions["bash_support"]) {
             $pat = '/[\#]?\/\*\*(.+)[\#]? \*\//isUm';
         } else {
             $pat = '/\/\*\*(.+)[\#]? \*\//isUm';
@@ -49,7 +61,7 @@ class DocBlockReader {
             $block = $this->parseDocBlock(implode("\n", $txtLines)); 
             $blocks[] = $block; 
             
-            if ($options["one"]) {
+            if ($curOptions["one"]) {
                 break;
             }
         }
@@ -97,8 +109,16 @@ class DocBlockReader {
         $subtitle = trim(implode("\n", $parts));
         $head     = trim($head);
         $text     = trim($text);
+
+        $codetags = array();
+        if (false !== stripos($text, '<code>')) {
+            $pat = '/<code>([^<]+)<\/code>/isUm';
+            if (preg_match_all($pat, $text, $matches)) {
+                $codetags = $matches[1];
+            }
+        }
         
-        return compact("title", "subtitle", "head", "text", "keys");
+        return compact("title", "subtitle", "head", "text", "keys", "codetags");
     }
 }
 class DocBlockReader_Exception extends Exception {

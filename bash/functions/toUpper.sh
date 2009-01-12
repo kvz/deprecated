@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Converts a string to uppercase
 # * 
 # * @param string $1 String

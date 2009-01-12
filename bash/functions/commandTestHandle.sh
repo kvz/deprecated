@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Tests if a command exists, tries to install package,
 # * resorts to 'handler' argument on fail. 
 # *

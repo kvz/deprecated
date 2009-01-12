@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Tests if a command exists, and returns it's location or an error string.
 # * Also saved command location in CMD_XXX.
 # *

@@ -1,4 +1,4 @@
-#!/bin/bash
+#/**
 # * Displays a List dialog
 # * 
 # * @param string $1 Title
