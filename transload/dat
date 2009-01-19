@@ -1,0 +1,7 @@
+http://developer.amazonwebservices.com/connect/entry.jspa?externalID=1427&categoryID=101
+us: ami-1c5db975
+eu: ami-ac032bd8
+
+ec2-describe-images -a |grep alestic |grep hardy
+ami-1c5db975
+
