@@ -77,7 +77,7 @@
 function ksortTree( &$array )
 {
     if (!is_array($array)) {
-        return true;
+        return false;
     }
     
     ksort($array);
