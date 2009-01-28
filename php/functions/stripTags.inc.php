@@ -32,5 +32,3 @@ function stripTags($str)
     return preg_replace('@<\/?([^>]+)\/?>@s', '', $str);
 }
 ?>
-
-?>
