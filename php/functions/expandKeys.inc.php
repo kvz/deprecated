@@ -64,12 +64,14 @@ function expandKeys(&$data = null, $allOptionsList = null, $recurse = false)
     }
 
     foreach($data as $key=>$val) {
-        $origKey = $key;
+        $expanded = false;
+        $origKey  = $key;
 
         // Determine mutation: add, delete, replace
         $operator   = substr($key, 0, 1);
         if (isset($operators[$operator])) {
             $key = substr($key, 1, strlen($key));
+            $expanded = true;
         } else {
             // No mutation character defaults to: add
             $operator = '+';
@@ -78,57 +80,54 @@ function expandKeys(&$data = null, $allOptionsList = null, $recurse = false)
         // Determine selection
         $keys = array();
         if ($key == '*') {
+            $expanded = true;
             $keys = $myOptionsList;
         } else if (false !== strpos($key, ',')) {
+            $expanded = true;
             $keys = explode(',', $key);
         } else {
             $keys[] = $key;
-        }
-
-        // Recurse
-        if (is_array($val) && $recurse !== false) {
-            echo 'recursing: '.($recurse+1)." for $key: ".print_r($val, true);
-            expandKeys($val, $allOptionsList, ($recurse + 1));
-            echo 'done: '.print_r($val, true);
         }
 
         // Mutate data according to selection
         foreach($keys as $doKey) {
             switch($operator){
                 case '-':
-                    // Save unsets for later
-                    if (is_array($val)) {
-                        foreach($val as $k=>$v) {
-                            echo 'Munsetting:'.$k."\n";
-                            unset($data[$doKey][$k]);
-                        }
-                    } else {
-                        echo 'unsetting: '.$doKey." in: ".print_r($data, true);
-                        unset($data[$doKey]);
-                        echo 'done: '.print_r($data, true);
-                    }
+                    indent($recurse, 'REMOVING KEY: '.$doKey." in: ".print_r($data, true));
+                    if (isset($data[$doKey])) unset($data[$doKey]);
+                    indent($recurse, 'done: '.print_r($data, true));
                     break;
                 case '=':
                     $data = array();
                 case '+':
-                    if (is_array($val)) {
-                        foreach($val as $k=>$v) {
-                            $data[$doKey][$k] = $v;
-                        }
-                    } else {
-                        $data[$doKey] = $val;
-                    }
-                    
+                    $data[$doKey] = $val;
                     break;
             }
         }
-        
+
         // Clean up Symbol keys
-        if ($origKey !== $key) {
-            echo 'REMOVING OLD KEY: '.$origKey." in: ".print_r($data, true);
+        if ($expanded) {
+            indent($recurse, 'REMOVING OLD KEY: '.$origKey." in: ".print_r($data, true));
             if (isset($data[$origKey])) unset($data[$origKey]);
-            echo 'done: '.print_r($data, true);
+            indent($recurse, 'done: '.print_r($data, true));
+        }
+
+        // Recurse
+        if (is_array($data[$doKey]) && $recurse !== false) {
+            indent($recurse, 'recursing: '.($recurse+1)." for $key: ".print_r($data[$doKey], true));
+            expandKeys($data[$doKey], $allOptionsList, ($recurse + 1));
+            indent($recurse, 'done: '.print_r($data[$doKey], true));
         }
     }
+}
+
+function indent($indent, $what) {
+    $lines       = explode("\n", $what);
+    $result      = "";
+    $indentation = str_repeat('    ', $indent);
+    foreach($lines as $line) {
+        $result .= $indentation.$line."\n";
+    }
+    echo $result;
 }
 ?>
