@@ -16,7 +16,7 @@
  *         '-is_update' => 1
  *     ),
  *     'edit,list' => array(
- *         '-is_update' => 0
+ *         '-is_update' => 1
  *     )
  * );
  *
