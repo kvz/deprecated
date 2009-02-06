@@ -164,7 +164,7 @@ function expandKeys(&$data = null, $allOptionsList = null, $recurse = false, &$e
                     
                     // Recurse Expand
                     if (is_array($data[$doKey]) && $recurse !== false) {
-                        expandKeys($data[$doKey], $allOptionsList, ($recurse + 1));
+                        expandKeys($data[$doKey], $allOptionsList, ($recurse + 1), $errors);
                     }
 
                     break;
