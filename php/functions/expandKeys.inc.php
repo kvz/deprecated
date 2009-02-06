@@ -77,8 +77,10 @@
  * // )
  * </code>
  * 
- * @param array $data
- * @param array $allOptions list to use when '*' is encountered
+ * @param array &$data      Data to process
+ * @param array $allOptions Lists to use when '*' is encountered
+ * @param array $recurse    Wether or not to recurse
+ * @param array &$errors    Stores errors
  *
  * @return array
  */
