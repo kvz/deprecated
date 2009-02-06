@@ -1,7 +1,8 @@
 <?php
 /**
- * Will look for semantic characters (like '*', or '-action') in an array
- * and try to explode it to a full blown array.
+ * Will look for operator characters (like '*', or '-action') in an array
+ * and try to expand it to a full blown array, making use of predefined lists
+ * of all possbile options per recursion level.
  *
  * The following code block can be utilized by PEAR's Testing_DocTest
  * <code>
@@ -14,17 +15,20 @@
  *         'employee_id,modified' => 0,
  *         '-is_update' => 1
  *     ),
- *     'edit,list' => 1
+ *     'edit,list' => array(
+ *         '-is_update' => 0
+ *     )
  * );
  *
  * $allOptions[0] = array('index', 'list', 'add', 'edit', 'view');
  * $allOptions[1] = array('employee_id', 'is_update', 'task_id', 'created', 'modified');
  * 
  * // Execute //
- * expandKeys($data, $allOptions, true);
+ * expandKeys($data, $allOptions, true, $errors);
  * 
  * // Show //
  * print_r($data);
+ * print_r($errors);
  * 
  * // expects:
  * // Array
@@ -40,10 +44,14 @@
  */
 
 
-function expandKeys(&$data = null, $allOptionsList = null, $recurse = false)
+function expandKeys(&$data = null, $allOptionsList = null, $recurse = false, &$errors = null)
 {
     if (empty($data)) {
         return array();
+    }
+
+    if (!is_array($errors)) {
+        $errors = array();
     }
 
     $operators = array(
@@ -63,14 +71,14 @@ function expandKeys(&$data = null, $allOptionsList = null, $recurse = false)
         $myOptionsList = &$allOptionsList;
     }
 
-    foreach($data as $key=>$val) {
+    while (list($key, $val) = each($data)) {
         $expanded = false;
         $origKey  = $key;
 
         // Determine mutation: add, delete, replace
-        $operator   = substr($key, 0, 1);
+        $operator = substr($key, 0, 1);
         if (isset($operators[$operator])) {
-            $key = substr($key, 1, strlen($key));
+            $key      = substr($key, 1, strlen($key));
             $expanded = true;
         } else {
             // No mutation character defaults to: add
@@ -81,53 +89,51 @@ function expandKeys(&$data = null, $allOptionsList = null, $recurse = false)
         $keys = array();
         if ($key == '*') {
             $expanded = true;
-            $keys = $myOptionsList;
+            $keys     = $myOptionsList;
         } else if (false !== strpos($key, ',')) {
             $expanded = true;
-            $keys = explode(',', $key);
+            $keys     = explode(',', $key);
         } else {
             $keys[] = $key;
         }
 
-        // Mutate data according to selection
-        foreach($keys as $doKey) {
+        // Expand
+        while (list(, $doKey) = each($keys)) {
             switch($operator){
                 case '-':
-                    indent($recurse, 'REMOVING KEY: '.$doKey." in: ".print_r($data, true));
                     if (isset($data[$doKey])) unset($data[$doKey]);
-                    indent($recurse, 'done: '.print_r($data, true));
                     break;
                 case '=':
                     $data = array();
                 case '+':
-                    $data[$doKey] = $val;
+                    if (isset($data[$doKey])) {
+                        if (is_array($data[$doKey]) && is_array($val)) {
+                            $data[$doKey] = array_merge($data[$doKey], $val);
+                        } else if (is_array($val)) {
+                            $errors[] = 'overwritting non-array: '.$doKey.' with array ';
+                            $data[$doKey] = $val;
+                        } else if (is_array($data[$doKey])) {
+                            $errors[] = 'NOT overwritting array: '.$doKey.' with non-array ';
+                        } else {
+                            $data[$doKey] = $val;
+                        }
+                    } else {
+                        $data[$doKey] = $val;
+                    }
+                    
+                    // Recurse Expand
+                    if (is_array($data[$doKey]) && $recurse !== false) {
+                        expandKeys($data[$doKey], $allOptionsList, ($recurse + 1));
+                    }
+
                     break;
             }
         }
 
         // Clean up Symbol keys
         if ($expanded) {
-            indent($recurse, 'REMOVING OLD KEY: '.$origKey." in: ".print_r($data, true));
             if (isset($data[$origKey])) unset($data[$origKey]);
-            indent($recurse, 'done: '.print_r($data, true));
-        }
-
-        // Recurse
-        if (is_array($data[$doKey]) && $recurse !== false) {
-            indent($recurse, 'recursing: '.($recurse+1)." for $key: ".print_r($data[$doKey], true));
-            expandKeys($data[$doKey], $allOptionsList, ($recurse + 1));
-            indent($recurse, 'done: '.print_r($data[$doKey], true));
         }
     }
-}
-
-function indent($indent, $what) {
-    $lines       = explode("\n", $what);
-    $result      = "";
-    $indentation = str_repeat('    ', $indent);
-    foreach($lines as $line) {
-        $result .= $indentation.$line."\n";
-    }
-    echo $result;
 }
 ?>
