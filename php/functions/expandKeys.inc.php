@@ -28,12 +28,52 @@
  * 
  * // Show //
  * print_r($data);
- * print_r($errors);
  * 
  * // expects:
  * // Array
  * // (
- * //     [0] => Kevin and Max go for walk in the park.
+ * //     [add] => Array
+ * //         (
+ * //             [employee_id] => 0
+ * //             [modified] => 0
+ * //             [task_id] => 1
+ * //             [created] => 1
+ * //         )
+ * //
+ * //     [index] => Array
+ * //         (
+ * //             [employee_id] => 1
+ * //             [is_update] => 1
+ * //             [task_id] => 1
+ * //             [created] => 1
+ * //             [modified] => 1
+ * //         )
+ * //
+ * //     [list] => Array
+ * //         (
+ * //             [employee_id] => 1
+ * //             [task_id] => 1
+ * //             [created] => 1
+ * //             [modified] => 1
+ * //         )
+ * //
+ * //     [edit] => Array
+ * //         (
+ * //             [employee_id] => 1
+ * //             [task_id] => 1
+ * //             [created] => 1
+ * //             [modified] => 1
+ * //         )
+ * //
+ * //     [view] => Array
+ * //         (
+ * //             [employee_id] => 1
+ * //             [is_update] => 1
+ * //             [task_id] => 1
+ * //             [created] => 1
+ * //             [modified] => 1
+ * //         )
+ * //
  * // )
  * </code>
  * 
