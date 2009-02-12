@@ -22,22 +22,22 @@
  *
  * $allOptions[0] = array('index', 'list', 'add', 'edit', 'view');
  * $allOptions[1] = array('employee_id', 'is_update', 'task_id', 'created', 'modified');
- * 
+ *
  * // Execute //
- * expandKeys($data, $allOptions, true, $errors);
- * 
+ * expandTree($data, $allOptions, true, $errors);
+ *
  * // Show //
  * print_r($data);
- * 
+ *
  * // expects:
  * // Array
  * // (
  * //     [add] => Array
  * //         (
  * //             [employee_id] => 0
- * //             [modified] => 0
  * //             [task_id] => 1
  * //             [created] => 1
+ * //             [modified] => 0
  * //         )
  * //
  * //     [index] => Array
@@ -85,7 +85,7 @@
  * @return array
  */
 
-function expandKeys(&$data = null, $allOptionsList = null, $recurse = false, &$errors = null)
+function expandTree(&$data = null, $allOptionsList = null, $recurse = false, &$errors = null)
 {
     if (empty($data)) {
         return array();
@@ -111,6 +111,20 @@ function expandKeys(&$data = null, $allOptionsList = null, $recurse = false, &$e
     } else {
         $myOptionsList = &$allOptionsList;
     }
+
+    //    // Debug
+    //    if (!function_exists('toVal')) {
+    //        function toVal($s) {
+    //            if (is_array($s)) {
+    //                $k = key($s);
+    //                $v = $s[$k];
+    //                $s = $k . ' => '.$v. ' ...';
+    //            }
+    //
+    //            return $s;
+    //        }
+    //    }
+
 
     while (list($key, $val) = each($data)) {
         $expanded = false;
@@ -140,34 +154,43 @@ function expandKeys(&$data = null, $allOptionsList = null, $recurse = false, &$e
 
         // Expand
         while (list(, $doKey) = each($keys)) {
-            switch($operator){
+            //            //Debug:
+            //            $errors[] = str_repeat(' ', 4*$recurse) .' processing: '. $operator. $doKey . ' : '. toVal($val);
+            
+            switch ($operator){
                 case '-':
-                    if (isset($data[$doKey])) unset($data[$doKey]);
+                    if (isset($data[$doKey])) {
+                        unset($data[$doKey]);
+                    }
                     break;
                 case '=':
                     $data = array();
                 case '+':
                     if (isset($data[$doKey])) {
+                        // Item Already exists
                         if (is_array($data[$doKey]) && is_array($val)) {
-                            $data[$doKey] = array_merge($data[$doKey], $val);
+
+                            $data[$doKey] = array_merge($val, $data[$doKey]);
                         } else if (is_array($val)) {
-                            $errors[] = 'overwritting non-array: '.$doKey.' with array ';
+                            $errors[] = 'overwritting non-array: '.$doKey.' with array '.print_r($val, true);
                             $data[$doKey] = $val;
                         } else if (is_array($data[$doKey])) {
-                            $errors[] = 'NOT overwritting array: '.$doKey.' with non-array ';
+                            $errors[] = 'NOT overwritting array: '.$doKey.' with non-array '.print_r($val, true);
                         } else {
                             $data[$doKey] = $val;
                         }
                     } else {
+                        // New item
                         $data[$doKey] = $val;
                     }
-                    
-                    // Recurse Expand
-                    if (is_array($data[$doKey]) && $recurse !== false) {
-                        expandKeys($data[$doKey], $allOptionsList, ($recurse + 1), $errors);
-                    }
-
                     break;
+            }
+            
+            // Recurse Expand
+            if (is_array($data[$doKey]) && $recurse !== false) {
+                $before = $data[$doKey];
+                expandTree($data[$doKey], $allOptionsList, ($recurse + 1), $errors);
+                $after = $data[$doKey];
             }
         }
 
