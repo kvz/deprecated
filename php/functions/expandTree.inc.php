@@ -79,7 +79,7 @@
  * 
  * @param array &$data      Data to process
  * @param array $allOptions Lists to use when '*' is encountered
- * @param array $recurse    Wether or not to recurse
+ * @param array $recurse    Wether or not to recurse. If true, allOptions should contain an array of lists. 1 for each recursion level
  * @param array &$errors    Stores errors
  *
  * @return array
@@ -104,28 +104,25 @@ function expandTree(&$data = null, $allOptionsList = null, $recurse = false, &$e
     // Determine level of recursion
     // and set active allOptions
     if ($recurse !== false) {
-        if ($recurse === true) {
+        if (!is_numeric($recurse)) {
             $recurse = 0;
         }
+
+        // Pick options from recursion level
         $myOptionsList = &$allOptionsList[$recurse];
     } else {
         $myOptionsList = &$allOptionsList;
     }
 
-    //    // Debug
-    //    if (!function_exists('toVal')) {
-    //        function toVal($s) {
-    //            if (is_array($s)) {
-    //                $k = key($s);
-    //                $v = $s[$k];
-    //                $s = $k . ' => '.$v. ' ...';
-    //            }
-    //
-    //            return $s;
-    //        }
-    //    }
-
-
+    // The final option list for this level
+    // can only be 1 dimension deep.
+    foreach($myOptionsList as $val) {
+        if (is_array($val)) {
+            $errors[] = 'Current option list has more than 1 dimension';
+            return false;
+        }
+    }
+    
     while (list($key, $val) = each($data)) {
         $expanded = false;
         $origKey  = $key;
@@ -154,8 +151,8 @@ function expandTree(&$data = null, $allOptionsList = null, $recurse = false, &$e
 
         // Expand
         while (list(, $doKey) = each($keys)) {
-            //            //Debug:
-            //            $errors[] = str_repeat(' ', 4*$recurse) .' processing: '. $operator. $doKey . ' : '. toVal($val);
+            // //Debug:
+            // $errors[] = str_repeat(' ', 4*$recurse) .' processing: '. $operator. $doKey . ' : '. (is_array($val) ? $k = key($val) . ' => ' . $val[$k]. '...' : $val) ;
             
             switch ($operator){
                 case '-':
