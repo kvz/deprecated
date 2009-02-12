@@ -88,7 +88,7 @@
 function expandTree(&$data = null, $allOptionsList = null, $recurse = false, &$errors = null)
 {
     if (empty($data)) {
-        return array();
+        return $data;
     }
 
     if (!is_array($errors)) {
@@ -109,20 +109,28 @@ function expandTree(&$data = null, $allOptionsList = null, $recurse = false, &$e
         }
 
         // Pick options from recursion level
+        if (empty($allOptionsList[$recurse]) || !is_array($allOptionsList[$recurse])) {
+            // No error, but this is just where we stop.
+            // It could be that userdata is going deeper than our
+            // optionlist.
+            return true;
+        }
+        
         $myOptionsList = &$allOptionsList[$recurse];
     } else {
         $myOptionsList = &$allOptionsList;
     }
 
-    // The final option list for this level
-    // can only be 1 dimension deep.
+    // Sanitize $myOptionsList
+    // Detect too many dimensions
     foreach($myOptionsList as $val) {
         if (is_array($val)) {
             $errors[] = 'Current option list has more than 1 dimension';
-            return false;
+            return false; // we could already be recursed so this is not a final break
         }
     }
-    
+
+    // Go through original, unexpanded keys
     while (list($key, $val) = each($data)) {
         $expanded = false;
         $origKey  = $key;
@@ -149,7 +157,7 @@ function expandTree(&$data = null, $allOptionsList = null, $recurse = false, &$e
             $keys[] = $key;
         }
 
-        // Expand
+        // Go through expanded keys
         while (list(, $doKey) = each($keys)) {
             // //Debug:
             // $errors[] = str_repeat(' ', 4*$recurse) .' processing: '. $operator. $doKey . ' : '. (is_array($val) ? $k = key($val) . ' => ' . $val[$k]. '...' : $val) ;
@@ -161,7 +169,10 @@ function expandTree(&$data = null, $allOptionsList = null, $recurse = false, &$e
                     }
                     break;
                 case '=':
+                    // Clean up all previous keys,
                     $data = array();
+
+                    // and:
                 case '+':
                     if (isset($data[$doKey])) {
                         // Item Already exists
@@ -184,10 +195,8 @@ function expandTree(&$data = null, $allOptionsList = null, $recurse = false, &$e
             }
             
             // Recurse Expand
-            if (is_array($data[$doKey]) && $recurse !== false) {
-                $before = $data[$doKey];
+            if ($recurse !== false && isset($data[$doKey]) && is_array($data[$doKey])) {
                 expandTree($data[$doKey], $allOptionsList, ($recurse + 1), $errors);
-                $after = $data[$doKey];
             }
         }
 
@@ -196,5 +205,8 @@ function expandTree(&$data = null, $allOptionsList = null, $recurse = false, &$e
             if (isset($data[$origKey])) unset($data[$origKey]);
         }
     }
+
+    // Return false on errors
+    return (count($errors) == 0);
 }
 ?>
