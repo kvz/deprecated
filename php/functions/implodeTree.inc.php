@@ -58,29 +58,29 @@
  *
  * @param array   $array
  * @param string  $delimiter
- * @param boolean $baseval
+ * @param boolean $preserveLastDimension
  *
  * @return array
  */
 
 
 
-function implodeTree($data, $separator = '.', $preserveLastDimension = false) {
+function implodeTree($data, $delimiter = '.', $preserveLastDimension = false) {
     $result = array();
     $path = null;
 
-    if (is_array($separator)) {
-        extract($separator, EXTR_OVERWRITE);
+    if (is_array($delimiter)) {
+        extract($delimiter, EXTR_OVERWRITE);
     }
 
     if (!is_null($path)) {
-        $path .= $separator;
+        $path .= $delimiter;
     }
 
     foreach ($data as $key => $val) {
         if (is_array($val) && !($preserveLastDimension && !is_array(reset($val)))) {
                 $result += (array)implodeTree($val, array(
-                    'separator' => $separator,
+                    'delimiter' => $delimiter,
                     'path' => $path . $key
                 ), $preserveLastDimension);
         } else {
