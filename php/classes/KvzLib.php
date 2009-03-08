@@ -4,6 +4,7 @@ require_once dirname(__FILE__)."/DocBlockReader.php";
 
 /**
  * Indexes all code in the KvzLib repository
+ * Testing needs pear install -f Testing_DocTest
  *
  * PHP version 5
  *
