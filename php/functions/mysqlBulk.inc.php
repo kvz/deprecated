@@ -4,20 +4,25 @@
  * performance and integrity.
  *
  * @param array  $queries
- * @param string $bulkMethod
+ * @param string $method
  * @param array  $options
  * 
  * @return float
  */
-function mysqlBulk($queries, $bulkMethod = 'concatenation', $options = array()) {
+function mysqlBulk($queries, $method = 'concatenation', $options = array()) {
     // Default options
-    if (!isset($options['query_handler'])) $options['query_handler'] = 'mysql_query';
-    if (!isset($options['trigger_errors'])) $options['trigger_errors'] = true;
+    if (!isset($options['query_handler'])) {
+        $options['query_handler'] = 'mysql_query';
+    }
+    if (!isset($options['trigger_errors'])) {
+        $options['trigger_errors'] = true;
+    }
 
     // Validation
     if (!is_array($queries)) {
         if ($options['trigger_errors']) {
-            trigger_error('First argument "queries" must be an array', E_USER_NOTICE);
+            trigger_error('First argument "queries" must be an array',
+                E_USER_NOTICE);
         }
         return false;
     }
@@ -30,10 +35,8 @@ function mysqlBulk($queries, $bulkMethod = 'concatenation', $options = array()) 
     $count = count($queries);
 
     // Choose bulk method
-    switch ($bulkMethod) {
+    switch ($method) {
         case 'concatenation':
-            // Fastest in benchmarks at:
-            // http://kevin.vanzonneveld.net/techblog/article/boost_mysql_performance_by_1000/
             // max 1200% gain
             call_user_func($options['query_handler'],
                 implode(';', $queries));
@@ -41,21 +44,23 @@ function mysqlBulk($queries, $bulkMethod = 'concatenation', $options = array()) 
         case 'delayed':
             // MyISAM, MEMORY, ARCHIVE, and BLACKHOLE tables only!
             call_user_func($options['query_handler'],
-                str_replace(';INSERT', ';INSERT DELAYED', implode(';', $queries)));
+                str_replace(';INSERT', ';INSERT DELAYED',
+                    implode(';', $queries)));
             break;
         case 'transaction':
-            // Very good for data integrity. Not so much for performance (max 26% gain)
+            // max 26% gain, but good for data integrity
             call_user_func($options['query_handler'], 
                 'START TRANSACTION');
 
             foreach ($queries as $query) {
                 if (!mysql_query($query)) {
-                    if ($bulkMethod === 'commit') {
+                    if ($method === 'commit') {
                         call_user_func($options['query_handler'],
                             'ROLLBACK');
                     }
                     if ($options['trigger_errors']) {
-                        trigger_error('Query failed. Rolling back transaction', E_USER_WARNING);
+                        trigger_error('Query failed. Transaction cancelled.',
+                            E_USER_WARNING);
                     }
                     return false;
                 }
@@ -67,7 +72,8 @@ function mysqlBulk($queries, $bulkMethod = 'concatenation', $options = array()) 
         default:
             // Unknown bulk method
             if ($options['trigger_errors']) {
-                trigger_error('Unknown bulk method: "'.$bulkMethod.'"', E_USER_ERROR);
+                trigger_error('Unknown bulk method: "'.$method.'"',
+                    E_USER_ERROR);
             }
             return false;
             break;
