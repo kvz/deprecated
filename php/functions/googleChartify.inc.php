@@ -133,10 +133,18 @@ function googleChartify($data, $options = array()) {
         // 2
         $l = floor($xcount/2);
         $r = ceil($xcount/2);
-        $chxl[2] = str_repeat('|', $l) . 'Y line' . str_repeat('|', $r);
+        if (isset($chxl2) && substr_count($chxl2, '|') > 2) {
+            $chxl[2] = $chxl2;
+        } else {
+            $chxl[2] = str_repeat('|', $l) . (isset($chxl2) ? $chxl2 : 'Y line') . str_repeat('|', $r);
+        }
 
         // 3
-        $chxl[3] = str_repeat('|', $l) . 'X line' . str_repeat('|', $r);
+        if (isset($chxl3) && substr_count($chxl3, '|') > 3) {
+            $chxl[3] = $chxl3;
+        } else {
+            $chxl[3] = str_repeat('|', $l) . (isset($chxl3) ? $chxl3 : 'X line') . str_repeat('|', $r);
+        }
 
         $chxl = '0:|'.$chxl[0].'|'.'1:|'.$chxl[1].'|'.'2:|'.$chxl[2].'|'.'3:|'.$chxl[3].'|';
     }

@@ -16,7 +16,10 @@ while(!feof($stdin)) {
 fclose($stdin);
 
 $options = array(
-    'debug' => true,
+    'debug' => false,
+    'chtt' => 'Some gain after > 50 inserts',
+    'chdl' => 'Transaction|Normal',
+    'chxl2' => 'inserts',
     'takeColums' => array(1, 2),
 );
 echo googleChartify($data, $options);
