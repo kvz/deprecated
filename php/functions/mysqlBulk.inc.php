@@ -43,7 +43,7 @@ function mysqlBulk($queries, $bulkMethod = 'concatenation', $options = array()) 
             call_user_func($options['query_handler'],
                 str_replace(';INSERT', ';INSERT DELAYED', implode(';', $queries)));
             break;
-        case 'commit':
+        case 'transaction':
             // Very good for data integrity. Not so much for performance (max 26% gain)
             call_user_func($options['query_handler'], 
                 'START TRANSACTION');
