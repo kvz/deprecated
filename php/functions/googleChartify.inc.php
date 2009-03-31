@@ -14,12 +14,13 @@ function googleChartify($data, $options = array()) {
     if (!isset($options['debug'])) $options['debug'] = false;
     if (!isset($options['urlencode'])) $options['urlencode'] = true;
     if (!isset($options['needColumnCnt'])) $options['needColumnCnt'] = null;
-    if (!isset($options['takeColums'])) $options['takeColums'] = '*';
+    if (!isset($options['takeColumns'])) $options['takeColumns'] = '*';
     if (!isset($options['cht'])) $options['cht'] = 'lc';
     if (!isset($options['chtt'])) $options['chtt'] = 'Comparison';
-    if (!isset($options['chco'])) $options['chco'] = '76A4FB,800080';
+    if (!isset($options['chco'])) $options['chco'] = '76A4FB,800080,4FFF88,FF5FDE,5FFFB1,FFA65F';
     if (!isset($options['chs'])) $options['chs'] = '570x250';
     if (!isset($options['chdl'])) $options['chdl'] = null;
+    if (!isset($options['chxl'])) $options['chxl'] = null;
     if (!isset($options['chxt'])) $options['chxt'] = 'x,y,t';
 
     extract($options);
