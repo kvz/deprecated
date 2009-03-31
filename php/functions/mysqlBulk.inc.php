@@ -81,6 +81,17 @@ function mysqlBulk(&$queries, $method = 'concatenation', $options = array()) {
             call_user_func($options['query_handler'],
                 'COMMIT');
             break;
+        case 'concat_trans':
+            // max 26% gain, but good for data integrity
+            call_user_func($options['query_handler'],
+                'START TRANSACTION');
+
+            call_user_func($options['query_handler'],
+                implode(';', $queries));
+
+            call_user_func($options['query_handler'],
+                'COMMIT');
+            break;
         default:
             // Unknown bulk method
             if ($options['trigger_errors']) {
