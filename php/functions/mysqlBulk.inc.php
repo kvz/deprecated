@@ -33,9 +33,9 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
         }
         return false;
     }
-    if (count($data) > 1000) {
+    if (count($data) > 10000) {
         if ($options['trigger_notices']) {
-            trigger_error('It\'s recommended to use < 1000 queries/bulk',
+            trigger_error('It\'s recommended to use < 10000 queries/bulk',
                 E_USER_NOTICE);
         }
     }
