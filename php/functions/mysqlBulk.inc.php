@@ -105,11 +105,13 @@ function mysqlBulk(&$data, $table, $method = 'loaddata', $options = array()) {
     switch ($method) {
         case 'loaddata':
         case 'loaddata_unsafe':
+        case 'loadsql':
             // Inserts data only
             // Use array instead of queries
+
             $buf    = '';
             foreach($data as $i=>$row) {
-                if (!is_array($row)) {
+                if ($method === 'loadsql') {
                     $row = __sql2array($row, $options);
                 }
                 $buf .= implode(':::,', $row)."^^^\n";
