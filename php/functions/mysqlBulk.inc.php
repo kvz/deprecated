@@ -105,13 +105,13 @@ function mysqlBulk(&$data, $table, $method = 'loaddata', $options = array()) {
     switch ($method) {
         case 'loaddata':
         case 'loaddata_unsafe':
-        case 'loadsql':
+        case 'loadsql_unsafe':
             // Inserts data only
             // Use array instead of queries
 
             $buf    = '';
             foreach($data as $i=>$row) {
-                if ($method === 'loadsql') {
+                if ($method === 'loadsql_unsafe') {
                     $row = __sql2array($row, $options);
                 }
                 $buf .= implode(':::,', $row)."^^^\n";
@@ -120,7 +120,7 @@ function mysqlBulk(&$data, $table, $method = 'loaddata', $options = array()) {
             $fields = implode(', ', array_keys($row));
             
             file_put_contents('/dev/shm/infile.txt', $buf);
-
+            
             if ($method === 'loaddata_unsafe') {
                 if (!__exe("SET UNIQUE_CHECKS=0", $options)) return false;
                 if (!__exe("set foreign_key_checks=0", $options)) return false;
@@ -136,7 +136,7 @@ function mysqlBulk(&$data, $table, $method = 'loaddata', $options = array()) {
                 LINES TERMINATED BY '^^^\\n'
                 (${fields})
             ", $options)) return false;
-
+            
             break;
         case 'delayed':
             // MyISAM, MEMORY, ARCHIVE, and BLACKHOLE tables only!
