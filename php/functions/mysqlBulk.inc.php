@@ -9,7 +9,7 @@
  * 
  * @return float
  */
-function mysqlBulk(&$queries, $method = 'concatenation', $options = array()) {
+function mysqlBulk(&$queries, $table, $method = 'concatenation', $options = array()) {
     // Default options
     if (!isset($options['query_handler'])) {
         $options['query_handler'] = 'mysql_query';
@@ -34,7 +34,7 @@ function mysqlBulk(&$queries, $method = 'concatenation', $options = array()) {
     }
     if (count($queries) > 1000) {
         if ($options['trigger_notices']) {
-            trigger_error('It\'s recommended to use < 1000 queries at once',
+            trigger_error('It\'s recommended to use < 1000 queries/bulk',
                 E_USER_NOTICE);
         }
     }
@@ -42,59 +42,116 @@ function mysqlBulk(&$queries, $method = 'concatenation', $options = array()) {
         return 0;
     }
 
+    if (!function_exists('__c')) {
+        function __c(){
+            list($num, $res) = queryS('SELECT COUNT(id) as cnt FROM benchmark_data');
+            $row = mysql_fetch_assoc($res);
+            return $row['cnt'];
+        }
+    }
+
+    if (!function_exists('__execute')) {
+        function __execute($sql, $options) {
+            extract($options);
+            
+            if (!call_user_func($query_handler, $sql)) {
+                if ($trigger_errors) {
+                    trigger_error('Query failed.' .mysql_error(),
+                        E_USER_ERROR);
+                    echo $sql."\n";
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+    }
+
+    // Make options local
+    extract($options);
+
     // Start timer
     $start = microtime(true);
     $count = count($queries);
 
     // Choose bulk method
     switch ($method) {
-        case 'concatenation':
-            // max 1200% gain
-            call_user_func($options['query_handler'],
-                implode(';', $queries));
+        case 'loaddata':
+            // Max 1200% gain
+            echo '-'.$method.'-'.$query_handler.'-'.count($queries).__LINE__."\n";
+            echo '    '.__c()." : ";
+            
+            if (!__execute(implode(';', $queries), $options)) {
+                return false;
+            }
+
+            echo '    '.__c()."\n";
             break;
         case 'delayed':
             // MyISAM, MEMORY, ARCHIVE, and BLACKHOLE tables only!
-            call_user_func($options['query_handler'],
-                str_replace(';INSERT', ';INSERT DELAYED',
-                    implode(';', $queries)));
+            echo '-'.$method.'-'.$query_handler.'-'.count($queries).__LINE__."\n";
+            echo '    '.__c()." : ";
+
+            if (!__execute(preg_replace('/$INSERT/', 'INSERT DELAYED',
+                        implode(';', $queries)), $options)) {
+                return false;
+            }
+            
+            echo '    '.__c()."\n";
             break;
         case 'transaction':
-            // max 26% gain, but good for data integrity
-            call_user_func($options['query_handler'], 
-                'START TRANSACTION');
+            // Max 26% gain, but good for data integrity
+            echo '-'.$method.'-'.$query_handler.'-'.count($queries).__LINE__."\n";
+            echo '    '.__c()." : ";
+            
+            if (!__execute('START TRANSACTION', $options)) {
+                return false;
+            }
 
             foreach ($queries as $query) {
-                if (!call_user_func($options['query_handler'], $query)) {
-                    if ($method === 'commit') {
-                        call_user_func($options['query_handler'],
-                            'ROLLBACK');
-                    }
-                    if ($options['trigger_errors']) {
-                        trigger_error('Query failed. Transaction cancelled.',
-                            E_USER_WARNING);
-                    }
+                if (!__execute($query, $options)) {
+                    __execute('ROLLBACK', $options);
                     return false;
                 }
             }
+            
+            if (!__execute('COMMIT', $options)) {
+                return false;
+            }
 
-            call_user_func($options['query_handler'],
-                'COMMIT');
+            echo '    '.__c()."\n";
             break;
+            echo '-'.$method.'-'.$query_handler.'-'.count($queries).__LINE__."\n";
+            echo '    '.__c()." : ";
+
+
+            if (!__execute('START TRANSACTION', $options)) {
+                return false;
+            }
+
+            if (!__execute(implode(';', $queries), $options)) {
+                __execute('ROLLBACK', $options);
+                return false;
+            }
+
+            if (!__execute('COMMIT', $options)) {
+                return false;
+            }
+            
+            echo '    '.__c()."\n";
+            break;
+        case 'concatenation':
         case 'concat_trans':
-            // max 26% gain, but good for data integrity
-            call_user_func($options['query_handler'],
-                'START TRANSACTION');
-
-            call_user_func($options['query_handler'],
-                implode(';', $queries));
-
-            call_user_func($options['query_handler'],
-                'COMMIT');
+            // Unknown bulk method
+            if ($trigger_errors) {
+                trigger_error('Deprecated bulk method: "'.$method.'"',
+                    E_USER_ERROR);
+            }
+            return false;
             break;
         default:
             // Unknown bulk method
-            if ($options['trigger_errors']) {
+            if ($trigger_errors) {
                 trigger_error('Unknown bulk method: "'.$method.'"',
                     E_USER_ERROR);
             }
@@ -106,7 +163,7 @@ function mysqlBulk(&$queries, $method = 'concatenation', $options = array()) {
     $duration = microtime(true) - $start;
     $qps      = round ($count / $duration, 2);
 
-    if ($options['eat_away']) {
+    if ($eat_away) {
         $queries = array();
     }
 
