@@ -10,6 +10,14 @@
  * 
  * @return float
  */
+
+$data      = array();
+$data[]    = array('level' => 'err', 'msg' => 'foobar!');
+$data[]    = array('level' => 'err', 'msg' => 'foobar!');
+$data[]    = array('level' => 'err', 'msg' => 'foobar!');
+
+
+
 function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) {
     // Default options
     if (!isset($options['query_handler'])) {
@@ -24,18 +32,24 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
     if (!isset($options['eat_away'])) {
         $options['eat_away'] = false;
     }
+    if (!isset($options['in_file'])) {
+        $options['in_file'] = '/dev/shm/infile.txt';
+    }
+
+    // Make options local
+    extract($options);
 
     // Validation
     if (!is_array($data)) {
-        if ($options['trigger_notices']) {
+        if ($trigger_notices) {
             trigger_error('First argument "queries" must be an array',
                 E_USER_NOTICE);
         }
         return false;
     }
     if (count($data) > 10000) {
-        if ($options['trigger_notices']) {
-            trigger_error('It\'s recommended to use < 10000 queries/bulk',
+        if ($trigger_notices) {
+            trigger_error('It\'s recommended to use <= 10000 queries/bulk',
                 E_USER_NOTICE);
         }
     }
@@ -44,13 +58,12 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
     }
 
     if (!function_exists('__exe')) {
-        function __exe($sql, $options) {
-            extract($options);
+        function __exe($sql, $query_handler, $trigger_errors) {
             if (!call_user_func($query_handler, $sql)) {
                 if ($trigger_errors) {
-                    trigger_error('Query failed.' .mysql_error() .'[sql: '.$sql.']',
+                    trigger_error('Query failed.' .mysql_error() .
+                        '[sql: '.$sql.']',
                         E_USER_ERROR);
-                    echo $sql."\n";
                     return false;
                 }
             }
@@ -60,17 +73,19 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
     }
 
     if (!function_exists('__sql2array')) {
-        function __sql2array($sql, $options) {
-            extract($options);  
+        function __sql2array($sql, $trigger_errors) {
             if (substr(strtoupper(trim($sql)), 0, 6) !== 'INSERT') {
                 if ($trigger_errors) {
-                    trigger_error('Magic sql2array conversion only works for inserts',
+                    trigger_error('Magic sql2array conversion '.
+                        'only works for inserts',
                         E_USER_ERROR);
                 }
                 return false;
             }
 
-            $parts   = preg_split("/[,\(\)] ?(?=([^'|^\\\']*['|\\\'][^'|^\\\']*['|\\\'])*[^'|^\\\']*[^'|^\\\']$)/", $sql);
+            $parts   = preg_split("/[,\(\)] ?(?=([^'|^\\\']*['|\\\']" . 
+                                  "[^'|^\\\']*['|\\\'])*[^'|^\\\']" .
+                                  "*[^'|^\\\']$)/", $sql);
             $process = 'keys';
             $data    = array();
 
@@ -93,10 +108,6 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
         }
     }
 
-
-    // Make options local
-    extract($options);
-
     // Start timer
     $start = microtime(true);
     $count = count($data);
@@ -112,73 +123,79 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
             $buf    = '';
             foreach($data as $i=>$row) {
                 if ($method === 'loadsql_unsafe') {
-                    $row = __sql2array($row, $options);
+                    $row = __sql2array($row, $trigger_errors);
                 }
                 $buf .= implode(':::,', $row)."^^^\n";
             }
             
             $fields = implode(', ', array_keys($row));
             
-            file_put_contents('/dev/shm/infile.txt', $buf);
+            if (!@file_put_contents($in_file, $buf)) {
+                $trigger_errors && trigger_error('Cant write to buffer file: "'.$in_file.'"', E_USER_ERROR);
+                return false;
+            }
             
             if ($method === 'loaddata_unsafe') {
-                if (!__exe("SET UNIQUE_CHECKS=0", $options)) return false;
-                if (!__exe("set foreign_key_checks=0", $options)) return false;
-                #if (!__exe("set sql_log_bin=0", $options)) return false;
-                if (!__exe("set unique_checks=0", $options)) return false;
+                if (!__exe("SET UNIQUE_CHECKS=0", $query_handler, $trigger_errors)) return false;
+                if (!__exe("set foreign_key_checks=0", $query_handler, $trigger_errors)) return false;
+                // Only works for SUPER users:
+                #if (!__exe("set sql_log_bin=0", $query_handler, $trigger_error)) return false;
+                if (!__exe("set unique_checks=0", $query_handler, $trigger_errors)) return false;
             }
 
             if (!__exe("
                 LOAD DATA
-                CONCURRENT LOCAL INFILE '/dev/shm/infile.txt'
+                CONCURRENT LOCAL INFILE '${in_file}'
                 INTO TABLE ${table}
                 FIELDS TERMINATED BY ':::,'
                 LINES TERMINATED BY '^^^\\n'
                 (${fields})
-            ", $options)) return false;
+            ", $query_handler, $trigger_errors)) return false;
             
-            break;
-        case 'delayed':
-            // MyISAM, MEMORY, ARCHIVE, and BLACKHOLE tables only!
-            if (!__exe(preg_replace('/$INSERT/', 'INSERT DELAYED',
-                implode(';', $data)), $options)) return false;
             break;
         case 'transaction':
         case 'transaction_lock':
         case 'transaction_nokeys':
             // Max 26% gain, but good for data integrity
             if ($method == 'transaction_lock') {
-                if (!__exe('SET autocommit = 0', $options)) return false;
-                if (!__exe('LOCK TABLES '.$table.' READ', $options)) return false;
+                if (!__exe('SET autocommit = 0', $query_handler, $trigger_errors)) return false;
+                if (!__exe('LOCK TABLES '.$table.' READ', $query_handler, $trigger_errors)) return false;
             } else if ($method == 'transaction_keys') {
-                if (!__exe('ALTER TABLE '.$table.' DISABLE KEYS', $options)) return false;
+                if (!__exe('ALTER TABLE '.$table.' DISABLE KEYS', $query_handler, $trigger_errors)) return false;
             }
 
-            if (!__exe('START TRANSACTION', $options)) return false;
+            if (!__exe('START TRANSACTION', $query_handler, $trigger_errors)) return false;
 
             foreach ($data as $query) {
-                if (!__exe($query, $options)) {
-                    __exe('ROLLBACK', $options);
+                if (!__exe($query, $query_handler, $trigger_errors)) {
+                    __exe('ROLLBACK', $query_handler, $trigger_errors);
                     if ($method == 'transaction_lock') {
-                        __exe('UNLOCK TABLES '.$table.'', $options);
+                        __exe('UNLOCK TABLES '.$table.'', $query_handler, $trigger_errors);
                     }
                     return false;
                 }
             }
 
-            __exe('COMMIT', $options);
+            __exe('COMMIT', $query_handler, $trigger_errors);
 
             if ($method == 'transaction_lock') {
-                if (!__exe('UNLOCK TABLES', $options)) return false;
+                if (!__exe('UNLOCK TABLES', $query_handler, $trigger_errors)) return false;
             } else if ($method == 'transaction_keys') {
-                if (!__exe('ALTER TABLE '.$table.' ENABLE KEYS', $options)) return false;
+                if (!__exe('ALTER TABLE '.$table.' ENABLE KEYS', $query_handler, $trigger_errors)) return false;
             }
             break;
         case 'none':
             foreach ($data as $query) {
-                if (!__exe($query, $options)) return false;
+                if (!__exe($query, $query_handler, $trigger_errors)) return false;
             }
             
+            break;
+        case 'delayed':
+            // MyISAM, MEMORY, ARCHIVE, and BLACKHOLE tables only!
+            if ($trigger_errors) {
+                trigger_error('Not yet implemented: "'.$method.'"',
+                    E_USER_ERROR);
+            }
             break;
         case 'concatenation':
         case 'concat_trans':
