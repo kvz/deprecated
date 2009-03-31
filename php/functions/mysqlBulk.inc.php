@@ -23,6 +23,9 @@ function mysqlBulk(&$data, $table, $method = 'concatenation', $options = array()
     if (!isset($options['eat_away'])) {
         $options['eat_away'] = false;
     }
+    if (!isset($options['eat_away'])) {
+        $options['safe'] = true;
+    }
 
     // Validation
     if (!is_array($data)) {
@@ -40,14 +43,6 @@ function mysqlBulk(&$data, $table, $method = 'concatenation', $options = array()
     }
     if (empty($data)) {
         return 0;
-    }
-
-    if (!function_exists('__c')) {
-        function __c(){
-            list($num, $res) = queryS('SELECT COUNT(id) as cnt FROM benchmark_data');
-            $row = mysql_fetch_assoc($res);
-            return $row['cnt'];
-        }
     }
 
     if (!function_exists('__exe')) {
@@ -111,11 +106,9 @@ function mysqlBulk(&$data, $table, $method = 'concatenation', $options = array()
     // Choose bulk method
     switch ($method) {
         case 'loaddata':
+        case 'loaddata_unsafe':
             // Inserts data only
             // Use array instead of queries
-            echo '-'.$method.'-'.$query_handler.'-'.count($data).__LINE__."\n";
-            echo '    '.__c()." : ";
-
             $buf    = '';
             foreach($data as $i=>$row) {
                 if (!is_array($row)) {
@@ -128,7 +121,13 @@ function mysqlBulk(&$data, $table, $method = 'concatenation', $options = array()
             
             file_put_contents('/dev/shm/infile.txt', $buf);
 
-            if (!__exe("SET UNIQUE_CHECKS=0", $options)) return false;
+            if ($method === 'loaddata_unsafe') {
+                if (!__exe("SET UNIQUE_CHECKS=0", $options)) return false;
+                if (!__exe("set foreign_key_checks=0", $options)) return false;
+                if (!__exe("set sql_log_bin=0", $options)) return false;
+                if (!__exe("set unique_checks=0", $options)) return false;
+            }
+
             if (!__exe("
                 LOAD DATA
                 CONCURRENT LOCAL INFILE '/dev/shm/infile.txt'
@@ -138,25 +137,16 @@ function mysqlBulk(&$data, $table, $method = 'concatenation', $options = array()
                 (${fields})
             ", $options)) return false;
 
-            echo '    '.__c()."\n";
             break;
         case 'delayed':
             // MyISAM, MEMORY, ARCHIVE, and BLACKHOLE tables only!
-            echo '-'.$method.'-'.$query_handler.'-'.count($data).__LINE__."\n";
-            echo '    '.__c()." : ";
-
             if (!__exe(preg_replace('/$INSERT/', 'INSERT DELAYED',
                 implode(';', $data)), $options)) return false;
-            
-            echo '    '.__c()."\n";
             break;
         case 'transaction':
         case 'transaction_lock':
         case 'transaction_nokeys':
             // Max 26% gain, but good for data integrity
-            echo '-'.$method.'-'.$query_handler.'-'.count($data).__LINE__."\n";
-            echo '    '.__c()." : ";
-            
             if ($method == 'transaction_lock') {
                 if (!__exe('SET autocommit = 0', $options)) return false;
                 if (!__exe('LOCK TABLES '.$table.' READ', $options)) return false;
@@ -183,8 +173,6 @@ function mysqlBulk(&$data, $table, $method = 'concatenation', $options = array()
             } else if ($method == 'transaction_keys') {
                 if (!__exe('ALTER TABLE '.$table.' ENABLE KEYS', $options)) return false;
             }
-
-            echo '    '.__c()."\n";
             break;
         case 'none':
             foreach ($data as $query) {
