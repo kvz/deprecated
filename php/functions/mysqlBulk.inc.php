@@ -3,14 +3,14 @@
  * Executes multiple queries in a 'bulk' to achieve better
  * performance and integrity.
  *
- * @param array  $data
+ * @param array  $data    An array of queries. Except for loaddata methods. Those require a 2 dimensional array.
  * @param string $table
  * @param string $method
  * @param array  $options
  * 
  * @return float
  */
-function mysqlBulk(&$data, $table, $method = 'loaddata', $options = array()) {
+function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) {
     // Default options
     if (!isset($options['query_handler'])) {
         $options['query_handler'] = 'mysql_query';
