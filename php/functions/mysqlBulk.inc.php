@@ -4,12 +4,13 @@
  * performance and integrity.
  *
  * @param array  $data
+ * @param string $table
  * @param string $method
  * @param array  $options
  * 
  * @return float
  */
-function mysqlBulk(&$data, $table, $method = 'concatenation', $options = array()) {
+function mysqlBulk(&$data, $table, $method = 'loaddata', $options = array()) {
     // Default options
     if (!isset($options['query_handler'])) {
         $options['query_handler'] = 'mysql_query';
@@ -22,9 +23,6 @@ function mysqlBulk(&$data, $table, $method = 'concatenation', $options = array()
     }
     if (!isset($options['eat_away'])) {
         $options['eat_away'] = false;
-    }
-    if (!isset($options['eat_away'])) {
-        $options['safe'] = true;
     }
 
     // Validation
