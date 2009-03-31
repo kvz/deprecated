@@ -10,14 +10,6 @@
  * 
  * @return float
  */
-
-$data      = array();
-$data[]    = array('level' => 'err', 'msg' => 'foobar!');
-$data[]    = array('level' => 'err', 'msg' => 'foobar!');
-$data[]    = array('level' => 'err', 'msg' => 'foobar!');
-
-
-
 function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) {
     // Default options
     if (!isset($options['query_handler'])) {
