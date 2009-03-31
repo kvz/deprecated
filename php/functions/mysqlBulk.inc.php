@@ -9,7 +9,7 @@
  * 
  * @return float
  */
-function mysqlBulk($queries, $method = 'concatenation', $options = array()) {
+function mysqlBulk(&$queries, $method = 'concatenation', $options = array()) {
     // Default options
     if (!isset($options['query_handler'])) {
         $options['query_handler'] = 'mysql_query';
@@ -17,14 +17,26 @@ function mysqlBulk($queries, $method = 'concatenation', $options = array()) {
     if (!isset($options['trigger_errors'])) {
         $options['trigger_errors'] = true;
     }
+    if (!isset($options['trigger_notices'])) {
+        $options['trigger_notices'] = true;
+    }
+    if (!isset($options['eat_away'])) {
+        $options['eat_away'] = false;
+    }
 
     // Validation
     if (!is_array($queries)) {
-        if ($options['trigger_errors']) {
+        if ($options['trigger_notices']) {
             trigger_error('First argument "queries" must be an array',
                 E_USER_NOTICE);
         }
         return false;
+    }
+    if (count($queries) > 1000) {
+        if ($options['trigger_notices']) {
+            trigger_error('It\'s recommended to use < 1000 queries at once',
+                E_USER_NOTICE);
+        }
     }
     if (empty($queries)) {
         return 0;
@@ -53,7 +65,7 @@ function mysqlBulk($queries, $method = 'concatenation', $options = array()) {
                 'START TRANSACTION');
 
             foreach ($queries as $query) {
-                if (!mysql_query($query)) {
+                if (!call_user_func($options['query_handler'], $query)) {
                     if ($method === 'commit') {
                         call_user_func($options['query_handler'],
                             'ROLLBACK');
@@ -82,6 +94,10 @@ function mysqlBulk($queries, $method = 'concatenation', $options = array()) {
     // Stop timer
     $duration = microtime(true) - $start;
     $qps      = round ($count / $duration, 2);
+
+    if ($options['eat_away']) {
+        $queries = array();
+    }
 
     // Return queries per second
     return $qps;
