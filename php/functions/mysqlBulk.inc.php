@@ -124,7 +124,7 @@ function mysqlBulk(&$data, $table, $method = 'concatenation', $options = array()
             if ($method === 'loaddata_unsafe') {
                 if (!__exe("SET UNIQUE_CHECKS=0", $options)) return false;
                 if (!__exe("set foreign_key_checks=0", $options)) return false;
-                if (!__exe("set sql_log_bin=0", $options)) return false;
+                #if (!__exe("set sql_log_bin=0", $options)) return false;
                 if (!__exe("set unique_checks=0", $options)) return false;
             }
 
