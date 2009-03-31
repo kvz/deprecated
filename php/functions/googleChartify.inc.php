@@ -22,7 +22,7 @@ function googleChartify($data, $options = array()) {
     if (!isset($options['chs'])) $options['chs'] = '570x250';
     if (!isset($options['chdl'])) $options['chdl'] = null;
     if (!isset($options['chxl'])) $options['chxl'] = null;
-    if (!isset($options['chxt'])) $options['chxt'] = 'x,y,t';
+    if (!isset($options['chxt'])) $options['chxt'] = 'x,y,t,r';
 
     extract($options);
 
