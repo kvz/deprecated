@@ -73,7 +73,10 @@ class KvzShell {
      *
      * @var array
      */
-    protected $_options = array();
+    protected $_options = array(
+        'enable_trace' => false,
+        'die_on_fail' => false,
+    );
         
     /**
      * Holds output of last command
@@ -113,7 +116,7 @@ class KvzShell {
      *
      * @return KvzShell
      */
-    public function __construct($options = false) {
+    public function __construct($options = array()) {
         $this->setOptions($options);
     }
     
@@ -125,14 +128,34 @@ class KvzShell {
      * 
      * @return boolean
      */
-    public function setOptions($options=false) {
-        if (!$options) $options = array();
-        if (!isset($options["enable_trace"])) $options["enable_trace"] = false;
-        
-        $this->_options = $options;
+    public function setOptions($options = array()) {
+        foreach($options as $k=>$v){
+            if (!$this->setOption($k, $v)) {
+                return false;
+            }
+        }
         return true;
     }
-    
+
+    /**
+     * Sets option
+     *
+     * @param array $options
+     *
+     * @return boolean
+     */
+    public function setOption($name, $value) {
+        if (!isset($this->_options[$name])) {
+            $this->log("Option: ".$name." does not exist", self::LOG_ERR);
+            return false;
+        }
+
+        $this->_options[$name] = $value;
+        return true;
+    }
+
+
+
     /**
      * Retrieves option
      *
@@ -157,7 +180,6 @@ class KvzShell {
     public function getOptions() {
         return $this->_options;
     }
-    
         
     
     /**
@@ -231,7 +253,15 @@ class KvzShell {
      * 
      * @return boolean
      */
-    public function initCommand($cmd="", $path=false, $dieOnFail=false) {
+    public function initCommand($cmd = "", $path = null, $dieOnFail=null) {
+        if ($dieOnFail === null) {
+            $dieOnFail = $this->getOption('die_on_fail');
+        }
+
+        if ($path === null && $cmd) {
+            $path = $this->_which($cmd);
+        }
+        
         if (!$cmd || !$path || !is_file($path)) {
             if ($dieOnFail) {
                 $level = self::LOG_EMERG;
@@ -242,7 +272,7 @@ class KvzShell {
             return false;
         }
         $this->_cmds[$cmd] = $path;
-        return true;
+        return $path;
     }
     
     /**
@@ -254,8 +284,11 @@ class KvzShell {
      * 
      * @return boolean
      */
-    public function initCommands($cmds = false, $dieOnFail=false) {
-        if (!$cmds) $cmds = array();
+    public function initCommands($cmds, $dieOnFail = null) {
+        if ($dieOnFail === null) {
+            $dieOnFail = $this->getOption('die_on_fail');
+        }
+
         foreach($cmds as $cmd) {
             $path = $this->_which($cmd);
             
@@ -365,10 +398,13 @@ class KvzShell {
             $cmdE = $this->_cmds[$base] ." ". implode(" ", $parts); 
         } else {
             if (isset($this->_cmds) && is_array($this->_cmds) && count($this->_cmds)) {
-                $this->log("Command: ".$base." has not been initialized yet, but other commands have.", self::LOG_WARNING);
+                // Command has not been initialized yet, but other commands have
+                if (false === $cmdE = $this->initCommand($base)) {
+                    $this->log("Command: '".$cmd."' ('".$path."') not found", $level);
+                }
             }
         }
-        
+
         return $this->_exe($cmdE);
     }
 
@@ -409,14 +445,20 @@ class KvzShell {
      * 
      * @return mixed array on success or boolean on failure
      */
-    protected function _exe($cmd) {
+    protected function _exe($cmd, $dieOnFail = null) {
+        if ($dieOnFail === null) {
+            $dieOnFail = $this->getOption('die_on_fail');
+        }
         //$this->log($cmd, self::LOG_DEBUG);
         $this->_setTrace();
         
         $this->output  = "";
         $this->command = $cmd;
         exec($cmd, $this->output, $this->return_var);
-        if ($this->return_var == $this->errReturnVar) {
+        if ($this->return_var === $this->errReturnVar) {
+            if ($dieOnFail) {
+                $this->log('Unable to execute: '.$cmd, self::LOG_EMERG);
+            }
             return false;
         }
         return $this->output;
