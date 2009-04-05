@@ -1,6 +1,8 @@
 <?php
 Class Movie{
     protected $_details = array();
+    protected $_imdb = null;
+    protected $_imdbsearch = null;
 
     public function  __construct($filename, $cachedir = false, $photoDir = false) {
         $imdbid = $this->_search(basename($filename), true);
@@ -194,21 +196,24 @@ Class Movie{
         }
 
         $results = array();
-        $imdbsearch = new imdbsearch();     // create an instance of the search class
-        $imdbsearch->maxresults = 1;
+        $this->_imdbsearch = new imdbsearch();     // create an instance of the search class
+        $this->_imdbsearch->maxresults = 1;
 
-        $imdbsearch->setsearchname($name);  // tell the class what to search for (case insensitive)
-        $results = $imdbsearch->results();  // submit the search
+        $this->_imdbsearch->setsearchname($name);  // tell the class what to search for (case insensitive)
+        $results = $this->_imdbsearch->results();  // submit the search
 
         $result = array_shift($results);
         return $result->imdbid();
     }
 
     protected function _fetchDetails($imdbid) {
-        $movie = new imdb($imdbid);
+        $this->_imdb = new imdb($imdbid);
+
         $keys = array(
             'genres',
             'photo',
+            'thumbphoto',
+            'mainPictures',
             'plot',
             'runtime',
             'tagline',
@@ -224,7 +229,7 @@ Class Movie{
         $this->_details = array();
 
         foreach ($keys as $key) {
-            $this->_details[$key] = call_user_func(array($movie, $key));
+            $this->_details[$key] = call_user_func(array($this->_imdb, $key));
         }
 
         if ($this->_details['year'] == -1)  {

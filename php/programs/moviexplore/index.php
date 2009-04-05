@@ -29,7 +29,7 @@ if (!defined('DIR_KVZLIB')) {
     }
 }
 
-define('IMDBPHP_CONFIG',DIR_ROOT.'/config/imdb_config.class.php');
+define('IMDBPHP_CONFIG',DIR_ROOT.'/config/imdb.php');
 
 ini_set("include_path", DIR_KVZLIB.":".DIR_ROOT.":".ini_get("include_path"));
 
@@ -43,10 +43,10 @@ $Crawler = new Crawler(array(
     'dir' => '/data/moviesHD',
     'minSize' => '600M',
     'cachedir' => DIR_ROOT.'/cache',
+    'photodir' => DIR_ROOT.'/images',
 ));
 $Movies = $Crawler->crawl();
-foreach($Movies as $file=>$Movie) {
-    $details = $Movie->getDetails();
-    print_r($details);
+foreach($Movies as $file=>$movieDetails) {
+    print_r($movieDetails);
 }
 ?>

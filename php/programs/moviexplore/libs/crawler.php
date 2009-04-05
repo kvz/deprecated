@@ -5,6 +5,7 @@ Class Crawler extends KvzShell{
         'dir' => false,
         'minSize' => false,
         'cachedir' => false,
+        'photodir' => false,
         'cacheage' => 2678400,
     );
 
@@ -23,6 +24,7 @@ Class Crawler extends KvzShell{
         $dir      = $this->getOption('dir');
         $minSize  = $this->getOption('minSize');
         $cachedir = $this->getOption('cachedir');
+        $photodir = $this->getOption('photodir');
         $cacheage = $this->getOption('cacheage');
 
         if (!is_dir($dir)) {
@@ -33,10 +35,13 @@ Class Crawler extends KvzShell{
         $files = $this->exe(sprintf('find %s -size +%s', $dir, $minSize));
 
         $movies = array();
+        $cnt    = 0;
         foreach ($files as $file) {
-            $relativeFile = substr($file, strlen($dir));
-            $hash = strtolower(preg_replace('/[^a-z0-9\-\.\_]/i', '_', $relativeFile));
-            $cacheFile = $cachedir.'/'.$hash.'.json';
+            $cnt++;
+            $relativeFile = substr($file, strlen($dir)+1);
+            $hash         = strtolower(preg_replace('/[^a-z0-9\-\.\_]/i', '_', $relativeFile));
+            $cacheFile    = $cachedir.'/'.$hash.'.json';
+            $imgFile      = $photodir.'/'.basename($file).'.jpg';
 
             if (file_exists($cacheFile) && filemtime($cacheFile) > (time()-($cacheage))) {
                 // Load cache
@@ -44,14 +49,26 @@ Class Crawler extends KvzShell{
             } else {
                 $Movie = new Movie($file);
                 $details = $Movie->getDetails();
+
+
                 $movies[$relativeFile] = $details;
                 if (false !== $details) {
+                    // Save photo
+                    if (!file_exists($imgFile) && !empty($details['photo'])) {
+                        if (false === $this->wget($details['photo'], $imgFile)) {
+                            trigger_error('wget error', E_USER_ERROR);
+                            return false;
+                        }
+                    }
+                    
                     // Save cache
                     file_put_contents($cacheFile, json_encode($details));
                 }
             }
 
-            break;
+            if ($cnt > 5) {
+                break;
+            }
         }
 
         return $movies;

@@ -400,12 +400,26 @@ class KvzShell {
             if (isset($this->_cmds) && is_array($this->_cmds) && count($this->_cmds)) {
                 // Command has not been initialized yet, but other commands have
                 if (false === $cmdE = $this->initCommand($base)) {
-                    $this->log("Command: '".$cmd."' ('".$path."') not found", $level);
+                    $this->log("Command: '".$cmd."' ('".$path."') not found", self::LOG_ERR);
                 }
             }
         }
 
         return $this->_exe($cmdE);
+    }
+
+    public function wget($url, $path, $dieOnFail = null) {
+        if ($dieOnFail === null) {
+            $dieOnFail = $this->getOption('die_on_fail');
+        }
+        
+        if (!$temp = tempnam('/tmp', basename($path))) {
+            $this->log("Unable to create tempfile", $dieOnFail ? self::LOG_EMERG : self::LOG_ERR);
+            return false;
+        }
+
+        $cmd = 'wget -qO- "'.$url.'" > "'.$temp.'" && mv "'.$temp.'" "'.$path.'"';
+        return $this->exe($cmd);
     }
 
 
@@ -472,7 +486,6 @@ class KvzShell {
      * @return boolean
      */
     protected function _which($cmd) {
-
         if (file_exists($cmd)) {
             return $cmd;
         }
