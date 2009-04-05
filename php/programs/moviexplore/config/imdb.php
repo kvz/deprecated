@@ -89,7 +89,7 @@ class imdb_config {
      * @class imdb_config
      * @attribute string photodir
      */
-    $this->photodir = dirname(dirname(__FILE__)).'/images/';
+    $this->photodir = dirname(dirname(__FILE__)).'/output/images/';
     /** URL corresponding to photodir, i.e. the URL to the images, i.e. start at
      *  your servers DOCUMENT_ROOT when specifying absolute path
      * @class imdb_config
