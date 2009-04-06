@@ -7,8 +7,10 @@
  *
  */
 
+error_reporting(E_ALL);
+
 if (!defined('DIR_ROOT')) {
-    define(DIR_ROOT, dirname(__FILE__));
+    define('DIR_ROOT', dirname(__FILE__));
 }
 
 if (!defined('DIR_KVZLIB')) {
@@ -52,6 +54,7 @@ $movies = $Crawler->crawl();
 $Store = new Store($movies, 'html', array(
     'photovirt' => 'images',
     'outputdir' => DIR_ROOT.'/output',
+    'separate_on_dir' => 1,
 ));
 $Store->save();
 ?>

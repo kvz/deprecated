@@ -4,6 +4,7 @@ Class Store{
     public $_options = array(
         'outputdir' => false,
         'photovirt' => false,
+        'separate_on_dir' => 0,
     );
 
     protected $_movies = array();
@@ -55,9 +56,19 @@ Class Store{
                 ksort($this->_movies);
 
                 foreach ($this->_movies as $file=>$movie) {
-                    $parts = explode(DIRECTORY_SEPARATOR, $file);
-                    $dirname = array_shift($parts);
-                    $imgFile = $photovirt.'/'.basename($file).'.jpg';
+                    if (empty($movie)) {
+                        trigger_error('Skipping '.$file.'. Invalid movie information', E_USER_NOTICE);
+                        continue;
+                    }
+                    
+                    if ($separate_on_dir = $this->getOption('separate_on_dir')) {
+                        $parts = explode(DIRECTORY_SEPARATOR, $file);
+                        $dirname = $parts[($separate_on_dir-1)];
+                    }
+
+                    $slug = Movie::fileslug($file);
+
+                    $imgFile = $photovirt.'/'.$slug.'.jpg';
                     if (!file_exists(realpath($outputdir.'/'.$imgFile))) {
                         $imgFile = 'title_noposter.gif';
                     }
@@ -75,9 +86,11 @@ Class Store{
                     }
                     $cast = implode(', ', $castar);
 
-                    if ($prevdirname != $dirname) {
-                        $index .= $Html->div(ucwords($dirname), 'directory');
-                        $index .= $Html->hr();
+                    if ($separate_on_dir) {
+                        if ($prevdirname != $dirname) {
+                            $index .= $Html->div(ucwords($dirname), 'directory');
+                            $index .= $Html->hr();
+                        }
                     }
 
                     $index .= $Html->div(
@@ -90,6 +103,7 @@ Class Store{
                             $Html->h1($movie['title'], 'title') .
                             $Html->h2($movie['tagline'], 'tagline') .
                             $Html->p($file, 'file') .
+                            $Html->p($movie['cleanedName'], 'cleanedName') .
                             $Html->p($movie['plotoutline'], 'plotoutline') .
                             $Html->p(implode(', ', $movie['genres']), 'genres') .
                             $Html->p($cast, 'cast'),
@@ -98,7 +112,9 @@ Class Store{
                         'movie'
                     );
 
-                    $prevdirname = $dirname;
+                    if ($separate_on_dir) {
+                        $prevdirname = $dirname;
+                    }
                 }
                 
                 $body .= $Html->div($index, 'index');

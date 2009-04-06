@@ -37,11 +37,20 @@ Class Crawler extends KvzShell{
         $movies = array();
         $cnt    = 0;
         foreach ($files as $file) {
+            if (strtolower(pathinfo($file, PATHINFO_EXTENSION)) == 'vob') {
+                $file = dirname($file);
+                //trigger_error('Think this is a DVD. Using: '. $file, E_USER_NOTICE);
+                if (basename($file) == 'VIDEO_TS') {
+                    $file = dirname($file);
+                    //trigger_error('Think this is a DVD. Using: '. $file, E_USER_NOTICE);
+                }
+            }
+
             $cnt++;
             $relativeFile = substr($file, strlen($dir)+1);
-            $hash         = strtolower(preg_replace('/[^a-z0-9\-\.\_]/i', '_', $relativeFile));
-            $cacheFile    = $cachedir.'/'.$hash.'.json';
-            $imgFile      = $photodir.'/'.basename($file).'.jpg';
+            $slug         = Movie::fileslug($file);
+            $cacheFile    = $cachedir.'/'.$slug. '.json';
+            $imgFile      = $photodir.'/'.$slug.'.jpg';
 
             if (file_exists($cacheFile) && filemtime($cacheFile) > (time()-($cacheage))) {
                 // Load cache
@@ -49,9 +58,12 @@ Class Crawler extends KvzShell{
             } else {
                 $Movie = new Movie($file);
                 $details = $Movie->getDetails();
-
-                $movies[$relativeFile] = $details;
-                if (false !== $details) {
+                if (false === $details) {
+                    trigger_error('No movie info found for: '.$Movie->cleanedName.', '. $file, E_USER_NOTICE);
+                } else {
+                    // Use this
+                    $movies[$relativeFile] = $details;
+                    
                     // Save photo
                     if (!file_exists($imgFile) && !empty($details['photo'])) {
                         if (false === $this->wget($details['photo'], $imgFile)) {

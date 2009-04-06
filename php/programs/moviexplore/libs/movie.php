@@ -4,11 +4,17 @@ Class Movie{
     protected $_imdb = null;
     protected $_imdbsearch = null;
 
+    public $cleanedName = '';
+
     public function  __construct($filename, $cachedir = false, $photoDir = false) {
         if (false === ($imdbid = $this->_search(basename($filename), true))) {
             return false;
         }
         $this->_fetchDetails($imdbid);
+    }
+
+    public static function fileslug($file) {
+        return strtolower(preg_replace('/[^a-z0-9\-\.\_]/i', '_', basename($file)));
     }
 
     public static function movienameFromFile($file, $useBlackLists = null, $options = array()) {
@@ -42,6 +48,7 @@ Class Movie{
             'dimension',
             'progress',
             'CLASSiC',
+            'CtrlHD',
             'Asteroids',
             'esir',
             'dc',
@@ -56,7 +63,10 @@ Class Movie{
             'Dvl',
             'ill',
             'hv',
+            'INTERNAL',
+            'SEPTiC',
             'malibu',
+            'ucr',
             'anarchy',
             'hnm',
             'sinners',
@@ -90,6 +100,7 @@ Class Movie{
             'xscr',
             'hdtv',
             'dvdscr',
+            'dvd',
             'tc',
             'ts',
             'kvcd',
@@ -97,10 +108,12 @@ Class Movie{
             'vcd',
             'bluray',
             'repack',
+            'r5',
         );
 
         $blackLists['Release'] = array(
             $patternYear,
+            'Directors\ Cut'
         );
 
         $blackLists['Encoding'] = array(
@@ -118,8 +131,11 @@ Class Movie{
         );
 
         $blackLists['Resolution'] = array(
+            'pal',
+            'ntsc',
             '1080p',
             '1080i',
+            'hd1080',
             '720p',
             '720i',
             '1920',
@@ -194,10 +210,11 @@ Class Movie{
     }
 
     protected function _search($name, $cleanUp = true) {
+        $this->cleanedName = '';
         $orig = $name;
         if ($cleanUp) {
-
             $name = self::movienameFromFile($name);
+            $this->cleanedName = $name;
             echo $name."\n";
         }
 
@@ -241,13 +258,15 @@ Class Movie{
 
         $this->_details = array(
             'imdbid' => $imdbid,
+            'cleanedName' => $this->cleanedName,
         );
 
         foreach ($keys as $key) {
             $this->_details[$key] = call_user_func(array($this->_imdb, $key));
         }
 
-        if ($this->_details['year'] == -1)  {
+        if ($this->_details['year'] == -1 && empty($this->_details['plot']))  {
+            print_r($this->_details);
             $this->_details = false;
             return false;
         }
