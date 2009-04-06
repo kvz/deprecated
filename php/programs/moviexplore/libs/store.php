@@ -79,6 +79,13 @@ Class Store{
                         $movie['genres'] = array();
                     }
 
+                    // 4 --- 9
+                    //     7
+                    // 1 --- 6 -3
+                    //
+
+                    $rateColor = statusColor((6-($movie['rating']-3.5)).'/6');
+
                     $movie['cast'] = array_slice($movie['cast'], 0, 3);
                     $castar = array();
                     foreach($movie['cast'] as $actor) {
@@ -96,14 +103,13 @@ Class Store{
                     $index .= $Html->div(
                         $Html->div(
                             $Html->a($movie['main_url'], $Html->img($imgFile, 'poster')) .
-                            $Html->p($movie['rating'], 'rating') .
-                            $Html->p($movie['runtime'].'m', 'runtime') ,
+                            $Html->p($movie['rating'], 'rating', 'style="color:'.$rateColor.';"') .
+                            $Html->p($movie['runtime'] ? $movie['runtime'].'m' : '', 'runtime') ,
                             'left'
                         ). $Html->div(
                             $Html->h1($movie['title'], 'title') .
                             $Html->h2($movie['tagline'], 'tagline') .
-                            $Html->p($file, 'file') .
-                            $Html->p($movie['cleanedName'], 'cleanedName') .
+                            $Html->p($file.' --&gt;&gt; '.$movie['cleanedName'], 'file') .
                             $Html->p($movie['plotoutline'], 'plotoutline') .
                             $Html->p(implode(', ', $movie['genres']), 'genres') .
                             $Html->p($cast, 'cast'),
