@@ -40,9 +40,9 @@ Class Movie{
 
 		$blackLists['Authors'] = array(
             'jamgood',
-            'stv 2005 dvdrip xvid internal',
+            'stv\ 2005\ dvdrip\ xvid\ internal',
             'LiMiTED',
-            'teste divxovore com',
+            'teste\ divxovore\ com',
             'done',
             'don',
             'dimension',
@@ -51,10 +51,11 @@ Class Movie{
             'CtrlHD',
             'Asteroids',
             'esir',
+            'Xvidus',
             'dc',
-            'Os Iluminados',
+            'Os\ Iluminados',
             'Legacy',
-            'LinkoManija Net',
+            'LinkoManija\ Net',
             'deity',
             'TEAM APEX',
             'bald',
@@ -72,16 +73,25 @@ Class Movie{
             'sinners',
             'DiSSOLVE',
             'hls',
-            'Mp3 Beef Stew',
+            'Mp3\ Beef\ Stew',
             'tmg',
             'crf',
             'iwok',
             'PerfectionHD',
-            'JUST4FUN TEAM',
+            'JUST4FUN\ TEAM',
+            'VisualScumBagz',
+            'EuReKA',
+            'AsiSter',
+            'SHiTSoNy',
+            'CiNEFiLE',
+            'txfiwtb',
+            'proper\ 2',
         );
+
         $blackLists['Subs'] = array(
             'custom',
             'nlsubbed',
+            'NLsubs',
             'Subbed',
             'multisubs',
             'nl',
@@ -90,11 +100,13 @@ Class Movie{
             'dut',
             'ger',
             'fr',
+            'pl',
         );
 
         $blackLists['Source'] = array(
             'dvdrip',
             'rerip',
+            'crosspost',
             'HDDVDRip',
             'HDDVD',
             'xscr',
@@ -109,6 +121,10 @@ Class Movie{
             'bluray',
             'repack',
             'r5',
+            'dvdr',
+            'vc1',
+            'novo',
+            'dvd5',
         );
 
         $blackLists['Release'] = array(
@@ -117,11 +133,15 @@ Class Movie{
         );
 
         $blackLists['Encoding'] = array(
+            'Dxva',
             'divx',
             'xvid',
             'X264',
             'ac3',
+            'wmv',
+            'WVC1',
             'dd5\ 1',
+            '5\ 1',
             'ttf',
             'dts',
             '192k',

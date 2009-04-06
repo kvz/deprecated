@@ -3,7 +3,8 @@
  * Requires imdbphp which is installable through apt:
  *  wget -O- http://apt.izzysoft.de/izzysoft.asc | apt-key add -
  *  deb http://apt.izzysoft.de/ubuntu generic universe
- *  aptitude install imdbphp
+ *  aptitude -y update
+ *  aptitude -y install imdbphp
  *
  */
 
@@ -43,8 +44,9 @@ require_once DIR_ROOT.'/libs/store.php';
 require_once DIR_ROOT.'/libs/html.php';
 require_once 'imdb.class.php';
 
+    //'dir' => '/data/moviesHD',
 $Crawler = new Crawler(array(
-    'dir' => '/data/moviesHD',
+    'dir' => '/mnt/aeon/_Movies',
     'minSize' => '600M',
     'cachedir' => DIR_ROOT.'/cache',
     'photodir' => DIR_ROOT.'/output/images',
@@ -54,7 +56,7 @@ $movies = $Crawler->crawl();
 $Store = new Store($movies, 'html', array(
     'photovirt' => 'images',
     'outputdir' => DIR_ROOT.'/output',
-    'separate_on_dir' => 1,
+    'separate_on_dir' => 0,
 ));
 $Store->save();
 ?>
