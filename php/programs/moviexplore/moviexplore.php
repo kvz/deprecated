@@ -1,11 +1,21 @@
 <?php
-/*
+/**
+ * MoviExplore scans a directory for movies and gathers IMDB information
+ *
  * Requires imdbphp which is installable through apt:
  *  wget -O- http://apt.izzysoft.de/izzysoft.asc | apt-key add -
  *  deb http://apt.izzysoft.de/ubuntu generic universe
  *  aptitude -y update
  *  aptitude -y install imdbphp
  *
+ * PHP version 5
+ *
+ * @package   MoviExplore
+ * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+ * @copyright 2009 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+ * @version   SVN: Release: $Id$
+ * @link      http://kevin.vanzonneveld.net
  */
 
 error_reporting(E_ALL);
