@@ -45,11 +45,10 @@ Class Crawler extends KvzShell{
 
             if (file_exists($cacheFile) && filemtime($cacheFile) > (time()-($cacheage))) {
                 // Load cache
-                $movies[$relativeFile] = json_decode(file_get_contents($cacheFile));
+                $movies[$relativeFile] = json_decode(file_get_contents($cacheFile), true);
             } else {
                 $Movie = new Movie($file);
                 $details = $Movie->getDetails();
-
 
                 $movies[$relativeFile] = $details;
                 if (false !== $details) {
@@ -66,9 +65,9 @@ Class Crawler extends KvzShell{
                 }
             }
 
-            if ($cnt > 5) {
-                break;
-            }
+//            if ($cnt > 5) {
+//                break;
+//            }
         }
 
         return $movies;

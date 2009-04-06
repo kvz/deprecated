@@ -37,16 +37,21 @@ require_once DIR_KVZLIB.'/php/classes/KvzShell.php';
 require_once DIR_KVZLIB.'/php/all_functions.php';
 require_once DIR_ROOT.'/libs/crawler.php';
 require_once DIR_ROOT.'/libs/movie.php';
+require_once DIR_ROOT.'/libs/store.php';
+require_once DIR_ROOT.'/libs/html.php';
 require_once 'imdb.class.php';
 
 $Crawler = new Crawler(array(
     'dir' => '/data/moviesHD',
     'minSize' => '600M',
     'cachedir' => DIR_ROOT.'/cache',
-    'photodir' => DIR_ROOT.'/images',
+    'photodir' => DIR_ROOT.'/output/images',
 ));
-$Movies = $Crawler->crawl();
-foreach($Movies as $file=>$movieDetails) {
-    print_r($movieDetails);
-}
+$movies = $Crawler->crawl();
+
+$Store = new Store($movies, 'html', array(
+    'photovirt' => 'images',
+    'outputdir' => DIR_ROOT.'/output',
+));
+$Store->save();
 ?>

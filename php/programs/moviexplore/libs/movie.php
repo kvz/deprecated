@@ -5,7 +5,9 @@ Class Movie{
     protected $_imdbsearch = null;
 
     public function  __construct($filename, $cachedir = false, $photoDir = false) {
-        $imdbid = $this->_search(basename($filename), true);
+        if (false === ($imdbid = $this->_search(basename($filename), true))) {
+            return false;
+        }
         $this->_fetchDetails($imdbid);
     }
 
@@ -39,10 +41,12 @@ Class Movie{
             'don',
             'dimension',
             'progress',
+            'CLASSiC',
             'Asteroids',
             'esir',
             'dc',
             'Os Iluminados',
+            'Legacy',
             'LinkoManija Net',
             'deity',
             'TEAM APEX',
@@ -190,7 +194,9 @@ Class Movie{
     }
 
     protected function _search($name, $cleanUp = true) {
+        $orig = $name;
         if ($cleanUp) {
+
             $name = self::movienameFromFile($name);
             echo $name."\n";
         }
@@ -201,6 +207,11 @@ Class Movie{
 
         $this->_imdbsearch->setsearchname($name);  // tell the class what to search for (case insensitive)
         $results = $this->_imdbsearch->results();  // submit the search
+
+        if (!$results) {
+            trigger_error('Could not find movie page for: "'.$name.'" (originaly: "'.$orig.'")', E_USER_WARNING);
+            return false;
+        }
 
         $result = array_shift($results);
         return $result->imdbid();
@@ -214,7 +225,9 @@ Class Movie{
             'photo',
             'thumbphoto',
             'mainPictures',
+            'main_url',
             'plot',
+            'plotoutline',
             'runtime',
             'tagline',
             'title',
@@ -226,7 +239,9 @@ Class Movie{
             'comment',
         );
 
-        $this->_details = array();
+        $this->_details = array(
+            'imdbid' => $imdbid,
+        );
 
         foreach ($keys as $key) {
             $this->_details[$key] = call_user_func(array($this->_imdb, $key));

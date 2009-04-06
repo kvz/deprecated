@@ -1,0 +1,77 @@
+/* 
+    Document   : style
+    Created on : Apr 6, 2009, 1:21:08 AM
+    Author     : kevin
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/* 
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+
+div.index {
+    font-size:100%;
+    font-family: arial;
+}
+
+div.index hr {
+    margin-bottom: 40px;
+}
+
+div.directory {
+    background-image: url(folder.jpg);
+    background-repeat: no-repeat;
+    font-weight: bold;
+    font-size: 200%;
+    height:50px;
+    padding-left:60px;
+    padding-top:10px;
+}
+
+div.movie {
+    border: 1px solid #cccccc;
+    clear: both;
+    padding: 2px;
+    margin: 2px;
+    width:750px;
+    margin-left:50px;
+    margin-bottom:20px;
+}
+
+div.movie div.left{
+    padding: 2px;
+    float: left;
+    margin-left:4px;
+    width: 110px;
+}
+div.movie div.right{
+    padding: 2px;
+    float: left;
+    width: 600px;
+}
+div.movie div.end{
+    float: none;
+    clear: both;
+}
+
+div.movie h1.title {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+div.movie h2.tagline {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+div.movie img.poster {
+    border: 0px;
+}
+div.movie p.file {
+    margin-top:0px;
+    font-size:80%;
+    color:#AFAFAF;
+}
+div.movie img.plotoutline {
+}
