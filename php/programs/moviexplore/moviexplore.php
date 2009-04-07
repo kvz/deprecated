@@ -54,19 +54,22 @@ require_once DIR_ROOT.'/libs/store.php';
 require_once DIR_ROOT.'/libs/html.php';
 require_once 'imdb.class.php';
 
-    //'dir' => '/data/moviesHD',
-$Crawler = new Crawler(array(
-    'dir' => '/mnt/aeon/_Movies',
+$outDir = '/var/www';
+
+
+$crawlerOptions = array(
+    'dir' => '/data/moviesHD',
     'minSize' => '600M',
     'cachedir' => DIR_ROOT.'/cache',
-    'photodir' => DIR_ROOT.'/output/images',
-));
+    'photodir' => $outDir.'/images',
+);
+$Crawler = new Crawler($crawlerOptions);
 $movies = $Crawler->crawl();
 
 $Store = new Store($movies, 'html', array(
     'photovirt' => 'images',
-    'outputdir' => DIR_ROOT.'/output',
-    'separate_on_dir' => 0,
+    'outputdir' => $outDir,
+    'separate_on_dir' => 1,
 ));
 $Store->save();
 ?>
