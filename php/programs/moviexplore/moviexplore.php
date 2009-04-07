@@ -31,7 +31,7 @@ if (!defined('DIR_KVZLIB')) {
     );
 
     foreach($lookIn as $dir) {
-        if (is_dir($dir)) {
+        if (is_dir($dir) && file_exists($dir.'/kvzlib.php')) {
             define('DIR_KVZLIB', $dir);
             break;
         }
