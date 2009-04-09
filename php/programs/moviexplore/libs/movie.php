@@ -88,6 +88,7 @@ Class Movie{
             'EuReKA',
             'AsiSter',
             'SHiTSoNy',
+            'Resurrection',
             'CiNEFiLE',
             'txfiwtb',
             'proper\ 2',
