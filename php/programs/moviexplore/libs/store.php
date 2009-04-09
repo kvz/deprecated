@@ -66,9 +66,7 @@ Class Store{
                         $dirname = $parts[($separate_on_dir-1)];
                     }
 
-                    $slug = Movie::fileslug($file);
-
-                    $imgFile = $photovirt.'/'.$slug.'.jpg';
+                    $imgFile = Movie::imageFromFile($file, $photovirt);
                     if (!file_exists(realpath($outputdir.'/'.$imgFile))) {
                         $imgFile = 'title_noposter.gif';
                     }

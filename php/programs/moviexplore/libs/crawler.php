@@ -50,7 +50,8 @@ Class Crawler extends KvzShell{
             $relativeFile = substr($file, strlen($dir)+1);
             $slug         = Movie::fileslug($file);
             $cacheFile    = $cachedir.'/'.$slug. '.json';
-            $imgFile      = $photodir.'/'.$slug.'.jpg';
+            #$imgFile      = $photodir.'/'.$slug.'.jpg';
+            $imgFile      = Movie::imageFromFile($file, $photodir);
 
             if (file_exists($cacheFile) && filemtime($cacheFile) > (time()-($cacheage))) {
                 // Load cache

@@ -17,6 +17,11 @@ Class Movie{
         return strtolower(preg_replace('/[^a-z0-9\-\.\_]/i', '_', basename($file)));
     }
 
+    public static function imageFromFile($file, $photoDir) {
+        $base = basename($file);
+        return $photoDir.'/'.$base.'.cover.jpg';
+    }
+
     public static function movienameFromFile($file, $useBlackLists = null, $options = array()) {
 		$orig_str = $file;
         $str      = $file;
