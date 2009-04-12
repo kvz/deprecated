@@ -54,8 +54,8 @@ require_once DIR_ROOT.'/libs/store.php';
 require_once DIR_ROOT.'/libs/html.php';
 require_once 'imdb.class.php';
 
-$outDir = '/var/www';
-
+$outDir = '/home/kevin/Dropbox/Public/cinema';
+$outFile = 'kijken.html';
 
 $crawlerOptions = array(
     'dir' => '/data/moviesHD',
@@ -69,7 +69,9 @@ $movies = $Crawler->crawl();
 $Store = new Store($movies, 'html', array(
     'photovirt' => 'images',
     'outputdir' => $outDir,
+    'outputfile' => $outFile,
     'separate_on_dir' => 1,
 ));
 $Store->save();
+#$Store->output();
 ?>
