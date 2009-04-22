@@ -247,6 +247,7 @@ UBUNTU_FOUND=0
 [ "gutsy"    = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
 [ "hardy"    = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
 [ "intrepid" = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
+[ "jaunty"   = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
  
 if [ "${UBUNTU_FOUND}" = 0 ]; then
     ${CMD_SUDO} echo "Version: '${UBUNTU_DISTR}' is not supported (yet)" >&2
