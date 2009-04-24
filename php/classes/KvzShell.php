@@ -335,15 +335,6 @@ class KvzShell {
      *
      * @param string $str
      */
-    public function info($str) {
-        $this->log($str, KvzShell::LOG_INFO);
-    }
-
-    /**
-     * Shortcut to log
-     *
-     * @param string $str
-     */
     public function notice($str) {
         $this->log($str, KvzShell::LOG_NOTICE);
     }
