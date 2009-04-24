@@ -324,7 +324,8 @@ class KvzShell {
      * @param string $str
      */
     public function debug($str) {
-        $this->log($str, KvzShell::LOG_DEBUG);
+        $args  = func_get_args();
+        $this->_logf($str, $args, KvzShell::LOG_DEBUG);
     }
 
     /**
@@ -333,7 +334,8 @@ class KvzShell {
      * @param string $str
      */
     public function info($str) {
-        $this->log($str, KvzShell::LOG_INFO);
+        $args  = func_get_args();
+        $this->_logf($str, $args, KvzShell::LOG_INFO);
     }
 
     /**
@@ -342,7 +344,8 @@ class KvzShell {
      * @param string $str
      */
     public function notice($str) {
-        $this->log($str, KvzShell::LOG_NOTICE);
+        $args  = func_get_args();
+        $this->_logf($str, $args, KvzShell::LOG_NOTICE);
     }
 
     /**
@@ -351,7 +354,26 @@ class KvzShell {
      * @param string $str
      */
     public function warning($str) {
-        $this->log($str, KvzShell::LOG_WARNING);
+        $args  = func_get_args();
+        $this->_logf($str, $args, KvzShell::LOG_WARNING);
+    }
+
+    /**
+     * Support sprintf formatted strings
+     * 
+     * @param <type> $str
+     * @param <type> $args
+     * @param <type> $level
+     */
+    public function _logf($str, $args, $level) {
+        if (is_array($args) && !empty($args)) {
+            $str   = array_shift($args);
+        }
+        if (is_array($args)) {
+            $str = vsprintf($str, $args);
+        }
+
+        $this->log($str, $level);
     }
 
     /**
@@ -360,7 +382,8 @@ class KvzShell {
      * @param string $str
      */
     public function err($str) {
-        $this->log($str, KvzShell::LOG_ERR);
+        $args  = func_get_args();
+        $this->_logf($str, $args, KvzShell::LOG_ERR);
     }
 
     /**
@@ -369,7 +392,8 @@ class KvzShell {
      * @param string $str
      */
     public function crit($str) {
-        $this->log($str, KvzShell::LOG_CRIT);
+        $args  = func_get_args();
+        $this->_logf($str, $args, KvzShell::LOG_ERR);
     }
 
     /**
@@ -378,7 +402,8 @@ class KvzShell {
      * @param string $str
      */
     public function alert($str) {
-        $this->log($str, KvzShell::LOG_ALERT);
+        $args  = func_get_args();
+        $this->_logf($str, $args, KvzShell::LOG_ALERT);
     }
 
     /**
@@ -387,7 +412,8 @@ class KvzShell {
      * @param string $str
      */
     public function emerg($str) {
-        $this->log($str, KvzShell::LOG_EMERG);
+        $args  = func_get_args();
+        $this->_logf($str, $args, KvzShell::LOG_EMERG);
     }
 
     /**
