@@ -658,8 +658,10 @@ class KvzShell {
     /**
      * Takes an array and returns an argument string
      *
-     * @param <type> $params
-     * @return <type>
+     * @param array  $params
+     * @param string $keyPrefix
+     *
+     * @return string
      */
     function argumentize($params, $keyPrefix = '--') {
         $arguments = '';
