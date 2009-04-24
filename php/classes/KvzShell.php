@@ -117,6 +117,13 @@ class KvzShell {
      * @return KvzShell
      */
     public function __construct($options = array()) {
+        // Merge parent's possible options with own
+        $parent        = get_parent_class($this);
+        $parentVars    = get_class_vars($parent);
+        $parentOptions = $parentVars['_options'];
+
+        $this->_options = array_merge($parentOptions, $this->_options);
+
         $this->setOptions($options);
     }
     
@@ -146,7 +153,7 @@ class KvzShell {
      */
     public function setOption($name, $value) {
         if (!isset($this->_options[$name])) {
-            $this->log("Option: ".$name." does not exist", self::LOG_ERR);
+            $this->err("Option: ".$name." does not exist");
             return false;
         }
 
@@ -165,7 +172,7 @@ class KvzShell {
      */
     public function getOption($optionName) {
         if (!isset($this->_options[$optionName])) {
-            $this->log("Option: ".$optionName." has not been initialized!", self::LOG_ERR);
+            $this->err("Option: ".$optionName." has not been initialized!");
             return null;
         }
         
@@ -189,7 +196,7 @@ class KvzShell {
      */
     public function getTrace() {
         if (!$this->getOption("enable_trace")) {
-            $this->log("Tracing not enabled. Set the enable_trace option. ", self::LOG_WARNING);
+            $this->warning("Tracing not enabled. Set the enable_trace option. ");
             return false;
         }
         
@@ -299,7 +306,93 @@ class KvzShell {
         }
         return true;
     }
-    
+
+    protected function _die($str) {
+        $this->out($str);
+        die();
+    }
+
+    /**
+     * Shortcut to log
+     *
+     * @param string $str
+     */
+    public function debug($str) {
+        $this->log($str, KvzShell::LOG_DEBUG);
+    }
+
+    /**
+     * Shortcut to log
+     *
+     * @param string $str
+     */
+    public function info($str) {
+        $this->log($str, KvzShell::LOG_INFO);
+    }
+
+    /**
+     * Shortcut to log
+     *
+     * @param string $str
+     */
+    public function info($str) {
+        $this->log($str, KvzShell::LOG_INFO);
+    }
+
+    /**
+     * Shortcut to log
+     *
+     * @param string $str
+     */
+    public function notice($str) {
+        $this->log($str, KvzShell::LOG_NOTICE);
+    }
+
+    /**
+     * Shortcut to log
+     *
+     * @param string $str
+     */
+    public function warning($str) {
+        $this->log($str, KvzShell::LOG_WARNING);
+    }
+
+    /**
+     * Shortcut to log
+     *
+     * @param string $str
+     */
+    public function err($str) {
+        $this->log($str, KvzShell::LOG_ERR);
+    }
+
+    /**
+     * Shortcut to log
+     *
+     * @param string $str
+     */
+    public function crit($str) {
+        $this->log($str, KvzShell::LOG_CRIT);
+    }
+
+    /**
+     * Shortcut to log
+     *
+     * @param string $str
+     */
+    public function alert($str) {
+        $this->log($str, KvzShell::LOG_ALERT);
+    }
+
+    /**
+     * Shortcut to log
+     *
+     * @param string $str
+     */
+    public function emerg($str) {
+        $this->log($str, KvzShell::LOG_EMERG);
+    }
+
     /**
      * Logs a message
      *
@@ -309,15 +402,38 @@ class KvzShell {
      * @return boolean
      */
     public function log($str, $level=KvzShell::LOG_INFO) {
-        echo $str."\n";
+        $this->out($str);
         
         if ($level < self::LOG_CRIT) {
-            die();
+            $this->_die('Can\'t continue after last event');
         }
         
         return true;
     }
-    
+
+    /**
+     * Echo like function
+     *
+     * @staticvar resource $stream
+     * @param     String   $str
+     * @param     boolean  $newline
+     * 
+     * @return    boolean
+     */
+	public static function out($str, $newline = true) {
+		if ($newline) {
+			$str = $str."\n";
+		}
+
+		static $stream;
+		if (!is_resource($stream)) {
+			$stream = fopen('php://stdout','w');
+		}
+		return fwrite($stream, $str);
+	}
+
+
+
     /**
      * Wrapper around exe, will expect something in return, or will produce false
      *
@@ -400,12 +516,71 @@ class KvzShell {
             if (isset($this->_cmds) && is_array($this->_cmds) && count($this->_cmds)) {
                 // Command has not been initialized yet, but other commands have
                 if (false === $cmdE = $this->initCommand($base)) {
-                    $this->log("Command: '".$cmd."' ('".$path."') not found", self::LOG_ERR);
+                    $this->err("Command: '".$cmd."' ('".$path."') not found");
                 }
             }
         }
 
         return $this->_exe($cmdE);
+    }
+
+    /**
+     * Main exe function. Used internally by all other functions.
+     * Returns false if return_var is errReturnVar
+     *
+     * @param string $cmd
+     *
+     * @return mixed array on success or boolean on failure
+     */
+    protected function _exe($cmd, $dieOnFail = null) {
+        if ($dieOnFail === null) {
+            $dieOnFail = $this->getOption('die_on_fail');
+        }
+        //$this->log($cmd, self::LOG_DEBUG);
+        $this->_setTrace();
+
+        $this->output  = "";
+        $this->command = $cmd;
+        exec($cmd, $this->output, $this->return_var);
+        if ($this->return_var === $this->errReturnVar) {
+            if ($dieOnFail) {
+                $this->emerg('Unable to execute: '.$cmd);
+            }
+            return false;
+        }
+        return $this->output;
+    }
+
+    /**
+     * Tries to locate command and saves exact location for later use by exe
+     *
+     * @param string $cmd
+     *
+     * @return boolean
+     */
+    protected function _which($cmd) {
+        if (file_exists($cmd)) {
+            return $cmd;
+        }
+
+        $possiblePaths = array(
+            "/usr/local/sbin",
+            "/usr/local/bin",
+            "/usr/sbin",
+            "/usr/bin",
+            "/sbin",
+            "/bin",
+            "/usr/games",
+        );
+
+        foreach ($possiblePaths as $possiblePath) {
+            $testPath = $possiblePath."/".escapeshellcmd($cmd);
+            if (file_exists($testPath)) {
+                return $testPath;
+            }
+        }
+
+        return false;
     }
 
     public function wget($url, $path, $dieOnFail = null) {
@@ -422,7 +597,6 @@ class KvzShell {
         return $this->exe($cmd);
     }
 
-
     public function crontabAdd($command, $timeschedule) {
 
         $oldErrReturnVar    = $this->errReturnVar;
@@ -431,7 +605,7 @@ class KvzShell {
         // Get & Filter
         $crons = array();
         if (false === $this->exeGlue("crontab", "-l", "|", $this->_which("grep")," -v '".addslashes($command)."'")) {
-            $this->log("No current crontab listing", self::LOG_DEBUG);
+            $this->debug("No current crontab listing");
         }
         $crons = $this->output;
 
@@ -440,75 +614,51 @@ class KvzShell {
 
         // Set
         if (false === $this->exeGlue($this->_which("echo"), '"'.addslashes(implode("\n", $crons)).'"', "|", $this->_which("crontab"), "-")) {
-            $this->log("Unable to set crontab", self::LOG_ERR);
+            $this->err("Unable to set crontab");
             return false;
         }
         
-        $this->log("Crontab updated", self::LOG_DEBUG);
+        $this->debug("Crontab updated");
 
         $this->errReturnVar = $oldErrReturnVar;
 
         return true;
     }
 
+
+
     /**
-     * Main exe function. Used internally by all other functions.
-     * Returns false if return_var is errReturnVar
+     * Uses PEAR dependency: Console_GetOps to return an array of commandline
+     * arguments & options
      *
-     * @param string $cmd
+     * @author Felix Geisendoerfer
+     * @param <type> $short
+     * @param <type> $long
      * 
-     * @return mixed array on success or boolean on failure
+     * @return array
      */
-    protected function _exe($cmd, $dieOnFail = null) {
-        if ($dieOnFail === null) {
-            $dieOnFail = $this->getOption('die_on_fail');
-        }
-        //$this->log($cmd, self::LOG_DEBUG);
-        $this->_setTrace();
-        
-        $this->output  = "";
-        $this->command = $cmd;
-        exec($cmd, $this->output, $this->return_var);
-        if ($this->return_var === $this->errReturnVar) {
-            if ($dieOnFail) {
-                $this->log('Unable to execute: '.$cmd, self::LOG_EMERG);
-            }
+	public function getArguments($short, $long = null) {
+        if (!@include_once("Console/Getopt.php")) {
+            $this->crit('Can\t include Console_Getopt. Please: pear install Console_Getopt');
             return false;
         }
-        return $this->output;
-    }
-    
-    /**
-     * Tries to locate command and saves exact location for later use by exe
-     *
-     * @param string $cmd
-     * 
-     * @return boolean
-     */
-    protected function _which($cmd) {
-        if (file_exists($cmd)) {
-            return $cmd;
-        }
+        
+		$cg = new Console_Getopt();
+		list($options, $args) = $cg->getopt($cg->readPHPArgv(), $short, $long);
+		$opt = array();
+		foreach ($options as $option) {
+			list($key, $val) = $option;
+			$val = is_null($val)
+				? true
+				: $val;
 
-        $possiblePaths = array(
-            "/usr/local/sbin",
-            "/usr/local/bin", 
-            "/usr/sbin",
-            "/usr/bin", 
-            "/sbin",
-            "/bin",
-            "/usr/games",
-        );
-        
-        foreach ($possiblePaths as $possiblePath) {
-            $testPath = $possiblePath."/".escapeshellcmd($cmd);
-            if (file_exists($testPath)) {
-                return $testPath;
-            }
-        }
-        
-        return false;
-    }
+			$opt[$key] = (!isset($opt[$key]))
+				? $val
+				: array_merge((array)$opt[$key], (array)$val);
+		}
+		return compact('opt', 'args');
+	}
+
 }
 class KvzShell_Exception extends Exception {
 
