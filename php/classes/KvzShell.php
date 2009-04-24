@@ -77,6 +77,7 @@ class KvzShell {
         'enable_trace' => false,
         'die_on_fail' => false,
         'die_on_nocli' => false,
+        'merge_stderr' => false,
     );
         
     /**
@@ -540,6 +541,11 @@ class KvzShell {
 
         $this->output  = "";
         $this->command = $cmd;
+
+        if ($this->getOptions('merge_stderr')) {
+            $cmd .= ' 2>&1';
+        }
+
         exec($cmd, $this->output, $this->return_var);
         if ($this->return_var === $this->errReturnVar) {
             if ($dieOnFail) {
