@@ -9,17 +9,6 @@ Class Crawler extends KvzShell{
         'cacheage' => 2678400,
     );
 
-    public function  __construct($options = array()) {
-        // Merge parent's possible options with own
-        $parent        = get_parent_class($this);
-        $parentVars    = get_class_vars($parent);
-        $parentOptions = $parentVars['_options'];
-        $this->_options = arrayMerge($parentOptions, $this->_options);
-
-        // Set given options
-        $this->setOptions($options);
-    }
-
     public function crawl() {
         $dir      = $this->getOption('dir');
         $minSize  = $this->getOption('minSize');
