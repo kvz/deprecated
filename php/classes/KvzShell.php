@@ -655,6 +655,24 @@ class KvzShell {
 		return compact('opt', 'args');
 	}
 
+    /**
+     * Takes an array and returns an argument string
+     *
+     * @param <type> $params
+     * @return <type>
+     */
+    function argumentize($params, $keyPrefix = '--') {
+        $arguments = '';
+        foreach($params as $k=>$v) {
+            if (!is_numeric($k)) {
+                $arguments .= $keyPrefix.$k.' ';
+            }
+            $arguments .= $v. ' ';
+        }
+        return trim($arguments);
+    }
+
+
 }
 class KvzShell_Exception extends Exception {
 
