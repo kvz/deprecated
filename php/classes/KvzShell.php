@@ -501,23 +501,26 @@ class KvzShell {
      * 
      * @return mixed array on success or boolean on failure
      */
-    public function exe($cmd) {
+    public function exe($cmd, $dieOnFail = null) {
+        if ($dieOnFail === null) {
+            $dieOnFail = $this->getOption('die_on_fail');
+        }
         $parts = preg_split("[\s]", $cmd, null, PREG_SPLIT_NO_EMPTY);
         $base  = basename(array_shift($parts));
         $cmdE  = $cmd;
-        
+
         if (isset($this->_cmds[$base])) {
-            $cmdE = $this->_cmds[$base] ." ". implode(" ", $parts); 
+            $cmdE = $this->_cmds[$base] ." ". implode(" ", $parts);
         } else {
             if (isset($this->_cmds) && is_array($this->_cmds) && count($this->_cmds)) {
                 // Command has not been initialized yet, but other commands have
                 if (false === $cmdE = $this->initCommand($base)) {
-                    $this->err("Command: '".$cmd."' ('".$path."') not found");
+                    $this->log("Command: '".$cmd."' ('".$path."') not found", self::LOG_ERR);
                 }
             }
         }
 
-        return $this->_exe($cmdE);
+        return $this->_exe($cmdE, $dieOnFail);
     }
 
     /**
