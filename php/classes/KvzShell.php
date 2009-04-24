@@ -76,6 +76,7 @@ class KvzShell {
     protected $_options = array(
         'enable_trace' => false,
         'die_on_fail' => false,
+        'die_on_nocli' => false,
     );
         
     /**
@@ -125,6 +126,10 @@ class KvzShell {
         $this->_options = array_merge($parentOptions, $this->_options);
 
         $this->setOptions($options);
+        
+        if ($this->getOption('die_on_nocli') && php_sapi_name() !== 'cli') {
+            $this->emerg('Please use CLI interface');
+        }
     }
     
     
