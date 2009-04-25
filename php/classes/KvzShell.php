@@ -675,7 +675,14 @@ class KvzShell {
         }
         
 		$cg = new Console_Getopt();
-		list($options, $args) = $cg->getopt($cg->readPHPArgv(), $short, $long);
+        $r = $cg->getopt($cg->readPHPArgv(), $short, $long);
+
+        if (PEAR::isError($r)) {
+            $this->warning($r->message);
+            return false;
+        }
+
+		list($options, $args) = $r;
 		$opt = array();
 		foreach ($options as $option) {
 			list($key, $val) = $option;
