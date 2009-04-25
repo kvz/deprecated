@@ -173,13 +173,25 @@ class KvzShell {
      * Retrieves option
      *
      * @param string $optionName
+     * @param string $subName1   In case of array, let's you extract a nested item
      * 
      * @return mixed
      */
-    public function getOption($optionName) {
+    public function getOption($optionName, $subName1 = null) {
         if (!array_key_exists($optionName, $this->_options)) {
             $this->err("Unrecognized option: '%s'", $optionName);
             return null;
+        }
+
+        $val &= $this->_options[$optionName];
+
+        if ($subName1 && is_array($val)) {
+            if (!array_key_exists($subName1, $val)) {
+                $this->err("Unrecognized option: '[%s][%s]'", $optionName, $subName1);
+                return null;
+            }
+
+            return $val[$subName1];
         }
         
         return $this->_options[$optionName];
