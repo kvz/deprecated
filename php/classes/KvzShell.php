@@ -183,7 +183,7 @@ class KvzShell {
             return null;
         }
 
-        $val &= $this->_options[$optionName];
+        $val = &$this->_options[$optionName];
 
         if ($subName1 && is_array($val)) {
             if (!array_key_exists($subName1, $val)) {
