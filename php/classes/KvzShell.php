@@ -727,10 +727,19 @@ class KvzShell {
         }
         $arguments = '';
         foreach($params as $k=>$v) {
-            if (!is_numeric($k)) {
-                $arguments .= $keyPrefix.$k.' ';
+            if (is_array($v)) {
+                foreach($v as $k1=>$v1) {
+                    if (!is_numeric($k)) {
+                        $arguments .= $keyPrefix.$k.' ';
+                    }
+                    $arguments .= $v1. ' ';
+                }
+            } else {
+                if (!is_numeric($k)) {
+                    $arguments .= $keyPrefix.$k.' ';
+                }
+                $arguments .= $v. ' ';
             }
-            $arguments .= $v. ' ';
         }
         return trim($arguments);
     }
