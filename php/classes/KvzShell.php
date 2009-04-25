@@ -157,13 +157,13 @@ class KvzShell {
      *
      * @return boolean
      */
-    public function setOption($name, $value) {
-        if (!isset($this->_options[$name])) {
-            $this->err("Option: ".$name." does not exist");
-            return false;
+    public function setOption($optionName, $value) {
+        if (!array_key_exists($optionName, $this->_options)) {
+            $this->err("Unrecognized option: '%s'", $optionName);
+            return null;
         }
 
-        $this->_options[$name] = $value;
+        $this->_options[$optionName] = $value;
         return true;
     }
 
