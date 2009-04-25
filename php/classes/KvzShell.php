@@ -177,8 +177,8 @@ class KvzShell {
      * @return mixed
      */
     public function getOption($optionName) {
-        if (array_key_exists($optionName, $this->_options)) {
-            $this->err("Option: ".$optionName." has not been initialized!");
+        if (!array_key_exists($optionName, $this->_options)) {
+            $this->err("Unrecognized option: '%s'", $optionName);
             return null;
         }
         
