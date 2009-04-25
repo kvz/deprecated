@@ -69,7 +69,8 @@ class KvzShell {
     protected $_trace = array();
     
     /**
-     * Holds options like enable_trace
+     * Holds options like enable_trace. Child options will be merged by
+     * __contructor
      *
      * @var array
      */
@@ -132,7 +133,6 @@ class KvzShell {
             $this->emerg('Please use CLI interface');
         }
     }
-    
     
     /**
      * Sets option array with options like enable_trace
@@ -670,7 +670,7 @@ class KvzShell {
      */
 	public function getArguments($short, $long = null) {
         if (!@include_once("Console/Getopt.php")) {
-            $this->crit('Can\t include Console_Getopt. Please: pear install Console_Getopt');
+            $this->emerg('Can\t include Console_Getopt. Please: pear install Console_Getopt');
             return false;
         }
         
@@ -678,7 +678,7 @@ class KvzShell {
         $r = $cg->getopt($cg->readPHPArgv(), $short, $long);
 
         if (PEAR::isError($r)) {
-            $this->warning($r->message);
+            $this->emerg($r->message);
             return false;
         }
 
@@ -694,6 +694,7 @@ class KvzShell {
 				? $val
 				: array_merge((array)$opt[$key], (array)$val);
 		}
+
 		return compact('opt', 'args');
 	}
 
@@ -706,6 +707,12 @@ class KvzShell {
      * @return string
      */
     function argumentize($params, $keyPrefix = '--') {
+        if (!is_array($params)) {
+            if ($params){
+                $params = $keyPrefix.$params;
+            }
+            return $params;
+        }
         $arguments = '';
         foreach($params as $k=>$v) {
             if (!is_numeric($k)) {
