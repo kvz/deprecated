@@ -464,9 +464,14 @@ class KvzShell {
      * @return    boolean
      */
 	public static function out($str, $newline = true) {
-        if (is_array($str)) {
+        if ($str === true) {
+            $str = 'true';
+        } else if ($str === false) {
+            $str = 'false';
+        } else if (is_array($str)) {
             $str = print_r($str, true);
         }
+        
 		if ($newline) {
 			$str = $str."\n";
 		}
@@ -475,6 +480,7 @@ class KvzShell {
 		if (!is_resource($stream)) {
 			$stream = fopen('php://stdout','w');
 		}
+        
 		return fwrite($stream, $str);
 	}
 
