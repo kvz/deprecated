@@ -75,6 +75,7 @@ class KvzShell {
      * @var array
      */
     protected $_options = array(
+        'print_log_level' => KvzShell::LOG_INFO,
         'enable_trace' => false,
         'die_on_fail' => false,
         'die_on_nocli' => false,
@@ -442,7 +443,9 @@ class KvzShell {
      * @return boolean
      */
     public function log($str, $level=KvzShell::LOG_INFO) {
-        $this->out($str);
+        if ($level <= $this->getOption('print_log_level')) {
+            $this->out($str);
+        }
         
         if ($level < self::LOG_CRIT) {
             $this->_die('Can\'t continue after last event');
