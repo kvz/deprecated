@@ -456,6 +456,9 @@ class KvzShell {
      * @return    boolean
      */
 	public static function out($str, $newline = true) {
+        if (is_array($str)) {
+            $str = print_r($str, true);
+        }
 		if ($newline) {
 			$str = $str."\n";
 		}
