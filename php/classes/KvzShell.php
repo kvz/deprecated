@@ -382,6 +382,11 @@ class KvzShell {
             $str   = array_shift($args);
         }
         if (is_array($args)) {
+			foreach($args as $k=>$v) {
+				if (is_array($v)) {
+					$args[$k] = print_r($v, true);
+				}
+			}
             $str = vsprintf($str, $args);
         }
 
