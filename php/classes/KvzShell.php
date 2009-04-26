@@ -72,6 +72,9 @@ class KvzShell {
      * Holds options like enable_trace. Child options will be merged by
      * __contructor
      *
+     * It's adviced to keep KvzShell's native option in lowercase format,
+     * and to use camelizedVersions yourSelf to make a clear distinction
+     *
      * @var array
      */
     protected $_options = array(
