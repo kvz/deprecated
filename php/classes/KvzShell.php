@@ -649,7 +649,7 @@ class KvzShell {
      * @return boolean
      */
     protected function _which($cmd) {
-        if (file_exists($cmd)) {
+        if (file_exists($cmd) && is_executable($cmd)) {
             return $cmd;
         }
 
@@ -664,12 +664,12 @@ class KvzShell {
         );
 
         if (isset($_SERVER['PATH'])) {
-            $possiblePaths = array_unique(array_merge(explode(':', $_SERVER['PATH']), $possiblePaths));
+            $possiblePaths = array_unique(array_merge(explode(':', $_SERVER['PATH']), $possiblePaths)); 
         }
 
         foreach ($possiblePaths as $possiblePath) {
             $testPath = $possiblePath."/".escapeshellcmd($cmd);
-            if (file_exists($testPath)) {
+            if (file_exists($testPath) && is_executable($cmd)) {
                 return $testPath;
             }
         }
