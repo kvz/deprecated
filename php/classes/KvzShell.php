@@ -616,7 +616,7 @@ class KvzShell {
         if ($this->getOption('merge_stderr')) {
             $cmd .= ' 2>&1';
         } else if ($this->getOption('save_stderr')) {
-            $errfile = tempnam();
+            $errfile = tempnam('/tmp', 'kvzshell.stderr');
             $cmd .= ' 2>'.$errfile;
         }
 
