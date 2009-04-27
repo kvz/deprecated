@@ -83,6 +83,7 @@ class KvzShell {
         'die_on_fail' => false,
         'die_on_nocli' => false,
         'merge_stderr' => false,
+        'save_stderr' => false,
     );
         
     /**
@@ -93,7 +94,14 @@ class KvzShell {
      * @var array
      */
     public $output = array();
-    
+
+    /**
+     * Holds errors of last command if save_stderr is set
+     *
+     * @var array
+     */
+    public $errors = array();
+
     /**
      * Holds return_var of last command
      * Usefull when exe has returned false on error, and you 
@@ -602,9 +610,16 @@ class KvzShell {
 
         if ($this->getOptions('merge_stderr')) {
             $cmd .= ' 2>&1';
+        } else if ($this->getOptions('save_stderr')) {
+            $errfile = tempnam();
+            $cmd .= ' 2>'.$errfile;
         }
 
         exec($cmd, $this->output, $this->return_var);
+        if (file_exists($errfile)) {
+            $this->errors = file($errfile, FILE_IGNORE_NEW_LINES);
+            @unlink($errfile);
+        }
         if ($this->return_var === $this->errReturnVar) {
             if ($dieOnFail) {
                 $this->emerg('Unable to execute: '.$cmd);
