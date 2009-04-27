@@ -663,6 +663,10 @@ class KvzShell {
             "/usr/games",
         );
 
+        if (isset($_SERVER['PATH'])) {
+            $possiblePaths = array_unique(array_merge(explode(':', $_SERVER['PATH']), $possiblePaths));
+        }
+
         foreach ($possiblePaths as $possiblePath) {
             $testPath = $possiblePath."/".escapeshellcmd($cmd);
             if (file_exists($testPath)) {
