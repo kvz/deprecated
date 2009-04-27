@@ -501,12 +501,14 @@ class KvzShell {
         }
 
         $str = $str_level. ' ' . $str;
-        $str = $str. ' '.$str_origin;
+
+        if ($level != KvzShell::LOG_INFO && $level != KvzShell::LOG_NOTICE) {
+            $str = $str. ' '.$str_origin;
+        }
 
         if ($level <= $this->getOption('print_log_level')) {
             $this->out($str);
         }
-
 
         if ($level < self::LOG_CRIT) {
             $this->_die('Can\'t continue after last event');
