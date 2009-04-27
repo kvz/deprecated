@@ -53,7 +53,22 @@ class KvzShell {
      */
     const LOG_DEBUG = 7;
     
-    
+    /**
+     * Available log levels
+     *
+     * @var array
+     */
+    static protected $_logLevels = array(
+        self::LOG_EMERG => "emerg",
+        self::LOG_ALERT => "alert",
+        self::LOG_CRIT => "crit",
+        self::LOG_ERR => "err",
+        self::LOG_WARNING => "warning",
+        self::LOG_NOTICE => "notice",
+        self::LOG_INFO => "info",
+        self::LOG_DEBUG => "debug"
+    );
+
     /**
      * Holds paths of commands
      *
@@ -459,10 +474,15 @@ class KvzShell {
      * @return boolean
      */
     public function log($str, $level=KvzShell::LOG_INFO) {
+        $str_level = str_pad(KvzShell::$_logLevels[$level]."", 8, " ", STR_PAD_LEFT);
+
+        $str = $str_level. ' ' . $str;
+
         if ($level <= $this->getOption('print_log_level')) {
             $this->out($str);
         }
-        
+
+
         if ($level < self::LOG_CRIT) {
             $this->_die('Can\'t continue after last event');
         }
