@@ -100,6 +100,7 @@ class KvzShell {
         'merge_stderr' => false,
         'save_stderr' => false,
         'log_stderr' => false,
+        'log_origin' => true,
     );
         
     /**
@@ -369,7 +370,7 @@ class KvzShell {
      */
     public function debug($str) {
         $args  = func_get_args();
-        $this->_logf($str, $args, KvzShell::LOG_DEBUG);
+        return $this->_logf($str, $args, KvzShell::LOG_DEBUG);
     }
 
     /**
@@ -379,7 +380,7 @@ class KvzShell {
      */
     public function info($str) {
         $args  = func_get_args();
-        $this->_logf($str, $args, KvzShell::LOG_INFO);
+        return $this->_logf($str, $args, KvzShell::LOG_INFO);
     }
 
     /**
@@ -389,7 +390,7 @@ class KvzShell {
      */
     public function notice($str) {
         $args  = func_get_args();
-        $this->_logf($str, $args, KvzShell::LOG_NOTICE);
+        return $this->_logf($str, $args, KvzShell::LOG_NOTICE);
     }
 
     /**
@@ -399,7 +400,7 @@ class KvzShell {
      */
     public function warning($str) {
         $args  = func_get_args();
-        $this->_logf($str, $args, KvzShell::LOG_WARNING);
+        return $this->_logf($str, $args, KvzShell::LOG_WARNING);
     }
 
     /**
@@ -421,8 +422,23 @@ class KvzShell {
 			}
             $str = vsprintf($str, $args);
         }
+        
+        $class    = false;
+        $function = false;
+        $file     = false;
+        $line     = false;
+        if ($this->getOptions('log_origin')) {
+            if (function_exists("debug_backtrace") && ($file == false
+                || $class == false || $function == false || $line == false)) {
+                $dbg_bt   = @debug_backtrace();
+                $class    = (isset($dbg_bt[2]["class"])?$dbg_bt[2]["class"]:"");
+                $function = (isset($dbg_bt[2]["function"])?$dbg_bt[2]["function"]:"");
+                $file     = basename($dbg_bt[1]["file"]);
+                $line     = $dbg_bt[1]["line"];
+            }
+        }
 
-        $this->log($str, $level);
+        return $this->log($str, $level, $class, $function, $file, $line);
     }
 
     /**
@@ -432,7 +448,7 @@ class KvzShell {
      */
     public function err($str) {
         $args  = func_get_args();
-        $this->_logf($str, $args, KvzShell::LOG_ERR);
+        return $this->_logf($str, $args, KvzShell::LOG_ERR);
     }
 
     /**
@@ -442,7 +458,7 @@ class KvzShell {
      */
     public function crit($str) {
         $args  = func_get_args();
-        $this->_logf($str, $args, KvzShell::LOG_ERR);
+        return $this->_logf($str, $args, KvzShell::LOG_ERR);
     }
 
     /**
@@ -452,7 +468,7 @@ class KvzShell {
      */
     public function alert($str) {
         $args  = func_get_args();
-        $this->_logf($str, $args, KvzShell::LOG_ALERT);
+        return $this->_logf($str, $args, KvzShell::LOG_ALERT);
     }
 
     /**
@@ -462,21 +478,30 @@ class KvzShell {
      */
     public function emerg($str) {
         $args  = func_get_args();
-        $this->_logf($str, $args, KvzShell::LOG_EMERG);
+        return $this->_logf($str, $args, KvzShell::LOG_EMERG);
     }
 
     /**
-     * Logs a message
+     * Logs a message.  Please use debug()|info()|etc instead though.
      *
      * @param string  $str
      * @param integer $level
-     * 
+     * @param string  $class
+     * @param string  $function
+     * @param string  $file
+     * @param integer $line
+     *
      * @return boolean
      */
-    public function log($str, $level=KvzShell::LOG_INFO) {
-        $str_level = str_pad(KvzShell::$_logLevels[$level]."", 8, " ", STR_PAD_LEFT);
+    public function log($str, $level=KvzShell::LOG_INFO, $class = false, $function = false, $file = false, $line = false) {
+        $str_level  = str_pad(KvzShell::$_logLevels[$level]."", 8, " ", STR_PAD_LEFT);
+        $str_origin = '';
+        if ($this->getOptions('log_origin')) {
+            $str_origin = sprintf('[f: %s, l:%s]', $file, $line);
+        }
 
         $str = $str_level. ' ' . $str;
+        $str = $str. ' '.$str_origin;
 
         if ($level <= $this->getOption('print_log_level')) {
             $this->out($str);
@@ -639,7 +664,7 @@ class KvzShell {
             $errfile = tempnam('/tmp', 'kvzshell.stderr');
             $cmd .= ' 2>'.$errfile;
         }
-
+        
         exec($cmd, $this->output, $this->return_var);
 
         // Load errors
