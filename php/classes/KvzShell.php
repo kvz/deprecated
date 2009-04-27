@@ -84,6 +84,7 @@ class KvzShell {
         'die_on_nocli' => false,
         'merge_stderr' => false,
         'save_stderr' => false,
+        'log_stderr' => false,
     );
         
     /**
@@ -610,7 +611,7 @@ class KvzShell {
 
         if ($this->getOptions('merge_stderr')) {
             $cmd .= ' 2>&1';
-        } else if ($this->getOptions('save_stderr')) {
+        } else if ($this->getOptions('save_stderr') || $this->getOption('log_stderr')) {
             $errfile = tempnam();
             $cmd .= ' 2>'.$errfile;
         }
@@ -621,6 +622,11 @@ class KvzShell {
             @unlink($errfile);
         }
         if ($this->return_var === $this->errReturnVar) {
+            if ($this->getOption('log_stderr')) {
+                foreach($this->errors as $err) {
+                    $this->err('Commandline error: '. $err);
+                }
+            }
             if ($dieOnFail) {
                 $this->emerg('Unable to execute: '.$cmd);
             }
