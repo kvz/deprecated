@@ -145,6 +145,10 @@ class KvzShell {
         if ($this->getOption('die_on_nocli') && php_sapi_name() !== 'cli') {
             $this->emerg('Please use CLI interface');
         }
+        
+        if ($this->getOption('log_stderr') && !$this->getOption('save_stderr')) {
+            $this->setOption('save_stderr', true);
+        }
     }
     
     /**
@@ -609,15 +613,17 @@ class KvzShell {
         $this->output  = "";
         $this->command = $cmd;
 
-        if ($this->getOptions('merge_stderr')) {
+        if ($this->getOption('merge_stderr')) {
             $cmd .= ' 2>&1';
-        } else if ($this->getOptions('save_stderr') || $this->getOption('log_stderr')) {
+        } else if ($this->getOption('save_stderr')) {
             $errfile = tempnam();
             $cmd .= ' 2>'.$errfile;
         }
 
         exec($cmd, $this->output, $this->return_var);
-        if (file_exists($errfile)) {
+
+        // Load errors
+        if ($this->getOption('save_stderr') && file_exists($errfile)) {
             $this->errors = file($errfile, FILE_IGNORE_NEW_LINES);
             @unlink($errfile);
         }
