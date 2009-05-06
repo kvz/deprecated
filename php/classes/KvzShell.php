@@ -358,9 +358,9 @@ class KvzShell {
         return true;
     }
 
-    protected function _die($str) {
+    protected function _die($str, $exitCode = 0) {
         $this->out($str);
-        die();
+        exit($exitCode);
     }
 
     /**
@@ -511,7 +511,7 @@ class KvzShell {
         }
 
         if ($level < self::LOG_CRIT) {
-            $this->_die('Can\'t continue after last event');
+            $this->_die('Can\'t continue after last event', 1);
         }
         
         return true;
