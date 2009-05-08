@@ -225,7 +225,7 @@ class KvzShell {
         }
 
         // Log it
-        $this->log($lvl, '[PHP Error] '.$errstr, $errfile, __CLASS__,
+        $this->log('[PHP Error] '.$errstr, $lvl, $errfile, __CLASS__,
             __FUNCTION__, $errline);
 
         return true;
@@ -575,7 +575,7 @@ class KvzShell {
         }
 
         if ($this->getOption('log_file')) {
-            file_put_contents($this->getOption('log_file'), $str, FILE_APPEND);
+            file_put_contents($this->getOption('log_file'), $str."\n", FILE_APPEND);
         }
         
         if ($level < self::LOG_CRIT) {
