@@ -415,11 +415,11 @@ class KvzShell {
             $str   = array_shift($args);
         }
         if (is_array($args)) {
-			foreach($args as $k=>$v) {
-				if (is_array($v)) {
-					$args[$k] = print_r($v, true);
-				}
-			}
+            foreach($args as $k=>$v) {
+                if (is_array($v)) {
+                    $args[$k] = print_r($v, true);
+                }
+            }
             $str = vsprintf($str, $args);
         }
         
@@ -526,7 +526,7 @@ class KvzShell {
      * 
      * @return    boolean
      */
-	public static function out($str, $newline = true) {
+    public function out($str, $newline = true) {
         if ($str === true) {
             $str = 'true';
         } else if ($str === false) {
@@ -535,17 +535,17 @@ class KvzShell {
             $str = print_r($str, true);
         }
         
-		if ($newline) {
-			$str = $str."\n";
-		}
+        if ($newline) {
+            $str = $str."\n";
+        }
 
-		static $stream;
-		if (!is_resource($stream)) {
-			$stream = fopen('php://stdout','w');
-		}
+        static $stream;
+        if (!is_resource($stream)) {
+            $stream = fopen('php://stdout','w');
+        }
         
-		return fwrite($stream, $str);
-	}
+        return fwrite($stream, $str);
+    }
 
 
 
@@ -778,13 +778,13 @@ class KvzShell {
      * 
      * @return array
      */
-	public function getArguments($short, $long = null) {
+    public function getArguments($short, $long = null) {
         if (!@include_once("Console/Getopt.php")) {
             $this->emerg('Can\t include Console_Getopt. Please: pear install Console_Getopt');
             return false;
         }
         
-		$cg = new Console_Getopt();
+        $cg = new Console_Getopt();
         $r = $cg->getopt($cg->readPHPArgv(), $short, $long);
 
         if (PEAR::isError($r)) {
@@ -792,21 +792,21 @@ class KvzShell {
             return false;
         }
 
-		list($options, $args) = $r;
-		$opt = array();
-		foreach ($options as $option) {
-			list($key, $val) = $option;
-			$val = is_null($val)
-				? true
-				: $val;
+        list($options, $args) = $r;
+        $opt = array();
+        foreach ($options as $option) {
+            list($key, $val) = $option;
+            $val = is_null($val)
+                ? true
+                : $val;
 
-			$opt[$key] = (!isset($opt[$key]))
-				? $val
-				: array_merge((array)$opt[$key], (array)$val);
-		}
+            $opt[$key] = (!isset($opt[$key]))
+                ? $val
+                : array_merge((array)$opt[$key], (array)$val);
+        }
 
-		return compact('opt', 'args');
-	}
+        return compact('opt', 'args');
+    }
 
     /**
      * Takes an array and returns an argument string
