@@ -121,6 +121,7 @@ class KvzShell {
         'log_phperr' => false,
         'log_stderr' => false,
         'log_origin' => true,
+        'log_file' => false,
     );
         
     /**
@@ -188,6 +189,13 @@ class KvzShell {
         
         if ($this->getOption('log_phperr')) {
             set_error_handler(array($this, 'phpErrors'), E_ALL);
+        }
+
+        if ($this->getOption('log_file')) {
+            if (!self::isWritable($this->getOption('log_file'))) {
+                $this->err('Logfile %s is not writable!', $this->getOption('log_file'));
+                return false;
+            }
         }
     }
 
@@ -566,7 +574,12 @@ class KvzShell {
             $this->out($str);
         }
 
+        if ($this->getOption('log_file')) {
+            file_put_contents($this->getOption('log_file'), $str, FILE_APPEND);
+        }
+        
         if ($level < self::LOG_CRIT) {
+            $this->warning('Can\'t continue after last event');
             $this->_die('Can\'t continue after last event', 1);
         }
         
