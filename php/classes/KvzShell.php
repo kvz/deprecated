@@ -85,7 +85,10 @@ class KvzShell {
         E_COMPILE_WARNING => self::LOG_WARNING,
         E_USER_ERROR => self::LOG_ERR,
         E_USER_WARNING => self::LOG_WARNING,
-        E_USER_NOTICE => self::LOG_DEBUG
+        E_USER_NOTICE => self::LOG_DEBUG,
+        E_RECOVERABLE_ERROR => self::LOG_CRIT,
+        E_DEPRECATED => self::LOG_NOTICE,
+        E_USER_DEPRECATED  => self::LOG_NOTICE,
     );
 
     /**
@@ -218,7 +221,7 @@ class KvzShell {
 
         // Map PHP error level to System_Daemon log level
         if (empty(self::$_logPhpMapping[$errno])) {
-            $this->log(self::LOG_WARNING, 'Unknown PHP errorno: '.$errno);
+            $this->warning('Unknown PHP errorno: '.$errno);
             $lvl = self::LOG_ERR;
         } else {
             $lvl = self::$_logPhpMapping[$errno];
