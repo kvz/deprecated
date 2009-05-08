@@ -70,6 +70,25 @@ class KvzShell {
     );
 
     /**
+     * Available PHP error levels and their meaning in POSIX loglevel terms
+     *
+     * @var array
+     */
+    static protected $_logPhpMapping = array(
+        E_ERROR => self::LOG_ERR,
+        E_WARNING => self::LOG_WARNING,
+        E_PARSE => self::LOG_EMERG,
+        E_NOTICE => self::LOG_DEBUG,
+        E_CORE_ERROR => self::LOG_EMERG,
+        E_CORE_WARNING => self::LOG_WARNING,
+        E_COMPILE_ERROR => self::LOG_EMERG,
+        E_COMPILE_WARNING => self::LOG_WARNING,
+        E_USER_ERROR => self::LOG_ERR,
+        E_USER_WARNING => self::LOG_WARNING,
+        E_USER_NOTICE => self::LOG_DEBUG
+    );
+
+    /**
      * Holds paths of commands
      *
      * @var array
@@ -99,6 +118,7 @@ class KvzShell {
         'die_on_nocli' => false,
         'merge_stderr' => false,
         'save_stderr' => false,
+        'log_phperr' => false,
         'log_stderr' => false,
         'log_origin' => true,
     );
@@ -165,8 +185,44 @@ class KvzShell {
         if ($this->getOption('log_stderr') && !$this->getOption('save_stderr')) {
             $this->setOption('save_stderr', true);
         }
+        
+        if ($this->getOption('log_phperr')) {
+            set_error_handler(array($this, 'phpErrors'), E_ALL);
+        }
     }
-    
+
+    /**
+     * Catches PHP Errors and forwards them to log function
+     *
+     * @param integer $errno   Level
+     * @param string  $errstr  Error
+     * @param string  $errfile File
+     * @param integer $errline Line
+     *
+     * @return boolean
+     */
+    public function phpErrors($errno, $errstr, $errfile, $errline)
+    {
+        // Ignore suppressed errors
+        if (error_reporting() == 0) {
+            return;
+        }
+
+        // Map PHP error level to System_Daemon log level
+        if (empty(self::$_logPhpMapping[$errno])) {
+            $this->log(self::LOG_WARNING, 'Unknown PHP errorno: '.$errno);
+            $lvl = self::LOG_ERR;
+        } else {
+            $lvl = self::$_logPhpMapping[$errno];
+        }
+
+        // Log it
+        $this->log($lvl, '[PHP Error] '.$errstr, $errfile, __CLASS__,
+            __FUNCTION__, $errline);
+
+        return true;
+    }
+
     /**
      * Sets option array with options like enable_trace
      *
