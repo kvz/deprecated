@@ -87,9 +87,12 @@ class KvzShell {
         E_USER_WARNING => self::LOG_WARNING,
         E_USER_NOTICE => self::LOG_DEBUG,
         E_RECOVERABLE_ERROR => self::LOG_CRIT,
-        E_DEPRECATED => self::LOG_NOTICE,
-        E_USER_DEPRECATED  => self::LOG_NOTICE,
     );
+
+// Only as of PHP 5.3:
+//        E_DEPRECATED => self::LOG_NOTICE,
+//        E_USER_DEPRECATED  => self::LOG_NOTICE,
+
 
     /**
      * Holds paths of commands
