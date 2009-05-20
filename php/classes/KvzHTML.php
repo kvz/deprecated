@@ -44,6 +44,12 @@ Class KvzHtml {
         } else {
             $argumentsT = '';
         }
+
+        $b = $this->indent($body)."\n";
+
+        if (!empty($args['__onlybody'])) {
+            return $b;
+        }
         
         if (false === $body) {
             // End tag
@@ -53,7 +59,7 @@ Class KvzHtml {
             return '<'.$tag.$argumentsT.'>'."\n";
         } else {
             // Full tag
-            return '<'.$tag.$argumentsT.'>'."\n".$this->indent($body)."\n".'</'.$tag.'>'."\n";
+            return '<'.$tag.$argumentsT.'>'."\n".$b.'</'.$tag.'>'."\n";
         }
     }
     
@@ -74,6 +80,10 @@ Class KvzHtml {
     }
     
     public function indent($str) {
+        if (!is_string($str)) {
+            return $str;
+        }
+
         $lines = explode("\n", $str);
         foreach ($lines as &$line) {
             $line = '    '. $line;
