@@ -48,6 +48,10 @@ Class KvzHtml {
             $argumentsT = '';
         }
 
+        if (is_array($body)) {
+            $body = implode("\n", $body);
+        }
+
         $b = $this->indent($body)."\n";
 
         if (!empty($args['__onlybody'])) {
