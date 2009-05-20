@@ -16,8 +16,17 @@ Class KvzHtml {
         $body       = array_shift($arguments);
         $class      = array_shift($arguments);
         $argumentsT = implode(' ', $arguments);
-        
-        return '<'.$tag.' class="'.$class.'" '.$argumentsT.'>'."\n".$this->indent($body)."\n".'</'.$tag.'>'."\n";
+
+        if (false === $body) {
+            // End tag
+            return '<'.$tag.' class="'.$class.'" '.$argumentsT.' />'."\n";
+        } else if (null === $body) {
+            // Opening tag
+            return '<'.$tag.' class="'.$class.'" '.$argumentsT.'>'."\n";
+        } else {
+            // Full tag
+            return '<'.$tag.' class="'.$class.'" '.$argumentsT.'>'."\n".$this->indent($body)."\n".'</'.$tag.'>'."\n";
+        }
     }
 
     public function hr() {
