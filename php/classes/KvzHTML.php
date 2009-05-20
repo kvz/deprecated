@@ -22,6 +22,9 @@ Class KvzHtml {
         $argumentsT = '';
         if (is_array($args) && count($args)) {
             foreach($args as $k=>$v) {
+                if (substr($k, 0, 2) == '__') {
+                    continue;
+                }
 
                 if (is_array($v)) {
                     if ($k == 'style') {
