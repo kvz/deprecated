@@ -12,15 +12,18 @@
  * @link      http://kevin.vanzonneveld.net/code/
  */
 Class KvzHtml {
-    public function __call($tag, $arguments) {
-        $body       = array_shift($arguments);
-        $class      = array_shift($arguments);
+    public function __call($tag, $args) {
+        $body       = array_shift($args);
+        $this->tag($tag, $body, $args);
+    }
+
+    public function tag($tag, $body, $args) {
         if (is_array($arguments) && count($arguments)) {
             $argumentsT = implode(' ', $arguments);
         } else {
             $argumentsT = '';
         }
-
+        
         if (false === $body) {
             // End tag
             return '<'.$tag.' class="'.$class.'" '.$argumentsT.' />'."\n";

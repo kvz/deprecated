@@ -28,7 +28,7 @@ Class Store{
     public function generate() {
         switch($this->_type) {
             case 'html':
-                $Html = new Html();
+                $Html = new KvzHTML();
 
                 $photovirt = $this->getOption('photovirt');
 
@@ -75,13 +75,13 @@ Class Store{
                     $movie['cast'] = array_slice($movie['cast'], 0, 3);
                     $castar = array();
                     foreach($movie['cast'] as $actor) {
-                        $castar[] = $Html->span($actor['name'], 'actor');
+                        $castar[] = $Html->span($actor['name'], array('class' => 'actor'));
                     }
                     $cast = implode(', ', $castar);
 
                     if ($separate_on_dir) {
                         if ($prevdirname != $dirname) {
-                            $index .= $Html->div(ucwords($dirname), 'directory');
+                            $index .= $Html->div(ucwords($dirname), array('class' => 'directory'));
                             $index .= $Html->hr();
                         }
                     }
@@ -89,19 +89,21 @@ Class Store{
                     $index .= $Html->div(
                         $Html->div(
                             $Html->a($movie['main_url'], $Html->img($imgFile, 'poster')) .
-                            $Html->p($movie['rating'], 'rating', 'style="color:'.$rateColor.';"') .
+                            $Html->p($movie['rating'], array('class' => 'rating', 'style' => '"color:'.$rateColor.';"')) .
                             $Html->p($movie['runtime'] ? $movie['runtime'].'m' : '', 'runtime') ,
-                            'left'
+                            array('class' => 'left')
                         ). $Html->div(
-                            $Html->h1($movie['title'], 'title') .
-                            $Html->h2($movie['tagline'], 'tagline') .
-                            $Html->p($file.' --&gt;&gt; '.$movie['cleanedName'], 'file') .
-                            $Html->p($movie['plotoutline'], 'plotoutline') .
-                            $Html->p(implode(', ', $movie['genres']), 'genres') .
-                            $Html->p($cast, 'cast'),
-                            'right'
-                        ) . $Html->div('', 'end'),
-                        'movie'
+                            $Html->h1($movie['title'], array('class' => 'title')) .
+                            $Html->h2($movie['tagline'], array('class' => 'tagline')) .
+                            $Html->p($file.' --&gt;&gt; '.$movie['cleanedName'], array('class' => 'file')) .
+                            $Html->p($movie['plotoutline'], array('class' => 'plotoutline')) .
+                            $Html->p(implode(', ', $movie['genres']), array('class' => 'genres')) .
+                            $Html->p($cast, array('class' => 'cast')),
+                            array('class' => 'right')
+                        ) . $Html->div('', array(
+                            'class' => 'end'
+                        )),
+                        array('class' => 'movie')
                     );
 
                     if ($separate_on_dir) {
@@ -109,7 +111,7 @@ Class Store{
                     }
                 }
 
-                $body .= $Html->div($index, 'index');
+                $body .= $Html->div($index, array('class' => 'index'));
 
 
                 $this->_output = $Html->html(
