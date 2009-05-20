@@ -19,6 +19,19 @@ Class KvzHtml {
     }
     
     public function tag($tag, $body = false, $args = array()) {
+        if (is_array($body)) {
+            $body = implode("\n", $body);
+        }
+        $bodyIndented = $this->indent($body)."\n";
+
+        if (!empty($args['__skip'])) {
+            return '';
+        }
+
+        if (!empty($args['__onlybody'])) {
+            return $bodyIndented;
+        }
+
         $argumentsT = '';
         if (is_array($args) && count($args)) {
             foreach($args as $k=>$v) {
@@ -48,16 +61,6 @@ Class KvzHtml {
             $argumentsT = '';
         }
 
-        if (is_array($body)) {
-            $body = implode("\n", $body);
-        }
-
-        $b = $this->indent($body)."\n";
-
-        if (!empty($args['__onlybody'])) {
-            return $b;
-        }
-        
         if (false === $body) {
             // End tag
             return '<'.$tag.$argumentsT.' />'."\n";
@@ -66,7 +69,7 @@ Class KvzHtml {
             return '<'.$tag.$argumentsT.'>'."\n";
         } else {
             // Full tag
-            return '<'.$tag.$argumentsT.'>'."\n".$b.'</'.$tag.'>'."\n";
+            return '<'.$tag.$argumentsT.'>'."\n".$bodyIndented.'</'.$tag.'>'."\n";
         }
     }
     
