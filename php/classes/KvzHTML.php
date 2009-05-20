@@ -15,7 +15,11 @@ Class KvzHtml {
     public function __call($tag, $arguments) {
         $body       = array_shift($arguments);
         $class      = array_shift($arguments);
-        $argumentsT = implode(' ', $arguments);
+        if (is_array($arguments) && count($arguments)) {
+            $argumentsT = implode(' ', $arguments);
+        } else {
+            $argumentsT = '';
+        }
 
         if (false === $body) {
             // End tag
