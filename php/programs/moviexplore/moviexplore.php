@@ -47,6 +47,7 @@ define('IMDBPHP_CONFIG',DIR_ROOT.'/config/imdb.php');
 ini_set("include_path", DIR_KVZLIB.":".DIR_ROOT.":".ini_get("include_path"));
 
 require_once DIR_KVZLIB.'/php/classes/KvzShell.php';
+require_once DIR_KVZLIB.'/php/classes/KvzHTML.php';
 require_once DIR_KVZLIB.'/php/all_functions.php';
 require_once DIR_ROOT.'/libs/crawler.php';
 require_once DIR_ROOT.'/libs/movie.php';

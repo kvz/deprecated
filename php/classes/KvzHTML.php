@@ -1,9 +1,18 @@
 <?php
-Class Html {
-
-
+/**
+ * Contains some methods that ease up working with html
+ *
+ * PHP version 5
+ *
+ * @package   KvzShell
+ * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+ * @copyright 2009 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+ * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
+ * @version   SVN: Release: $Id$
+ * @link      http://kevin.vanzonneveld.net/code/
+ */
+Class KvzHtml {
     public function __call($tag, $arguments) {
-
         $body       = array_shift($arguments);
         $class      = array_shift($arguments);
         $argumentsT = implode(' ', $arguments);
@@ -36,6 +45,5 @@ Class Html {
 
         return implode("\n", $lines);
     }
-
 }
 ?>
