@@ -23,7 +23,7 @@ Class KvzHtml {
             $body = implode("\n", $body);
         }
         $bodyIndented = $this->indent($body)."\n";
-
+        
         if (!empty($args['__skip'])) {
             return '';
         }
@@ -54,13 +54,15 @@ Class KvzHtml {
                 if (is_numeric($k)) {
                     $argumentsT .= sprintf(' %s', $v);
                 } else {
-                    $argumentsT .= sprintf(' %s=\'%s\'', $k, $v);
+                    if (!empty($v)) {
+                        $argumentsT .= sprintf(' %s=\'%s\'', $k, trim($v));
+                    }
                 }
             }
         } else {
             $argumentsT = '';
         }
-
+        
         if (false === $body) {
             // End tag
             return '<'.$tag.$argumentsT.' />'."\n";
