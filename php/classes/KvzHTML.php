@@ -19,21 +19,29 @@ Class KvzHtml {
     }
     
     public function tag($tag, $body = false, $args = array()) {
+        $argumentsT = '';
         if (is_array($args) && count($args)) {
-            $argumentsT = implode(' ', $args);
+            foreach($arg as $k=>$v) {
+                if (is_numeric($k)) {
+                    $argumentsT = sprintf(' %s', $v);
+                } else {
+                    $argumentsT = sprintf(' %s="%s"', $k, $v);
+                }
+            }
+            $argumentsT = trim($argumentsT);
         } else {
             $argumentsT = '';
         }
         
         if (false === $body) {
             // End tag
-            return '<'.$tag.' '.$argumentsT.' />'."\n";
+            return '<'.$tag.$argumentsT.' />'."\n";
         } else if (null === $body) {
             // Opening tag
-            return '<'.$tag.' '.$argumentsT.'>'."\n";
+            return '<'.$tag.$argumentsT.'>'."\n";
         } else {
             // Full tag
-            return '<'.$tag.' '.$argumentsT.'>'."\n".$this->indent($body)."\n".'</'.$tag.'>'."\n";
+            return '<'.$tag.$argumentsT.'>'."\n".$this->indent($body)."\n".'</'.$tag.'>'."\n";
         }
     }
     
