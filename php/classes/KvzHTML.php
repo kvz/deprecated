@@ -29,7 +29,7 @@ Class KvzHtml {
                         foreach($v as $stylek => $stylev) {
                             $v2 .= sprintf(' %s: %s;', $stylek, $stylev);
                         }
-                        $v = $v2;
+                        $v = trim($v2);
                     } else {
                         trigger_error('No support for array value for tag: '.$k);
                         return false;
@@ -37,9 +37,9 @@ Class KvzHtml {
                 }
 
                 if (is_numeric($k)) {
-                    $argumentsT = sprintf(' %s', $v);
+                    $argumentsT .= sprintf(' %s', $v);
                 } else {
-                    $argumentsT = sprintf(' %s="%s"', $k, $v);
+                    $argumentsT .= sprintf(' %s="%s"', $k, $v);
                 }
             }
         } else {
