@@ -82,7 +82,7 @@ Class Store{
                     if ($separate_on_dir) {
                         if ($prevdirname != $dirname) {
                             $index .= $Html->div(ucwords($dirname), array('class' => 'directory'));
-                            $index .= $Html->hr();
+                            $index .= $Html->hr(false);
                         }
                     }
 

@@ -58,10 +58,6 @@ Class KvzHtml {
         }
     }
     
-    public function hr() {
-        return sprintf('<hr />'."\n");
-    }
-    
     public function a($link, $title = '') {
         return sprintf('<a href="%s">%s</a>'."\n", $link, $title);
     }
