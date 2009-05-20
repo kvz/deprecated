@@ -31,15 +31,14 @@ Class KvzHtml {
                         }
                         $v = trim($v2);
                     } else {
-                        trigger_error('No support for array value for tag: '.$k);
-                        return false;
+                        $v = implode(' ', $v);
                     }
                 }
 
                 if (is_numeric($k)) {
                     $argumentsT .= sprintf(' %s', $v);
                 } else {
-                    $argumentsT .= sprintf(' %s="%s"', $k, $v);
+                    $argumentsT .= sprintf(' %s=\'%s\'', $k, $v);
                 }
             }
         } else {
