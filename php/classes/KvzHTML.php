@@ -91,16 +91,19 @@ Class KvzHtml {
         return sprintf('<img src="%s" class="%s" />'."\n", $link, $class);
     }
     
-    public function indent($str) {
+    public function indent($str, $indent = 4) {
+        if (is_array($str)) {
+            $str = implode("\n", $str);
+        }
         if (!is_string($str)) {
             return $str;
         }
-
+        
         $lines = explode("\n", $str);
         foreach ($lines as &$line) {
-            $line = '    '. $line;
+            $line = str_repeat(' ', $indent) . $line;
         }
-
+        
         return implode("\n", $lines);
     }
 }
