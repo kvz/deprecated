@@ -389,16 +389,16 @@ class KvzShell {
         if ($path === null && $cmd) {
             $path = $this->_which($cmd);
         }
-        
+
         if (!$cmd || !$path || !is_file($path)) {
             if ($dieOnFail) {
-                $level = self::LOG_EMERG;
+                $this->emerg("Command: '%s' ('%s') not found", $cmd, $path);
             } else {
-                $level = self::LOG_WARNING;
+                $this->warning("Command: '%s' ('%s') not found", $cmd, $path);
             }
-            $this->log("Command: '".$cmd."' ('".$path."') not found", $level);
             return false;
         }
+        
         $this->_cmds[$cmd] = $path;
         return $path;
     }
