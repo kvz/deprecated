@@ -771,7 +771,7 @@ class KvzShell {
      * @return boolean
      */
     protected function _which($cmd) {
-        if (file_exists($cmd) && is_executable($cmd)) {
+        if (file_exists($cmd)) {
             return $cmd;
         }
 
@@ -791,7 +791,9 @@ class KvzShell {
 
         foreach ($possiblePaths as $possiblePath) {
             $testPath = $possiblePath."/".escapeshellcmd($cmd);
-            if (file_exists($testPath) && is_executable($cmd)) {
+            $this->debug('trying %s', $testPath);
+            if (file_exists($testPath)) {
+                $this->debug('found %s', $testPath);
                 return $testPath;
             }
         }
