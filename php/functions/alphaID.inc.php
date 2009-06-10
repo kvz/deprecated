@@ -77,12 +77,12 @@
  * @link      http://kevin.vanzonneveld.net/
  * 
  * @param mixed   $in     String or long input to translate     
- * @param boolean $to_num  Reverses translation when true
+ * @param boolean $to_num Reverses translation when true
  * @param mixed   $pad_up Number or boolean padds the result up to a specified length
  * 
  * @return mixed string or long
  */
-function alphaID($in, $to_num=false, $pad_up=false) 
+function alphaID($in, $to_num = false, $pad_up = false)
 {
     $index = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     $base  = strlen($index);
