@@ -44,6 +44,7 @@ Class Movie{
         $blackLists = array();
 
 		$blackLists['Authors'] = array(
+            'besthd',
             'jamgood',
             'stv\ 2005\ dvdrip\ xvid\ internal',
             'LiMiTED',
@@ -78,10 +79,12 @@ Class Movie{
             'sinners',
             'DiSSOLVE',
             'hls',
+            'abd',
             'Mp3\ Beef\ Stew',
             'tmg',
             'crf',
             'iwok',
+            'hubris',
             'PerfectionHD',
             'JUST4FUN\ TEAM',
             'VisualScumBagz',
@@ -95,6 +98,8 @@ Class Movie{
         );
 
         $blackLists['Subs'] = array(
+            'dubbed',
+            'custom',
             'custom',
             'nlsubbed',
             'NLsubs',
@@ -102,6 +107,7 @@ Class Movie{
             'multisubs',
             'nl',
             'es',
+            'hebrew',
             'eng',
             'dut',
             'ger',
@@ -112,6 +118,7 @@ Class Movie{
         $blackLists['Source'] = array(
             'dvdrip',
             'rerip',
+            'refined',
             'crosspost',
             'HDDVDRip',
             'HDDVD',

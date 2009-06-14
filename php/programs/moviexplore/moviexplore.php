@@ -52,7 +52,6 @@ require_once DIR_KVZLIB.'/php/all_functions.php';
 require_once DIR_ROOT.'/libs/crawler.php';
 require_once DIR_ROOT.'/libs/movie.php';
 require_once DIR_ROOT.'/libs/store.php';
-require_once DIR_ROOT.'/libs/html.php';
 require_once 'imdb.class.php';
 
 $outDir = '/home/kevin/Dropbox/Public/cinema';
