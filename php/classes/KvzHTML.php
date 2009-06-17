@@ -17,13 +17,18 @@ Class KvzHtml {
         $args       = array_shift($arguments);
         return $this->tag($tag, $body, $args);
     }
-    
+
     public function tag($tag, $body = false, $args = array()) {
         if (is_array($body)) {
             $body = implode("\n", $body);
         }
-        $bodyIndented = $this->indent($body)."\n";
-        
+
+        if (!empty($args['__trimbody'])) {
+            $bodyIndented = $body;
+        } else {
+            $bodyIndented = $this->indent($body)."\n";
+        }
+
         if (!empty($args['__skip'])) {
             return '';
         }
@@ -62,7 +67,7 @@ Class KvzHtml {
         } else {
             $argumentsT = '';
         }
-        
+
         if (false === $body) {
             // End tag
             return '<'.$tag.$argumentsT.' />'."\n";
@@ -74,7 +79,7 @@ Class KvzHtml {
             return '<'.$tag.$argumentsT.'>'."\n".$bodyIndented.'</'.$tag.'>'."\n";
         }
     }
-    
+
     public function a($link, $title = '') {
         return sprintf('<a href="%s">%s</a>'."\n", $link, $title);
     }
@@ -90,7 +95,7 @@ Class KvzHtml {
     public function img($link, $class = '') {
         return sprintf('<img src="%s" class="%s" />'."\n", $link, $class);
     }
-    
+
     public function indent($str, $indent = 4) {
         if (is_array($str)) {
             $str = implode("\n", $str);
@@ -98,12 +103,12 @@ Class KvzHtml {
         if (!is_string($str)) {
             return $str;
         }
-        
+
         $lines = explode("\n", $str);
         foreach ($lines as &$line) {
             $line = str_repeat(' ', $indent) . $line;
         }
-        
+
         return implode("\n", $lines);
     }
 }
