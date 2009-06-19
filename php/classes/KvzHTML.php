@@ -12,10 +12,72 @@
  * @link      http://kevin.vanzonneveld.net/code/
  */
 Class KvzHtml {
+
+    /**
+     * Can track TOC if you use H1, H2 tags
+     *
+     * @var array
+     */
+    protected $_toc = array();
+    protected $_tocLevelPrev = false;
+    protected $_tocIdPrev = false;
+    
+    protected $_options = array();
+
+    
+    public function  __construct($options = array()) {
+        $this->_options = $options;
+        
+        if (!isset($this->_options['track_toc'])) $this->_options['track_toc'] = false;
+        if (!isset($this->_options['link_toc'])) $this->_options['link_toc'] = true;
+    }
+
     public function __call($tag, $arguments) {
         $body       = array_shift($arguments);
         $args       = array_shift($arguments);
-        return $this->tag($tag, $body, $args);
+
+        $tag = $this->tag($tag, $body, $args);
+
+        // TOC?
+        if ($this->_options['track_toc']) {
+            if (preg_match('/h(\d)/i', $tag, $m)) {
+                $tocId     = count($this->_toc);
+                $tocLevel  = $m[1];
+                $tocLine   = '';
+                $suffix    = '';
+                $prefix    = '';
+                
+                if ($this->_tocIdPrev === false) {
+                    // root element
+                    $prefix = $this->tag('a', '', array('name' => 'toc_'.'root', '__trimbody' => true)) . $tag;
+                } elseif ($tocLevel < $this->_tocLevelPrev) {
+                    $prefix = "\n". str_repeat('</ul>', ($this->_tocLevelPrev - $tocLevel));
+                } elseif ($this->_tocIdPrev === false || $tocLevel > $this->_tocLevelPrev) {
+                    $prefix = '<ul>'."\n";
+                }
+                
+                $tocLine .= $prefix;
+                $tocLine .= str_repeat(' ', $tocLevel). '<li>';
+                $tocLine .= trim($body);
+                if ($this->_options['link_toc']) {
+                    // Add Jump link to anchor
+                    $tocLine .= ' '.$this->tag('a', '[jump]', array('href' => '#toc_'.$tocId, '__trimbody' => true));
+                    // Add anchor
+                    $tag   = $this->tag('a', '', array('name' => 'toc_'.$tocId, '__trimbody' => true)) . $tag;
+
+                    // Jump home
+                    $tag .= $this->tag('a', '[home]', array('href' => '#toc_'.'root', '__trimbody' => true));
+                }
+                $tocLine .= '</li>';
+                $tocLine .= $suffix;
+
+                $this->_toc[$tocId]  = $tocLine;
+                $this->_tocLevelPrev = $tocLevel;
+                $this->_tocIdPrev    = $tocId;
+            }
+        }
+
+        return $tag;
     }
 
     public function tag($tag, $body = false, $args = array()) {
@@ -96,6 +158,12 @@ Class KvzHtml {
 
     public function img($link, $class = '') {
         return sprintf('<img src="%s" class="%s" />'."\n", $link, $class);
+    }
+
+    public function getToc() {
+        $toc = $this->_toc;
+        $toc[] = str_repeat('</ul>', $this->_tocLevelPrev);
+        return $toc;
     }
 
     public function indent($str, $indent = 4) {
