@@ -23,10 +23,12 @@ Class KvzHtml {
             $body = implode("\n", $body);
         }
 
+        $newLineAfterOpeningTag = true;
+
+        $bodyIndented = $this->indent($body)."\n";
         if (!empty($args['__trimbody'])) {
-            $bodyIndented = $body;
-        } else {
-            $bodyIndented = $this->indent($body)."\n";
+            $bodyIndented           = trim($bodyIndented);
+            $newLineAfterOpeningTag = false;
         }
 
         if (!empty($args['__skip'])) {
@@ -70,13 +72,13 @@ Class KvzHtml {
 
         if (false === $body) {
             // End tag
-            return '<'.$tag.$argumentsT.' />'."\n";
+            return '<'.$tag.$argumentsT.' />'.($newLineAfterOpeningTag ? "\n" : "");
         } else if (null === $body) {
             // Opening tag
-            return '<'.$tag.$argumentsT.'>'."\n";
+            return '<'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");
         } else {
             // Full tag
-            return '<'.$tag.$argumentsT.'>'."\n".$bodyIndented.'</'.$tag.'>'."\n";
+            return '<'.$tag.$argumentsT.'>'. ($newLineAfterOpeningTag ? "\n" : "").$bodyIndented.'</'.$tag.'>'."\n";
         }
     }
 
