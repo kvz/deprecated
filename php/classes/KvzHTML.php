@@ -35,8 +35,7 @@ Class KvzHtml {
     public function __call($tag, $arguments) {
         $body       = array_shift($arguments);
         $args       = array_shift($arguments);
-
-        $tag = $this->tag($tag, $body, $args);
+        $bodySuffix = '';
 
         // TOC?
         if ($this->_options['track_toc']) {
@@ -49,7 +48,7 @@ Class KvzHtml {
                 
                 if ($this->_tocIdPrev === false) {
                     // root element
-                    $prefix = $this->tag('a', '', array('name' => 'toc_'.'root', '__trimbody' => true)) . $tag;
+                    $prefix = $this->tag('a', '', array('name' => 'toc_'.'root', '__trimbody' => true));
                 } elseif ($tocLevel < $this->_tocLevelPrev) {
                     $prefix = "\n". str_repeat('</ul>', ($this->_tocLevelPrev - $tocLevel));
                 } elseif ($this->_tocIdPrev === false || $tocLevel > $this->_tocLevelPrev) {
@@ -62,12 +61,9 @@ Class KvzHtml {
                 if ($this->_options['link_toc']) {
                     // Add Jump link to anchor
                     $tocLine .= ' '.$this->tag('a', '[jump]', array('href' => '#toc_'.$tocId, '__trimbody' => true));
-                    // Add anchor
-                    $tag   = $this->tag('a', '', array('name' => 'toc_'.$tocId, '__trimbody' => true)) . $tag;
-
-                    // Jump home
-                    $tag .= $this->tag('a', '[home]', array('href' => '#toc_'.'root', '__trimbody' => true));
-                }
+                    $bodySuffix .= $this->tag('a', '', array('name' => 'toc_'.$tocId, '__trimbody' => true));
+                    $bodySuffix .= $this->tag('a', '[toc]', array('href' => '#toc_'.'root', '__trimbody' => true));
+                } 
                 $tocLine .= '</li>';
                 $tocLine .= $suffix;
 
@@ -77,7 +73,7 @@ Class KvzHtml {
             }
         }
 
-        return $tag;
+        return $this->tag($tag, $body . $bodySuffix, $args);
     }
 
     public function tag($tag, $body = false, $args = array()) {
