@@ -73,7 +73,7 @@ Class KvzHtml {
             }
         }
 
-        return $this->tag($tag, $body . $bodySuffix, $args);
+        return $this->tag($tag, (!is_string($body) ? $body : $body . $bodySuffix), $args);
     }
 
     public function tag($tag, $body = false, $args = array()) {
@@ -127,7 +127,7 @@ Class KvzHtml {
         } else {
             $argumentsT = '';
         }
-
+        
         if (false === $body) {
             // End tag
             return '<'.$tag.$argumentsT.' />'.($newLineAfterOpeningTag ? "\n" : "");
