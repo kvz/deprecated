@@ -128,10 +128,13 @@ Class KvzHtml {
             $argumentsT = '';
         }
         
-        if (false === $body) {
-            // End tag
+        if (null === $body) {
+            // self closing tag
             return '<'.$tag.$argumentsT.' />'.($newLineAfterOpeningTag ? "\n" : "");
-        } else if (null === $body) {
+        } else if (false === $body) {
+            // End tag
+            return '</'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");
+        } else if (true === $body) {
             // Opening tag
             return '<'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");
         } else {
@@ -141,19 +144,32 @@ Class KvzHtml {
     }
 
     public function a($link, $title = '') {
-        return sprintf('<a href="%s">%s</a>'."\n", $link, $title);
+        return $this->tag('link', $title, array(
+            'href'=> $link,
+        ));
     }
 
     public function css($link) {
-        return sprintf('<link rel="stylesheet" type="text/css" href="%s" />'."\n", $link);
+        return $this->tag('link', null, array(
+            'type' => 'text/css',
+            'rel' => 'stylesheet',
+            'href'=> $link,
+        ));
     }
 
     public function js($link) {
-        return sprintf('<script type="text/javascript" src="%s"></script>'."\n", $link);
+        return $this->tag('script', '', array(
+            'type' => 'text/javascript',
+            'src'=> $link,
+            '__trimbody' => true,
+        ));
     }
 
     public function img($link, $class = '') {
-        return sprintf('<img src="%s" class="%s" />'."\n", $link, $class);
+        return $this->tag('img', null, array(
+            'class'=> $class,
+            'src' => $link,
+        ));
     }
 
     public function getToc() {
