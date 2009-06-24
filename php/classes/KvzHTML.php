@@ -165,11 +165,9 @@ Class KvzHtml {
         ));
     }
 
-    public function img($link, $class = '') {
-        return $this->tag('img', null, array(
-            'class'=> $class,
-            'src' => $link,
-        ));
+    public function img($link, $args) {
+        $args = array_merge($args, array('src' => $link));
+        return $this->tag('img', null, $args);
     }
 
     public function getToc() {
