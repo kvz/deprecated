@@ -27,6 +27,9 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
     if (!isset($options['in_file'])) {
         $options['in_file'] = '/dev/shm/infile.txt';
     }
+    if (!isset($options['link_identifier'])) {
+        $options['link_identifier'] = null;
+    }
 
     // Make options local
     extract($options);
