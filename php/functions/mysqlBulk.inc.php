@@ -33,9 +33,16 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
 
     // Validation
     if (!is_array($data)) {
-        if ($trigger_notices) {
+        if ($trigger_errors) {
             trigger_error('First argument "queries" must be an array',
-                E_USER_NOTICE);
+                E_USER_ERROR);
+        }
+        return false;
+    }
+    if (empty($table)) {
+        if ($trigger_errors) {
+            trigger_error('No insert table specified',
+                E_USER_ERROR);
         }
         return false;
     }
