@@ -216,6 +216,8 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
         $data = array();
     }
 
+    @unlink($options['in_file']);
+
     // Return queries per second
     return $qps;
 }
