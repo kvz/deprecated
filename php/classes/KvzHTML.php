@@ -21,6 +21,8 @@ Class KvzHtml {
     protected $_toc = array();
     protected $_tocLevelPrev = false;
     protected $_tocIdPrev = false;
+    protected $_idCnt = array();
+    protected $_ids = array();
     
     protected $_options = array();
 
@@ -76,6 +78,27 @@ Class KvzHtml {
         return $this->tag($tag, (!is_string($body) ? $body : $body . $bodySuffix), $args);
     }
 
+    public function reset() {
+        $this->_idCnt = array();
+        $this->_ids = array();
+    }
+
+    protected function _createId($tag) {
+        if (!isset($this->_idCnt[$tag])) {
+            $this->_idCnt[$tag] = 0;
+        }
+        
+        $this->_idCnt[$tag]++;
+        $id = $tag . '-' . $this->_idCnt[$tag];
+        $this->_ids[] = $id;
+
+        return $id;
+    }
+
+    public function getLastId() {
+        return end($this->_ids);
+    }
+
     public function tag($tag, $body = false, $args = array()) {
         if (is_array($body)) {
             $body = implode("\n", $body);
@@ -89,6 +112,11 @@ Class KvzHtml {
             $newLineAfterOpeningTag = false;
         }
 
+        if (true === @$args['id']) {
+            // auto id
+            $args['id'] = $this->_createId($tag);
+        }
+
         if (!empty($args['__skip'])) {
             return '';
         }
@@ -96,6 +124,7 @@ Class KvzHtml {
         if (!empty($args['__onlybody'])) {
             return $bodyIndented;
         }
+
 
         $argumentsT = '';
         if (is_array($args) && count($args)) {
