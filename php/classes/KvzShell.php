@@ -176,10 +176,16 @@ class KvzShell {
      * @return KvzShell
      */
     public function __construct($options = array()) {
+        $parentOptions = array();
+
         // Merge parent's possible options with own
         $parent        = get_parent_class($this);
-        $parentVars    = get_class_vars($parent);
-        $parentOptions = $parentVars['_options'];
+        if (!empty($parent)) {
+            $parentVars    = get_class_vars($parent);
+            if (!empty($parentVars['_options'])) {
+                $parentOptions = $parentVars['_options'];
+            }
+        }
 
         $this->_options = array_merge($parentOptions, $this->_options);
 
