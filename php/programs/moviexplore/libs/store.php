@@ -82,13 +82,13 @@ Class Store{
                     if ($separate_on_dir) {
                         if ($prevdirname != $dirname) {
                             $index .= $Html->div(ucwords($dirname), array('class' => 'directory'));
-                            $index .= $Html->hr(false);
+                            $index .= $Html->hr(null);
                         }
                     }
 
                     $index .= $Html->div(
                         $Html->div(
-                            $Html->a($movie['main_url'], $Html->img($imgFile, 'poster')) .
+                            $Html->a($movie['main_url'], $Html->img($imgFile, array('class' => 'poster'))) .
                             $Html->p($movie['rating'], array('class' => 'rating', 'style' => '"color:'.$rateColor.';"')) .
                             $Html->p($movie['runtime'] ? $movie['runtime'].'m' : '', 'runtime') ,
                             array('class' => 'left')
