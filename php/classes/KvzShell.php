@@ -943,7 +943,7 @@ class KvzShell {
         foreach($params as $k=>$v) {
             if (is_array($v)) {
                 foreach($v as $k1=>$v1) {
-                    if (!is_numeric($k)) {
+                    if (!is_numeric($k) && $v !== false) {
                         $arguments .= $keyPrefix.$k.' ';
                     }
                     $arguments .= $v1. ' ';
