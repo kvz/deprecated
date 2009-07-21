@@ -949,7 +949,7 @@ class KvzShell {
                     $arguments .= $v1. ' ';
                 }
             } else {
-                if (!is_numeric($k)) {
+                if (!is_numeric($k) && $v !== false) {
                     $arguments .= $keyPrefix.$k.' ';
                 }
                 $arguments .= $v. ' ';
