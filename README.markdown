@@ -65,7 +65,7 @@ argument *$request_suffix*, which defaults to an empty string, may be passed as 
 	
 	class CsvParser {
 	    // This method must be "public" in order to be called
-	    public function parse($curl_csv_response) {
+	    static function parse($curl_csv_response) {
 	        // Logic to convert $curl_response into an array or object or something
 	        return $converted_csv;
 	    }
