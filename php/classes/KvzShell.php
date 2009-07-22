@@ -582,19 +582,27 @@ class KvzShell {
             $str = $str. ' '.$str_origin;
         }
 
-        if ($level <= $this->getOption('print_log_level')) {
-            $this->out($str);
-        }
-
-        if ($this->getOption('log_file')) {
-            file_put_contents($this->getOption('log_file'), $str."\n", FILE_APPEND);
-        }
+        $this->logOut($str);
+        $this->logAppend($str);
         
         if ($level < self::LOG_CRIT) {
             $this->warning('Can\'t continue after last event');
             $this->_die('Can\'t continue after last event', 1);
         }
         
+        return true;
+    }
+
+    public function logAppend($str) {
+        if ($this->getOption('log_file')) {
+            return file_put_contents($this->getOption('log_file'), $str."\n", FILE_APPEND);
+        }
+        return true;
+    }
+    public function logOut($str) {
+        if ($level <= $this->getOption('print_log_level')) {
+            return $this->out($str);
+        }
         return true;
     }
 
