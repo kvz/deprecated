@@ -503,7 +503,7 @@ class KvzShell {
         $function = false;
         $file     = false;
         $line     = false;
-        if ($this->getOptions('log_origin')) {
+        if ($this->getOption('log_origin')) {
             if (function_exists("debug_backtrace") && ($file == false
                 || $class == false || $function == false || $line == false)) {
                 $dbg_bt   = @debug_backtrace();
@@ -572,7 +572,7 @@ class KvzShell {
     public function log($str, $level=KvzShell::LOG_INFO, $class = false, $function = false, $file = false, $line = false) {
         $str_level  = str_pad(KvzShell::$_logLevels[$level]."", 8, " ", STR_PAD_LEFT);
         $str_origin = '';
-        if ($this->getOptions('log_origin')) {
+        if ($this->getOption('log_origin')) {
             $str_origin = sprintf('[f: %s, l:%s]', $file, $line);
         }
 
