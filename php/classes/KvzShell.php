@@ -128,6 +128,7 @@ class KvzShell {
         'log_stderr' => false,
         'log_origin' => true,
         'log_file' => false,
+        'log_prependtype' => true,
     );
         
     /**
@@ -576,7 +577,9 @@ class KvzShell {
             $str_origin = sprintf('[f: %s, l:%s]', $file, $line);
         }
 
-        $str = $str_level. ' ' . $str;
+        if ($this->getOption('log_prependtype')) {
+            $str = $str_level. ' ' . $str;
+        }
 
         if ($level != KvzShell::LOG_INFO && $level != KvzShell::LOG_NOTICE) {
             $str = $str. ' '.$str_origin;
