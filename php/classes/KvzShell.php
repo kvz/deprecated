@@ -582,8 +582,8 @@ class KvzShell {
             $str = $str. ' '.$str_origin;
         }
 
-        $this->logOut($str);
-        $this->logAppend($str);
+        $this->logOut($str, $level);
+        $this->logAppend($str, $level);
         
         if ($level < self::LOG_CRIT) {
             $this->warning('Can\'t continue after last event');
@@ -593,13 +593,14 @@ class KvzShell {
         return true;
     }
 
-    public function logAppend($str) {
+    public function logAppend($str, $level) {
         if ($this->getOption('log_file')) {
             return file_put_contents($this->getOption('log_file'), $str."\n", FILE_APPEND);
         }
         return true;
     }
-    public function logOut($str) {
+    
+    public function logOut($str, $level) {
         if ($level <= $this->getOption('print_log_level')) {
             return $this->out($str);
         }
