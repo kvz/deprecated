@@ -177,6 +177,8 @@ class KvzShell {
      * @return KvzShell
      */
     public function __construct($options = array()) {
+        // @todo: Merging Parent options fails to recurse
+
         $parentOptions = array();
 
         // Merge parent's possible options with own
