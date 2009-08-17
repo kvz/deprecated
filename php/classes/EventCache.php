@@ -27,13 +27,42 @@ class EventCache {
         $_this = EventCache::getInstance();
         return $_this->setOption($key, $val);
     }
-    
     static public function read($key) {
         $_this = EventCache::getInstance();
         return $_this->read($key);
     }
+    static public function getKeys($event) {
+        $_this = EventCache::getInstance();
+        return $_this->getKeys($event);
+    }
+    static public function getEvents() {
+        $_this = EventCache::getInstance();
+        return $_this->getEvents();
+    }
 
-    static function magicKey($scope, $method, $args = array(), $events = array(), $options = array()) {
+    /*
+    // PHP 5.3
+    static public function  __callStatic($name, $arguments) {
+        $_this = EventCache::getInstance();
+        $call = array($_this, $name);
+        if (is_callable($call)) {
+            return call_user_func_array($call, $arguments);
+        }
+
+        return false;
+    }
+    */
+
+    static public function squashArrayTo1Dim($array) {
+        foreach($array as $k=>$v) {
+            if (is_array($v)) {
+                $array[$k] = crc32(json_encode($v));
+            }
+        }
+        return $array;
+    }
+
+    static public function magicKey($scope, $method, $args = array(), $events = array(), $options = array()) {
         $_this = EventCache::getInstance();
         $dlm   = '.';
         $dls   = '@';
@@ -55,7 +84,7 @@ class EventCache {
             );
         }
         if (!empty($options['unique'])) {
-            $options['unique'] = (array)$options['unique'];
+            $options['unique'] = self::squashArrayTo1Dim((array)$options['unique']);
             $keyp = array_merge($keyp, $options['unique']);
         }
         $keyp[] = join($dls, $args);
@@ -65,26 +94,39 @@ class EventCache {
         return $key;
     }
 
-    static function magic($scope, $method, $args = array(), $events = array(), $options = array()) {
-        $key = self::magicKey($scope, $method, $args, $events, $options);
-        
-        if (($val = self::read($key))) {
-            // Cache Hit
-            return $val;
-        }
-
+    static protected function _execute($callback, $args) {
         // Can we Execute Callback?
-        $callback = array($scope, '_'.$method);
-        if (!is_object($scope) || !is_callable($callback)) {
+        if (!is_callable($callback)) {
+            trigger_error('Can\'t call '.join('::', $callback).' is it public?', E_USER_ERROR);
             return false;
         }
+        return call_user_func_array($callback, $args);
+    }
+
+    static public function magic($scope, $method, $args = array(), $events = array(), $options = array()) {
+        $key      = self::magicKey($scope, $method, $args, $events, $options);
+        $callback = array($scope, '_'.$method);
         
-        return self::write($key, call_user_func_array($callback, $args), $events, $options);
+        if (!empty($options['disable'])) {
+            return self::_execute($callback, $args);
+        }
+
+        if (!($val = self::read($key))) {
+            $val = self::_execute($callback, $args);
+            self::write($key, $val, $events, $options);
+        }
+        
+        return $val;
     }
 
     static public function write($key, $val, $events = array(), $options = array()) {
         $_this = EventCache::getInstance();
         return $_this->write($key, $val, $events, $options);
+    }
+    
+    static public function trigger($event) {
+        $_this = EventCache::getInstance();
+        return $_this->trigger($event);
     }
 }
 
@@ -118,6 +160,7 @@ class EventCacheInst {
         'delimiter' => '-',
         'adapter' => 'EventCacheMemcachedAdapter',
         'trackEvents' => false,
+        'motherEvents' => array(),
         'servers' => array(
             '127.0.0.1',
         ),
@@ -169,6 +212,16 @@ class EventCacheInst {
      */
     public function write($key, $val, $events = array(), $options = array()) {
         if (!isset($options['ttl'])) $options['ttl'] = 0;
+
+        // In case of 'null' e.g.
+        if (empty($events)) {
+            $events = array();
+        }
+        
+        // Mother events are attached to all keys
+        if (!empty($this->_config['motherEvents'])) {
+            $events = array_merge($events, (array)$this->_config['motherEvents']);
+        }
 
         $this->register($key, $events);
 
@@ -278,7 +331,7 @@ class EventCacheInst {
      */
     public function trigger($event) {
         $cKeys = $this->getCKeys($event);
-        $this->_del($cKeys);
+        return $this->_del($cKeys);
     }
 
     // Get events
@@ -287,10 +340,10 @@ class EventCacheInst {
             $this->err('You need to enable the slow "trackEvents" option for this');
             return false;
         }
-
+        
         $etKey  = $this->cKey('events', 'track');
         $events = $this->_get($etKey);
-        return $events;
+        return $events ? $events : array();
     }
 
     /**
@@ -459,15 +512,15 @@ class EventCacheInst {
      * @return <type>
      */
     protected function _del($cKeys, $ttl = 0) {
+        if (empty($cKeys)) {
+            return null;
+        }
         if (is_array($cKeys)) {
             foreach($cKeys as $cKey) {
                 if (!$this->_del($cKey)) {
                     return false;
                 }
             }
-            return true;
-        }
-        if (empty($cKeys)) {
             return true;
         }
         

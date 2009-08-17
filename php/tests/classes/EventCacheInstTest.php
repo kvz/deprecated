@@ -133,7 +133,7 @@ class EventCacheInstTest extends PHPUnit_Framework_TestCase {
     }
 
     public function testSave() {
-        $this->assertEquals('asdf__235_____b______', $this->EventCacheInst->sane('asdf~!235@#$%^b&_-=*('));
+        $this->assertEquals('asdf__235@____b______', $this->EventCacheInst->sane('asdf~!235@#$%^b&_-=*('));
     }
 
     public function testClear() {

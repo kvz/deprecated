@@ -22,6 +22,17 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
         EventCache::write('name', 'Kevin');
         $this->assertEquals('Kevin', EventCache::read('name'));
     }
+    public function testSquashArrayTo1Dim() {
+        $y = array(
+            'a' => array(1, 2, 3, 4),
+            'b' => array(5, 6, 7, 8),
+            'c' => array(9, 10, 11, 12),
+        );
+
+        $x = EventCache::squashArrayTo1Dim($y);
+        print_r(compact('y','x'));
+    }
+    
     public function testMagic() {
 
         $EventCacheInst = EventCache::getInstance();
