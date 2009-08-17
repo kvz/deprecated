@@ -30,7 +30,9 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
         );
 
         $x = EventCache::squashArrayTo1Dim($y);
-        print_r(compact('y','x'));
+
+        $this->assertTrue($x['a'] == '1741593048');
+        $this->assertTrue(count($x) === 3);
     }
     
     public function testMagic() {
