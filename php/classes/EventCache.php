@@ -56,7 +56,7 @@ class EventCache {
     static public function squashArrayTo1Dim($array) {
         foreach($array as $k=>$v) {
             if (is_array($v)) {
-                $array[$k] = crc32(json_encode($v));
+                $array[$k] = md5(json_encode($v));
             }
         }
         return $array;
