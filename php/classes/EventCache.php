@@ -128,6 +128,10 @@ class EventCache {
         $_this = EventCache::getInstance();
         return $_this->trigger($event);
     }
+    static public function flush() {
+        $_this = EventCache::getInstance();
+        return $_this->flush();
+    }
 }
 
 /**
