@@ -165,6 +165,7 @@ class EventCacheInst {
         'adapter' => 'EventCacheMemcachedAdapter',
         'trackEvents' => false,
         'motherEvents' => array(),
+        'disable' => false,
         'servers' => array(
             '127.0.0.1',
         ),
@@ -215,6 +216,10 @@ class EventCacheInst {
      * @return <type>
      */
     public function write($key, $val, $events = array(), $options = array()) {
+        if (!empty($this->_config['disable'])) {
+            return false;
+        }
+
         if (!isset($options['ttl'])) $options['ttl'] = 0;
 
         // In case of 'null' e.g.
@@ -239,6 +244,10 @@ class EventCacheInst {
      * @return <type>
      */
     public function read($key) {
+        if (!empty($this->_config['disable'])) {
+            return false;
+        }
+
         $kKey = $this->cKey('key', $key);
         return $this->_get($kKey);
     }
