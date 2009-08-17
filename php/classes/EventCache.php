@@ -33,7 +33,7 @@ class EventCache {
         return $_this->read($key);
     }
 
-    static function magic($scope, $method, $args = array(), $events = array(), $options = array()) {
+    static function magicKey($scope, $method, $args = array(), $events = array(), $options = array()) {
         $_this = EventCache::getInstance();
         $dlm   = '.';
         $dls   = '@';
@@ -62,6 +62,11 @@ class EventCache {
 
         $keyp = $_this->sane($keyp);
         $key  = join($dlm, $keyp);
+        return $key;
+    }
+
+    static function magic($scope, $method, $args = array(), $events = array(), $options = array()) {
+        $key = self::magicKey($scope, $method, $args, $events, $options);
         
         if (($val = self::read($key))) {
             // Cache Hit
