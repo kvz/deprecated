@@ -13,12 +13,47 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
     {
         EventCache::setOption(array(
             'app' => 'testapp',
+            'trackEvents' => true,
         ));
     }
-    
+    #magic($scope, $method, $args = array(), $val = null, $events = array(), $options = array()) {
     public function testRead() {
         EventCache::write('name', 'Kevin');
         $this->assertEquals('Kevin', EventCache::read('name'));
     }
+    public function testMagic() {
+
+        $EventCacheInst = EventCache::getInstance();
+        $EventCacheInst->flush();
+
+        $events = $EventCacheInst->getEvents();
+        $this->assertTrue(empty($events));
+
+        $this->assertEquals('Kevin', $this->heavyDBFunction('Kevin'));
+        $this->assertEquals('van Zonneveld', $this->heavyDBFunction('van Zonneveld', 5));
+
+        $events = $EventCacheInst->getEvents();
+        $this->assertArrayHasKey('testapp-event-deploy', $events);
+        $this->assertTrue(count($events) === 2);
+
+        $keys = $EventCacheInst->getKeys('deploy');
+        print_r($keys);
+        
+        //$this->assertEquals(EventCache::read());
+
+    }
+    public function heavyDBFunction($name, $retry = 3) {
+        $args = func_get_args();
+        return EventCache::magic($this, __FUNCTION__, $args, array(
+            'deploy',
+            'Server::afterSave',
+        ), array(
+            'unique' => 'otherSpecificStuff'
+        ));
+    }
+    public function _heavyDBFunction($name, $retry = 3) {
+        return $name;
+    }
+
 }
 ?>

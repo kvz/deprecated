@@ -16,25 +16,69 @@ class EventCache {
     static public    $config = array();
     static protected $_instance = null;
     
-    static protected function _getInstance() {
+    static public function getInstance() {
         if (EventCache::$_instance === null) {
-            EventCache::$_instance = new EventCache(EventCache::$config);
+            EventCache::$_instance = new EventCacheInst(EventCache::$config);
         }
 
         return EventCache::$_instance;
     }
     static public function setOption($key, $val = null) {
-        $_this = EventCache::_getInstance();
+        $_this = EventCache::getInstance();
         return $_this->setOption($key, $val);
     }
     
     static public function read($key) {
-        $_this = EventCache::_getInstance();
+        $_this = EventCache::getInstance();
         return $_this->read($key);
     }
-    
+
+    static function magic($scope, $method, $args = array(), $events = array(), $options = array()) {
+        $_this = EventCache::getInstance();
+        $dlm   = '.';
+        $dls   = '@';
+
+        $keyp = array();
+        if (is_object($scope)) {
+            if (!empty($scope->name)) {
+                $keyp[] = $scope->name;
+            } else {
+                $keyp[] = get_class($scope);
+            }
+        } elseif (is_string($scope)) {
+            $keyp[] = $scope;
+        }
+        $keyp[] = $method;
+        if (is_string($options)) {
+            $options = array(
+                'unique' => $options,
+            );
+        }
+        if (!empty($options['unique'])) {
+            $options['unique'] = (array)$options['unique'];
+            $keyp = array_merge($keyp, $options['unique']);
+        }
+        $keyp[] = join($dls, $args);
+
+        $keyp = $_this->sane($keyp);
+        $key  = join($dlm, $keyp);
+        
+        if (($val = self::read($key))) {
+            // Cache Hit
+            return $val;
+        }
+
+        // Can we Execute Callback?
+        $callback = array($scope, '_'.$method);
+        if (!is_object($scope) || !is_callable($callback)) {
+            return false;
+        }
+        
+        return self::write($key, call_user_func_array($callback, $args), $events, $options);
+    }
+
     static public function write($key, $val, $events = array(), $options = array()) {
-        $_this = EventCache::_getInstance();
+        $_this = EventCache::getInstance();
         return $_this->write($key, $val, $events, $options);
     }
 }
@@ -104,8 +148,9 @@ class EventCacheInst {
             }
             return true;
         }
-        
-        $_this->_config[$key] = $val;
+
+        $this->_config[$key] = $val;
+        return true;
     }
 
     /**
@@ -300,6 +345,7 @@ class EventCacheInst {
                 '\-' => true,
                 '\_' => true,
                 '\.' => true,
+                '\@' => true,
             );
 
             if (isset($allowed['\\'.$this->_config['delimiter']])) {
