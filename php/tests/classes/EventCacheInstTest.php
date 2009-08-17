@@ -63,6 +63,31 @@ class EventCacheInstTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(false, $this->EventCacheInst->read('name'));
     }
 
+    public function testUnregister() {
+        $this->EventCacheInst->flush();
+        $this->EventCacheInst->write('name', 'Kevin van Zonneveld', array(
+            'Employee::afterSave',
+            'Employee::afterDelete',
+            'Server::afterDelete',
+        ));
+        $this->EventCacheInst->write('hostname', 'kevin.vanzonneveld.net', array(
+            'Server::afterSave',
+            'Server::afterDelete',
+        ));
+        
+        $keys = $this->EventCacheInst->getKeys('Server::afterDelete');
+        $this->assertEquals(array(
+            'testapp-key-hostname' => 'hostname',
+            'testapp-key-name' => 'name',
+        ), $keys);
+        
+        $this->EventCacheInst->unregister('name', 'Server::afterDelete');
+        $keys = $this->EventCacheInst->getKeys('Server::afterDelete');
+        $this->assertEquals(array(
+            'testapp-key-hostname' => 'hostname',
+        ), $keys);
+    }
+
     public function testGetEvents() {
         $this->EventCacheInst->write('name', 'Kevin van Zonneveld', array(
             'Employee::afterSave',

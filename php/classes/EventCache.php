@@ -163,7 +163,7 @@ class EventCacheInst {
         } else {
             $events = (array)$events;
             foreach($events as $eKey=>$event) {
-                $cKeys = $this->getEventCKeys($event);
+                $cKeys = $this->getCKeys($event);
                 $this->_del($cKeys);
                 
                 $this->_del($eKey);
@@ -180,26 +180,44 @@ class EventCacheInst {
     }
 
     /**
+     * DisAssociate keys with events
+     *
+     * @param <type> $key
+     * @param <type> $events
+     */
+    public function unregister($key, $events = array()) {
+        return $this->register($key, $events, true);
+    }
+    
+    /**
      * Associate keys with events (if you can't do it immediately with 'write')
      *
      * @param <type> $key
      * @param <type> $events
      */
-    public function register($key, $events = array()) {
+    public function register($key, $events = array(), $del = false) {
         $events = (array)$events;
         if ($this->_config['trackEvents']) {
             // Slows down performance
             $etKey = $this->cKey('events', 'track');
             foreach($events as $event) {
                 $eKey = $this->cKey('event', $event);
-                $this->_listAdd($etKey, $eKey, $event);
+                if ($del) {
+                    $this->_listDel($etKey, $eKey);
+                } else {
+                    $this->_listAdd($etKey, $eKey, $event);
+                }
             }
         }
 
         foreach($events as $event) {
             $eKey = $this->cKey('event', $event);
             $kKey = $this->cKey('key', $key);
-            $this->_listAdd($eKey, $kKey, $key);
+            if ($del) {
+                $this->_listDel($eKey, $kKey);
+            } else {
+                $this->_listAdd($eKey, $kKey, $key);
+            }
         }
     }
 
@@ -209,7 +227,7 @@ class EventCacheInst {
      * @param <type> $event
      */
     public function trigger($event) {
-        $cKeys = $this->getEventCKeys($event);
+        $cKeys = $this->getCKeys($event);
         $this->_del($cKeys);
     }
 
@@ -235,13 +253,14 @@ class EventCacheInst {
         $eKey = $this->cKey('event', $event);
         return $this->_get($eKey);
     }
+    
     /**
      * Get internal keys
      *
      * @param <type> $event
      * @return <type>
      */
-    public function getEventCKeys($event) {
+    public function getCKeys($event) {
         $list = $this->getKeys($event);
         if (!is_array($list)) {
             return $list;
@@ -329,6 +348,25 @@ class EventCacheInst {
         $log .= "\n";
         echo $log;
         return $log;
+    }
+
+    /**
+     * Add remove element from an array in cache
+     *
+     * @param <type> $memKey
+     * @param <type> $cKey
+     * @param <type> $ttl
+     * @return <type>
+     */
+    protected function _listDel($memKey, $cKey, $ttl = 0) {
+        $list = $this->_get($memKey);
+        $this->debug('Removing key: %s to list: %s count: %s', $cKey, $memKey, count($list));
+        if (array_key_exists($cKey, $list)) {
+            unset($list[$cKey]);
+            return $this->_set($memKey, $list, $ttl);
+        }
+        // Didn't have to remove non-existing key
+        return null;
     }
 
     /**
