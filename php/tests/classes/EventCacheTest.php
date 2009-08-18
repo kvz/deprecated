@@ -17,7 +17,7 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
             'trackEvents' => true,
         ));
     }
-    #magic($scope, $method, $args = array(), $val = null, $events = array(), $options = array()) {
+    
     public function testRead() {
         EventCache::write('name', 'Kevin');
         $this->assertEquals('Kevin', EventCache::read('name'));
@@ -31,7 +31,7 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
 
         $x = EventCache::squashArrayTo1Dim($y);
 
-        $this->assertEquals('7bd4c63ba2cdadb060f5730e7bf66a30', $x['a']);
+        $this->assertEquals('1741593048', $x['a']);
         $this->assertTrue(count($x) === 3);
     }
     
@@ -46,8 +46,39 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
         
         $this->assertEquals('Kevin', $this->heavyDBFunction('Kevin'));
         $this->assertTrue($this->DBCalled);
-        $this->assertEquals('van Zonneveld', $this->heavyDBFunction('van Zonneveld', 5));
+        $this->assertEquals('van Zonneveld', $this->heavyDBFunction('van Zonneveld', array(
+            'url' => array(
+                'controller' => 'Customers',
+                'action' => 'view',
+                'id' => 5,
+            ),
+        )));
         $this->assertTrue($this->DBCalled);
+        $this->assertEquals('van Zonneveld', $this->heavyDBFunction('van Zonneveld', array(
+            'url' => array(
+                'controller' => 'Customers',
+                'action' => 'view',
+                'id' => 6,
+            ),
+        )));
+        $this->assertTrue($this->DBCalled);
+        $this->assertEquals('van Zonneveld', $this->heavyDBFunction('van Zonneveld', array(
+            'url' => array(
+                'controller' => 'Customers',
+                'action' => 'view',
+                'id' => 6,
+            ),
+        )));
+        $this->assertFalse($this->DBCalled);
+
+        $this->assertEquals('van Zonneveld', $this->heavyDBFunction('van Zonneveld', array(
+            'url' => array(
+                'controller' => 'Customers',
+                'action' => 'view',
+                'id' => 6,
+            ),
+        )));
+        $this->assertFalse($this->DBCalled);
 
 
         $this->assertEquals('Kevin', $this->heavyDBFunction('Kevin'));
@@ -62,19 +93,16 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
     public function heavyDBFunction($name, $retry = 3) {
         $this->DBCalled = false;
         $args = func_get_args();
-        $this->MagicKey = EventCache::magicKey($this, __FUNCTION__, $args, array(
+
+        list ($this->MagicKey, $val) = EventCache::magic($this, __FUNCTION__, $args, array(
             'deploy',
             'Server::afterSave',
         ), array(
-            'unique' => 'otherSpecificStuff'
+            'unique' => array('a' => array(1, 2, 3), 'b', 'c'),
+            'keypair' => true,
         ));
-        
-        return EventCache::magic($this, __FUNCTION__, $args, array(
-            'deploy',
-            'Server::afterSave',
-        ), array(
-            'unique' => 'otherSpecificStuff'
-        ));
+
+        return $val;
     }
     public function _heavyDBFunction($name, $retry = 3) {
         $this->DBCalled = true;

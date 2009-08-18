@@ -57,7 +57,7 @@ class EventCache {
     static public function squashArrayTo1Dim($array) {
         foreach($array as $k=>$v) {
             if (is_array($v)) {
-                $array[$k] = md5(json_encode($v));
+                $array[$k] = crc32(json_encode($v));
             }
         }
         return $array;
@@ -79,15 +79,18 @@ class EventCache {
             $keyp[] = $scope;
         }
         $keyp[] = $method;
+        // Default to 'unique' option if not specified
         if (is_string($options)) {
             $options = array(
                 'unique' => $options,
             );
         }
         if (!empty($options['unique'])) {
-            $options['unique'] = self::squashArrayTo1Dim((array)$options['unique']);
-            $keyp = array_merge($keyp, $options['unique']);
+            $keyp = array_merge($keyp, self::squashArrayTo1Dim((array)$options['unique']));
         }
+        
+        $args = self::squashArrayTo1Dim($args);
+        
         $keyp[] = join($dls, $args);
 
         $keyp = $_this->sane($keyp);
@@ -115,6 +118,11 @@ class EventCache {
         if (!($val = self::read($key))) {
             $val = self::_execute($callback, $args);
             self::write($key, $val, $events, $options);
+        }
+
+        // For testing purposes
+        if (!empty($options['keypair'])) {
+            return array($key, $val);
         }
         
         return $val;
