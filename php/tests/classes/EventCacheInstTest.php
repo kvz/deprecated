@@ -21,6 +21,33 @@ class EventCacheInstTest extends PHPUnit_Framework_TestCase {
         #$this->EventCacheInst->flush();
     }
 
+    public function testListAdd() {
+        $this->EventCacheInst->flush();
+        
+        $this->EventCacheInst->listAdd('EventCacheLogEntries', null, 'Kevin van Zonneveld');
+        $this->EventCacheInst->listAdd('EventCacheLogEntries', null, 'Kevin');
+
+        $list = $this->EventCacheInst->read('EventCacheLogEntries');
+
+        $this->assertEquals(array(
+            'Kevin van Zonneveld',
+            'Kevin',
+        ), $list);
+
+        
+        $this->EventCacheInst->flush();
+        
+        $this->EventCacheInst->listAdd('EventCacheLogEntries', 'a', 'Kevin van Zonneveld');
+        $this->EventCacheInst->listAdd('EventCacheLogEntries', 'b', 'Kevin');
+
+        $list = $this->EventCacheInst->read('EventCacheLogEntries');
+
+        $this->assertEquals(array(
+            'a' => 'Kevin van Zonneveld',
+            'b' => 'Kevin',
+        ), $list);
+    }
+
     public function testWrite() {
         $this->EventCacheInst->write('name', 'Kevin van Zonneveld', array(
             'Employee::afterSave',

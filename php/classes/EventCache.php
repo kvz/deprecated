@@ -250,11 +250,30 @@ class EventCacheInst {
         if (!empty($this->_config['disable'])) {
             return false;
         }
-
+        
         $kKey = $this->cKey('key', $key);
 
         $this->debug('Get key: %s', $kKey);
         return $this->_get($kKey);
+    }
+    /**
+     * Adds array item
+     *
+     * @param <type> $listKey
+     * @param <type> $key
+     * @param <type> $val
+     * @param <type> $ttl
+     * @return <type>
+     */
+    public function listAdd($listKey, $key = null, $val = null, $ttl = 0) {
+        $memKey = $this->cKey('key', $listKey);
+        $this->debug('Add item: %s with value: %s to list: %s. ttl: %s',
+            $key,
+            $val,
+            $memKey,
+            $ttl
+        );
+        return $this->_listAdd($memKey, $key, $val, $ttl);
     }
     /**
      * Delete a key
@@ -273,15 +292,17 @@ class EventCacheInst {
      * @param <type> $events
      * @return <type>
      */
-    public function clear($events = array()) {
+    public function clear($events = null) {
         if (!$this->_config['trackEvents']) {
             $this->err('You need to enable the slow "trackEvents" option for this');
             return false;
         }
 
-        if (empty($events)) {
+        if ($events === null) {
             $events = $this->getEvents();
-            $this->clear($events);
+            if (!empty($events)) {
+               $this->clear($events);
+            }
         } else {
             $events = (array)$events;
             foreach($events as $eKey=>$event) {
@@ -316,6 +337,7 @@ class EventCacheInst {
      *
      * @param <type> $key
      * @param <type> $events
+     * @param <type> $del
      */
     public function register($key, $events = array(), $del = false) {
         $events = (array)$events;
@@ -341,6 +363,7 @@ class EventCacheInst {
                 $this->_listAdd($eKey, $kKey, $key);
             }
         }
+        return true;
     }
 
     /**
