@@ -85,7 +85,8 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue(!$this->DBCalled);
 
         $events = $EventCacheInst->getEvents();
-        $this->assertArrayHasKey('testapp-event-deploy', $events);
+        $this->assertContains('deploy', $events);
+        $this->assertContains('Server::afterSave', $events);
         $this->assertTrue(count($events) === 2);
         
         $this->assertEquals('Kevin', EventCache::read($this->MagicKey));

@@ -430,8 +430,15 @@ class EventCacheInst {
      * @return <type>
      */
     public function cKey($type, $key) {
-        $cKey = $this->sane($key);
-        return $this->_config['app'].$this->_config['delimiter'].$type.$this->_config['delimiter'].$this->sane($cKey);
+        $cKey = $this->_config['app'] .
+            $this->_config['delimiter'] .
+            $type .
+            $this->_config['delimiter'] .
+            $this->sane($key);
+
+        $cKey = md5($cKey);
+
+        return $cKey;
     }
     /**
      * Sanitizes a string
@@ -495,7 +502,7 @@ class EventCacheInst {
     protected function _log($level, $str, $args) {
         foreach ($args as $k=>$arg) {
             if (is_array($arg)) {
-                $args[$k] = var_export($arg, true);
+                $args[$k] = substr(var_export($arg, true), 0, 30);
             }
         }
         

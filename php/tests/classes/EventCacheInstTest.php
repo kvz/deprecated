@@ -103,16 +103,14 @@ class EventCacheInstTest extends PHPUnit_Framework_TestCase {
         ));
         
         $keys = $this->EventCacheInst->getKeys('Server::afterDelete');
-        $this->assertEquals(array(
-            'testapp-key-hostname' => 'hostname',
-            'testapp-key-name' => 'name',
-        ), $keys);
+
+        $this->assertContains('hostname', $keys);
+        $this->assertContains('name', $keys);
         
         $this->EventCacheInst->unregister('name', 'Server::afterDelete');
         $keys = $this->EventCacheInst->getKeys('Server::afterDelete');
-        $this->assertEquals(array(
-            'testapp-key-hostname' => 'hostname',
-        ), $keys);
+        $this->assertContains('hostname', $keys);
+        $this->assertTrue(count($keys) === 1);
     }
 
     public function testGetEvents() {
@@ -126,13 +124,13 @@ class EventCacheInstTest extends PHPUnit_Framework_TestCase {
         ));
         
         $events = $this->EventCacheInst->getEvents();
-        
-        $this->assertEquals(array(
-            'testapp-event-Employee__afterSave' => 'Employee::afterSave',
-            'testapp-event-Employee__afterDelete' => 'Employee::afterDelete',
-            'testapp-event-Server__afterSave' => 'Server::afterSave',
-            'testapp-event-Server__afterDelete' => 'Server::afterDelete',
-        ), $events);
+
+
+        $this->assertContains('Employee::afterSave', $events);
+        $this->assertContains('Employee::afterDelete', $events);
+        $this->assertContains('Server::afterSave', $events);
+        $this->assertContains('Server::afterDelete', $events);
+        $this->assertTrue(count($events) === 4);
     }
 
     public function testGetKeys() {
@@ -142,10 +140,7 @@ class EventCacheInstTest extends PHPUnit_Framework_TestCase {
             'Server::afterDelete',
         ));
         $keys = $this->EventCacheInst->getKeys('Server::afterDelete');
-        $this->assertEquals(array(
-            'testapp-key-name' => 'name',
-        ), $keys);
-
+        $this->assertContains('name', $keys);
 
         $this->EventCacheInst->write('hostname', 'kevin.vanzonneveld.net', array(
             'Server::afterSave',
@@ -153,10 +148,9 @@ class EventCacheInstTest extends PHPUnit_Framework_TestCase {
         ));
 
         $keys = $this->EventCacheInst->getKeys('Server::afterDelete');
-        $this->assertEquals(array(
-            'testapp-key-hostname' => 'hostname',
-            'testapp-key-name' => 'name',
-        ), $keys);
+        $this->assertContains('hostname', $keys);
+        $this->assertContains('name', $keys);
+        $this->assertTrue(count($keys) === 2);
     }
 
     public function testSave() {
