@@ -172,6 +172,8 @@ class EventCacheInst {
         'app' => 'base',
         'delimiter' => '-',
         'adapter' => 'EventCacheMemcachedAdapter',
+        'logInKey' => false,
+        'logOnScreen' => false,
         'trackEvents' => false,
         'motherEvents' => array(),
         'disable' => false,
@@ -182,7 +184,7 @@ class EventCacheInst {
     
     protected $_dir   = null;
     protected $_Cache = null;
-
+    
     /**
      * Init
      *
@@ -513,7 +515,12 @@ class EventCacheInst {
         $log .= str_pad($this->_logLevels[$level], 8, ' ', STR_PAD_LEFT);
         $log .= ': ';
         $log .= vsprintf($str, $args);
-        return $this->out($log);
+
+        if (!empty($this->_config['logInKey'])) {
+            return $this->_listAdd($this->cKey('key', $this->_config['logInKey']), null, $log);
+        } elseif (!empty($this->_config['logOnScreen'])) {
+            return $this->out($log);
+        }
     }
 
     public function out($str) {
