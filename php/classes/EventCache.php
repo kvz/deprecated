@@ -174,6 +174,8 @@ class EventCacheInst {
         'adapter' => 'EventCacheMemcachedAdapter',
         'logInKey' => false,
         'logOnScreen' => false,
+        'ttl' => 0,
+        'flag' => MEMCACHE_COMPRESSED,
         'trackEvents' => false,
         'motherEvents' => array(),
         'disable' => false,
@@ -231,7 +233,7 @@ class EventCacheInst {
             return false;
         }
 
-        if (!isset($options['ttl'])) $options['ttl'] = 0;
+        if (!isset($options['ttl'])) $options['ttl'] = $this->_config['ttl'];
 
         // In case of 'null' e.g.
         if (empty($events)) {
@@ -662,8 +664,8 @@ class EventCacheMemcachedAdapter {
 		return $this->_memd->flush();
 	}
 
-	public function set($key, $val, $ttl = 0) {
-		return $this->_memd->set($key, $val, 0, $ttl);
+	public function set($key, $val, $ttl = 0, $flag = 0) {
+		return $this->_memd->set($key, $val, $flag, $ttl);
 	}
 
 	public function add($key, $val, $ttl = 0) {
