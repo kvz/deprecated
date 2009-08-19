@@ -115,7 +115,7 @@ class EventCache {
             return self::_execute($callback, $args);
         }
 
-        if (!($val = self::read($key))) {
+        if (false === ($val = self::read($key))) {
             $val = self::_execute($callback, $args);
             self::write($key, $val, $events, $options);
         }

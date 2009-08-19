@@ -56,6 +56,15 @@ class EventCacheInstTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('Kevin van Zonneveld', $this->EventCacheInst->read('name'));
     }
 
+    public function testRead() {
+        $this->EventCacheInst->write('name', 'Kevin van Zonneveld', array(
+            'Employee::afterSave',
+            'Employee::afterDelete',
+        ));
+        $this->assertEquals('Kevin van Zonneveld', $this->EventCacheInst->read('name'));
+        $this->assertFalse($this->EventCacheInst->read('name1'));
+    }
+
     public function testTrigger() {
         $this->EventCacheInst->write('name', 'Kevin van Zonneveld', array(
             'Employee::afterSave',
