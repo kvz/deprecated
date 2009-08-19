@@ -675,43 +675,43 @@ class EventCacheMemcachedAdapter {
 		'servers' => null,
 	);
 
-	protected $_memd;
+	public $Memcache;
 
 	public function __construct($options) {
 		$this->_config =  $options + $this->_config;
 
-		$this->_memd = new Memcache();
+		$this->Memcache = new Memcache();
 		foreach ($this->_config['servers'] as $server) {
-			call_user_func_array(array($this->_memd, 'addServer'), $server);
+			call_user_func_array(array($this->Memcache, 'addServer'), $server);
 		}
 	}
 
 	public function get($key) {
-		return $this->_memd->get($key);
+		return $this->Memcache->get($key);
 	}
 
 	public function flush() {
-		return $this->_memd->flush();
+		return $this->Memcache->flush();
 	}
 
 	public function set($key, $val, $ttl = 0, $flag = 0) {
-		return $this->_memd->set($key, $val, $flag, $ttl);
+		return $this->Memcache->set($key, $val, $flag, $ttl);
 	}
 
 	public function add($key, $val, $ttl = 0) {
-		return $this->_memd->add($key, $val, 0, $ttl);
+		return $this->Memcache->add($key, $val, 0, $ttl);
 	}
 
 	public function delete($key, $ttl = 0) {
-		return $this->_memd->delete($key, $ttl);
+		return $this->Memcache->delete($key, $ttl);
 	}
 
 	public function increment($key, $value = 1) {
-		return $this->_memd->increment($key, $value);
+		return $this->Memcache->increment($key, $value);
 	}
 
 	public function decrement($key, $value = 1) {
-		return $this->_memd->decrement($key, $value);
+		return $this->Memcache->decrement($key, $value);
 	}
 }
 ?>
