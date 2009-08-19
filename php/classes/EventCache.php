@@ -13,16 +13,16 @@
  *
  */
 class EventCache {
-    static public    $instanceClass = 'EventCacheInst';
-    static public    $config = array();
-    static protected $_instance = null;
+    static public $instanceClass = 'EventCacheInst';
+    static public $config = array();
+    static public $Instance = null;
     
     static public function getInstance() {
-        if (EventCache::$_instance === null) {
-            EventCache::$_instance = new self::$instanceClass(EventCache::$config);
+        if (EventCache::$Instance === null) {
+            EventCache::$Instance = new self::$instanceClass(EventCache::$config);
         }
 
-        return EventCache::$_instance;
+        return EventCache::$Instance;
     }
     static public function setOption($key, $val = null) {
         $_this = EventCache::getInstance();
@@ -185,7 +185,7 @@ class EventCacheInst {
     );
     
     protected $_dir   = null;
-    protected $_Cache = null;
+    public    $Cache = null;
     
     /**
      * Init
@@ -193,8 +193,8 @@ class EventCacheInst {
      * @param <type> $config
      */
     public function  __construct($config) {
-        $this->_config       = array_merge($this->_config, $config);
-        $this->_Cache        = new $this->_config['adapter'](array(
+        $this->_config = array_merge($this->_config, $config);
+        $this->Cache   = new $this->_config['adapter'](array(
             'servers' => $this->_config['servers'],
         ));
     }
@@ -612,7 +612,7 @@ class EventCacheInst {
      * @return <type>
      */
     protected function _add($cKey, $val, $ttl = 0) {
-        return $this->_Cache->add($cKey, $val, $ttl);
+        return $this->Cache->add($cKey, $val, $ttl);
     }
     /**
      * Delete real key
@@ -634,7 +634,7 @@ class EventCacheInst {
             return true;
         }
         
-        return $this->_Cache->delete($cKeys, $ttl);
+        return $this->Cache->delete($cKeys, $ttl);
     }
     /**
      * Set real key
@@ -645,7 +645,7 @@ class EventCacheInst {
      * @return <type>
      */
     protected function _set($cKey, $val, $ttl = 0) {
-        return $this->_Cache->set($cKey, $val, $ttl);
+        return $this->Cache->set($cKey, $val, $ttl);
     }
     /**
      * Get real key
@@ -654,7 +654,7 @@ class EventCacheInst {
      * @return <type>
      */
     protected function _get($cKey) {
-        return $this->_Cache->get($cKey);
+        return $this->Cache->get($cKey);
     }
     /**
      * Flush!
@@ -662,7 +662,7 @@ class EventCacheInst {
      * @return <type>
      */
     protected function _flush() {
-        return $this->_Cache->flush();
+        return $this->Cache->flush();
     }
 }
 
