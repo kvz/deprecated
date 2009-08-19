@@ -235,21 +235,23 @@ class EventCacheInst {
 
         if (!isset($options['ttl'])) $options['ttl'] = $this->_config['ttl'];
 
-        // In case of 'null' e.g.
-        if (empty($events)) {
-            $events = array();
+        if (empty($options['lightning'])) {
+            // In case of 'null' e.g.
+            if (empty($events)) {
+                $events = array();
+            }
+
+            // Mother events are attached to all keys
+            if (!empty($this->_config['motherEvents'])) {
+                $events = array_merge($events, (array)$this->_config['motherEvents']);
+            }
+
+            $this->register($key, $events);
+
+            $this->debug('Set key: %s with val: %s', $key, $val);
         }
         
-        // Mother events are attached to all keys
-        if (!empty($this->_config['motherEvents'])) {
-            $events = array_merge($events, (array)$this->_config['motherEvents']);
-        }
-
-        $this->register($key, $events);
-
         $kKey = $this->cKey('key', $key);
-
-        $this->debug('Set key: %s with val: %s', $kKey, $val);
         return $this->_set($kKey, $val, $options['ttl']);
     }
     /**
@@ -264,8 +266,6 @@ class EventCacheInst {
         }
         
         $kKey = $this->cKey('key', $key);
-
-        $this->debug('Get key: %s', $kKey);
         return $this->_get($kKey);
     }
     /**
@@ -352,6 +352,9 @@ class EventCacheInst {
      * @param <type> $del
      */
     public function register($key, $events = array(), $del = false) {
+        if (empty($events)) {
+            return false;
+        }
         $events = (array)$events;
         if ($this->_config['trackEvents']) {
             // Slows down performance
@@ -408,7 +411,8 @@ class EventCacheInst {
      */
     public function getKeys($event) {
         $eKey = $this->cKey('event', $event);
-        return $this->_get($eKey);
+        $keys = $this->_get($eKey);
+        return $keys ? $keys : array();
     }
     
     /**
@@ -434,14 +438,32 @@ class EventCacheInst {
      * @return <type>
      */
     public function cKey($type, $key) {
+        // Local cache for cKeys
+        static $cKeys;
+        if (isset($cKeys[$type.','.$key])) {
+            return $cKeys[$type.','.$key];
+        }
+
         $cKey = $this->_config['app'] .
             $this->_config['delimiter'] .
             $type .
             $this->_config['delimiter'] .
             $this->sane($key);
+        
+        // http://groups.google.com/group/memcached/browse_thread/thread/4c9e28eb9e71620a
+        // From: Brian Moon <br...@moonspot.net>
+        // Date: Sun, 26 Apr 2009 22:59:29 -0500
+        // Local: Mon, Apr 27 2009 5:59 am
+        // Subject: Re: what is the maximum of memcached key size now ?
+        //
+        // pecl/memcache will handle your keys being too long.  I forget what it
+        // does (md5 maybe) but it silently deals with it.
 
-        $cKey = md5($cKey);
+//        if (strlen($cKey) > 250) {
+//            $cKey = md5($cKey);
+//        }
 
+        $cKeys[$type.','.$key] = $cKey;
         return $cKey;
     }
     /**
@@ -457,6 +479,12 @@ class EventCacheInst {
             }
             return $str;
         } else {
+            // Local cache for sane results
+            static $sanitation;
+            if (isset($sanitation[$str])) {
+                return $sanitation[$str];
+            }
+            
             $allowed = array(
                 '0-9' => true,
                 'a-z' => true,
@@ -466,12 +494,14 @@ class EventCacheInst {
                 '\.' => true,
                 '\@' => true,
             );
-
+            
             if (isset($allowed['\\'.$this->_config['delimiter']])) {
                 unset($allowed['\\'.$this->_config['delimiter']]);
             }
+
+            $sanitation[$str] = preg_replace('/[^'.join('', array_keys($allowed)).']/', '_', $str);
             
-            return preg_replace('/[^'.join('', array_keys($allowed)).']/', '_', $str);
+            return $sanitation[$str];
         }
     }
 

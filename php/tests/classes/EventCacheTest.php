@@ -34,9 +34,30 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('1741593048', $x['a']);
         $this->assertTrue(count($x) === 3);
     }
+
+    public function testLightning() {
+        $args = array(
+            5,
+            'Customer',
+        );
+        
+//        $url = EventCache::magic('AppModel', 'url', $args, array(
+//            'deploy',
+//        ), array(
+//            'disable' => false,
+//            'lightning' => true,
+//        ));
+        
+        $this->assertEquals('Kevin', $this->urlMappingFunction('Kevin'));
+        $this->assertEquals('Kevin', EventCache::read($this->MagicKey));
+
+
+        $keys = EventCache::getKeys('deploy');
+        print_r($keys);
+        $this->assertTrue(count($keys) === 0);
+    }
     
     public function testMagic() {
-
         $EventCacheInst = EventCache::getInstance();
         $EventCacheInst->flush();
         $this->DBCalled = false;
@@ -91,6 +112,7 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
         
         $this->assertEquals('Kevin', EventCache::read($this->MagicKey));
     }
+    
     public function heavyDBFunction($name, $retry = 3) {
         $this->DBCalled = false;
         $args = func_get_args();
@@ -109,6 +131,24 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
         $this->DBCalled = true;
         return $name;
     }
+    
+    public function urlMappingFunction($name, $retry = 3) {
+        $this->DBCalled = false;
+        $args = func_get_args();
 
+        list ($this->MagicKey, $val) = EventCache::magic($this, __FUNCTION__, $args, array(
+            'deploy',
+        ), array(
+            'unique' => array('a' => array(1, 2, 3), 'b', 'c'),
+            'lightning' => true,
+            'keypair' => true,
+        ));
+
+        return $val;
+    }
+    public function _urlMappingFunction($name, $retry = 3) {
+        $this->DBCalled = true;
+        return $name;
+    }
 }
 ?>

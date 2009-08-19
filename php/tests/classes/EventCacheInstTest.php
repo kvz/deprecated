@@ -133,6 +133,7 @@ class EventCacheInstTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue(count($events) === 4);
     }
 
+
     public function testGetKeys() {
         $this->EventCacheInst->write('name', 'Kevin van Zonneveld', array(
             'Employee::afterSave',
