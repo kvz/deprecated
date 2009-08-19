@@ -118,8 +118,8 @@ class EventCache {
         if (false === ($val = self::read($key))) {
             $val = self::_execute($callback, $args);
             self::write($key, $val, $events, $options);
-        }
-
+        } 
+        
         // For testing purposes
         if (!empty($options['keypair'])) {
             return array($key, $val);
@@ -140,6 +140,11 @@ class EventCache {
     static public function flush() {
         $_this = EventCache::getInstance();
         return $_this->flush();
+    }
+
+    static public function getLogs() {
+        $_this = EventCache::getInstance();
+        return $_this->getLogs();
     }
 }
 
@@ -167,12 +172,16 @@ class EventCacheInst {
         self::LOG_INFO => 'info',
         self::LOG_DEBUG => 'debug'
     );
-    
+
+    public $log = array();
+
     protected $_config = array(
         'app' => 'base',
         'delimiter' => '-',
         'adapter' => 'EventCacheMemcachedAdapter',
         'logInKey' => false,
+        'logInVar' => false,
+        'logHits' => false,
         'logOnScreen' => false,
         'ttl' => 0,
         'flag' => MEMCACHE_COMPRESSED,
@@ -266,7 +275,17 @@ class EventCacheInst {
         }
         
         $kKey = $this->cKey('key', $key);
-        return $this->_get($kKey);
+        $val  = $this->_get($kKey);
+        
+        if (empty($options['lightning']) && empty($options['logHits'])) {
+            if ($val === false) {
+                $this->debug(sprintf("%s miss", $key));
+            } else {
+                $this->debug(sprintf("%s hit", $key));
+            }
+        }
+        
+        return $val;
     }
     /**
      * Adds array item
@@ -325,6 +344,7 @@ class EventCacheInst {
             }
         }
     }
+    
     /**
      * Kills everything in (mem) cache. Everything!
      *
@@ -552,9 +572,26 @@ class EventCacheInst {
             return $this->_listAdd($this->cKey('key', $this->_config['logInKey']), null, $log);
         } elseif (!empty($this->_config['logOnScreen'])) {
             return $this->out($log);
+        } elseif (!empty($this->_config['logInVar'])) {
+            $this->log[] = $log;
         }
     }
 
+    public function getLogs() {
+        if (!empty($this->_config['logInKey'])) {
+            $keys = $this->getKeys($this->_config['logInKey']);
+            foreach ($keys as $cKey=>$key) {
+                $vals[$key] = $this->read($key);
+            }
+            return $vals;
+        } elseif (!empty($this->_config['logOnScreen'])) {
+            // Need to read on screen
+            return array('You need to read on screen');
+        } elseif (!empty($this->_config['logInVar'])) {
+            return $this->log;
+        }
+    }
+    
     public function out($str) {
         echo $str . "\n";
         return true;
