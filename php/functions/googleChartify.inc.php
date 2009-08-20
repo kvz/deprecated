@@ -34,6 +34,16 @@ function googleChartify($data, $options = array()) {
 
     extract($options);
 
+    // Hack: Convert array to plaintext
+    if (is_array($data)) {
+        foreach($data as $k=>$v) {
+            if (is_array($v)) {
+                $data[$k] = join('   ', $v);
+            }
+        }
+        $data = join("\n", $data)."\n";
+    }
+
     // Parse data, build matrix
     $rows   = explode("\n", $data);
     $lines  = array();
