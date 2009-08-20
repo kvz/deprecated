@@ -4,6 +4,14 @@
  * value. Uses following numeric colums for multiple lines on Y-axis
  * and returns a valid Google Chart URL.
  *
+ * So data basically needs to be:
+ * [] = array(x, y, y, y, y);
+ * [] = array(x, y, y, y, y);
+ * [] = array(x, y, y, y, y);
+ * [] = array(x, y, y, y, y);
+ * [] = array(x, y, y, y, y);
+ * (In your head, turn this data 90 degrees anti-clokwise; and you get the picture)
+ *
  * @param string $data
  * @param array $options
  * 
