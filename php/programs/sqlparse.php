@@ -1,7 +1,7 @@
 <?php
 /* 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Pipe queries to this program and get returned the table names used,
+ * comma seperated.
  */
 if (!include_once('SQL/Parser.php')) {
     echo "You need to: \n";
