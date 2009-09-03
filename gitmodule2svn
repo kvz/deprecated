@@ -1,0 +1,52 @@
+#!/bin/bash
+
+this=$(basename ${0})
+modulepath=$(pwd |awk -F'/' '{print $1"/"$2"/"$3"/"$4"/"$5}')
+modulename=$(echo "${modulepath}" |awk -F'/' '{print $NF}')
+warnings=""
+infos="Trying to sync git module: ${modulename} accross all svn repositories in workspace.."
+
+function process {
+    local dir=${1}
+    
+    apppath=$(echo "${dir}" |awk -F'/' '{print $1"/"$2"/"$3"/"$4"/"$5}')
+    appname=$(subd "${apppath}")
+    vendorpath=$(echo "${dir}" |awk -F'/' '{print $1"/"$2"/"$3"/"$4"/"$5"/"$6}')
+
+    if [ "$(svn propget svn:externals ${apppath} |grep "${modulename}" |wc -l)" -eq 1 ]; then
+        propsuggest ${apppath} ${modulename}
+    elif [ "$(svn propget svn:externals ${vendorpath} |grep "${modulename}" |wc -l)" -eq 1 ]; then
+        propsuggest ${vendorpath} ${modulename}
+    else
+        /usr/bin/rsync -a --dry-run -i --size-only --exclude '.git*' --exclude ${this} $modulepath/ $dir
+        infos="${infos}'${modulename}' was synced to '${appname}'\n"
+    fi
+}
+
+function subd {
+    echo "${1}" |awk -F'/' '{k=NF-1; print $k"/"$NF}'
+}
+
+function propsuggest {
+    local apppath=${1}
+    local appname=$(subd "${apppath}")
+    local modulename=${2}
+    local remain=$(svn propget svn:externals ${apppath} |grep -v ${modulename})
+    
+    warnings="${warnings}'${modulename}' is still an svn:external of '${appname}'. You probably need to: \n"
+    if [ -z "${remain}" ]; then
+        warnings="${warnings}  svn propdel svn:externals ${apppath}\n\n"
+    else
+        warnings="${warnings}  svn propset svn:externals \"${remain}\" ${apppath}\n\n"
+    fi
+}
+
+for dir in $(find ~/workspace -mindepth 3 -maxdepth 3 -regextype posix-extended -iregex ".*(ext|vendors|vendor)/${modulename}.*" -type d |egrep -v '(\.svn)'); do
+    process "${dir}"
+done
+for dir in $(find ~/workspace -mindepth 4 -maxdepth 4 -regextype posix-extended -iregex ".*(plugins)/${modulename}.*" -type d |egrep -v '(\.svn)'); do
+    process "${dir}"
+done
+
+echo -e "${infos}"
+echo -e "${warnings}"
