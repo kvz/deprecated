@@ -1,5 +1,5 @@
 <?php
-/* 
+/**
  * Pipe queries to this program and get returned the table names used,
  * comma seperated.
  */

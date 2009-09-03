@@ -1,25 +1,48 @@
 #!/bin/bash
 
+executed=${0}
 this=$(basename ${0})
 modulepath=$(pwd |awk -F'/' '{print $1"/"$2"/"$3"/"$4"/"$5}')
 modulename=$(echo "${modulepath}" |awk -F'/' '{print $NF}')
 warnings=""
-infos="Trying to sync git module: ${modulename} accross all svn repositories in workspace.."
+infos="Trying to sync git module: '${modulename}' accross all svn repositories in workspace..\n"
 
 function process {
     local dir=${1}
-    
+
     apppath=$(echo "${dir}" |awk -F'/' '{print $1"/"$2"/"$3"/"$4"/"$5}')
     appname=$(subd "${apppath}")
     vendorpath=$(echo "${dir}" |awk -F'/' '{print $1"/"$2"/"$3"/"$4"/"$5"/"$6}')
 
-    if [ "$(svn propget svn:externals ${apppath} |grep "${modulename}" |wc -l)" -eq 1 ]; then
-        propsuggest ${apppath} ${modulename}
+    if [ -d "${apppath}/.git" ]; then
+        if [ -d "${dir}/.git" ]; then
+            infos="${infos}'${modulename}' not synced to '${dir}; git repository is using submodule'\n"
+        else
+            infos="${infos}'${modulename}' not synced to '${dir}; git repositories can use submodule'\n"
+            gitsuggest ${apppath} ${modulename} ${dir}
+        fi
+    elif [ "$(svn propget svn:externals ${apppath} |grep "${modulename}" |wc -l)" -eq 1 ]; then
+        infos="${infos}'${modulename}' not synced to '${dir}; lose svn:external first'\n"
+        propsuggest ${apppath} ${modulename} ${dir}
     elif [ "$(svn propget svn:externals ${vendorpath} |grep "${modulename}" |wc -l)" -eq 1 ]; then
-        propsuggest ${vendorpath} ${modulename}
+        infos="${infos}'${modulename}' not synced to '${dir}; lose svn:external first'\n"
+        propsuggest ${vendorpath} ${modulename} ${dir}
     else
-        /usr/bin/rsync -a --dry-run -i --size-only --exclude '.git*' --exclude ${this} $modulepath/ $dir
-        infos="${infos}'${modulename}' was synced to '${appname}'\n"
+        svn up ${apppath}
+        
+        y=$(/usr/bin/rsync -a -i --size-only --exclude '.git*' --exclude ${this} $modulepath/ ${dir})
+        if [ $(echo -e "${y}" |wc -l) -lt 2 ]; then
+            infos="${infos}'${modulename}' was up to date in '${dir}'\n"
+        else
+            echo -e "'${y}'"
+            x=$(svn ls ${dir})
+            if [ ${?} -eq 1 ]; then
+                svn add ${dir}
+            fi
+            svn commit -m "AutoIncluded internal module: ${modulename}" ${apppath}
+            svn up ${apppath}
+            infos="${infos}'${modulename}' was synced to '${dir}'\n"
+        fi
     fi
 }
 
@@ -27,23 +50,50 @@ function subd {
     echo "${1}" |awk -F'/' '{k=NF-1; print $k"/"$NF}'
 }
 
+function gitsuggest {
+    local apppath=${1}
+    local appname=$(subd "${apppath}")
+    local modulename=${2}
+    local dir=${3}
+
+    warnings="${warnings}Git repositories can use submodules. You probably need to: \n"
+    warnings="${warnings}  cd ${apppath} \n"
+    warnings="${warnings}  git submodule git://github.com/kvz/${modulename}.git ${dir} \n"
+    warnings="${warnings}  cd - \n"
+    warnings="${warnings}\n"
+}
+
 function propsuggest {
     local apppath=${1}
     local appname=$(subd "${apppath}")
     local modulename=${2}
+    local dir=${3}
     local remain=$(svn propget svn:externals ${apppath} |grep -v ${modulename})
     
     warnings="${warnings}'${modulename}' is still an svn:external of '${appname}'. You probably need to: \n"
+    warnings="${warnings}  svn up ${apppath}  \n"
     if [ -z "${remain}" ]; then
-        warnings="${warnings}  svn propdel svn:externals ${apppath}\n\n"
+        warnings="${warnings}  svn propdel svn:externals ${apppath} \n"
     else
-        warnings="${warnings}  svn propset svn:externals \"${remain}\" ${apppath}\n\n"
+        warnings="${warnings}  svn propset svn:externals \"${remain}\" ${apppath} \n"
     fi
+    warnings="${warnings}  svn commit -m \"Removed reference to external module: ${modulename}\" ${apppath} \n"
+    warnings="${warnings}  svn up ${apppath} \n"
+    warnings="${warnings}  svn rm ${dir} --force \n"
+    warnings="${warnings}  rm -rf ${dir} \n"
+    warnings="${warnings}  svn cleanup ${apppath} \n"
+    warnings="${warnings}  svn commit -m \"Removed external module: ${modulename}\" ${apppath} \n"
+    warnings="${warnings}  svn up ${apppath} \n"
+    warnings="${warnings}  mkdir ${dir} \n"
+    warnings="${warnings}  ${executed} \n"
+    warnings="${warnings}\n"
 }
 
-for dir in $(find ~/workspace -mindepth 3 -maxdepth 3 -regextype posix-extended -iregex ".*(ext|vendors|vendor)/${modulename}.*" -type d |egrep -v '(\.svn)'); do
+# Vendor & Ext dirs that match modulename
+for dir in $(find ~/workspace -mindepth 3 -maxdepth 3 -regextype posix-extended -iregex ".*(code|ext|vendors|vendor)/${modulename}.*" -type d |egrep -v '(\.svn)'); do
     process "${dir}"
 done
+# Cake Plugins that match modulename
 for dir in $(find ~/workspace -mindepth 4 -maxdepth 4 -regextype posix-extended -iregex ".*(plugins)/${modulename}.*" -type d |egrep -v '(\.svn)'); do
     process "${dir}"
 done
