@@ -30,7 +30,7 @@ function process {
     else
         svn up ${apppath}
         
-        y=$(/usr/bin/rsync -a -i --size-only --exclude '.git*' --exclude ${this} $modulepath/ ${dir})
+        y=$(/usr/bin/rsync -a -i --size-only --exclude '.git*' --exclude ${this} --exclude 'gitup.dat' --exclude 'up.sh' $modulepath/ ${dir})
         if [ $(echo -e "${y}" |wc -l) -lt 2 ]; then
             infos="${infos}'${modulename}' was up to date in '${dir}'\n"
         else
