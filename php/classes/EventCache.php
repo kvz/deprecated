@@ -732,7 +732,7 @@ class EventCacheMemcachedAdapter {
 	}
 
 	public function set($key, $val, $ttl = 0, $flag = 0) {
-		return $this->Memcache->set($key, $val, $flag, $ttl);
+		return @$this->Memcache->set($key, $val, $flag, $ttl);
 	}
 
 	public function add($key, $val, $ttl = 0) {

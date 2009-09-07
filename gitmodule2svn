@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#set -x
+
 executed=${0}
 this=$(basename ${0})
 modulepath=$(pwd |awk -F'/' '{print $1"/"$2"/"$3"/"$4"/"$5}')
@@ -29,8 +31,10 @@ function process {
         propsuggest ${vendorpath} ${modulename} ${dir}
     else
         svn up ${apppath}
-        
-        y=$(/usr/bin/rsync -a -i --size-only --exclude '.git*' --exclude ${this} --exclude 'gitup.dat' --exclude 'up.sh' $modulepath/ ${dir})
+
+        cmd="/usr/bin/rsync -a -i --size-only --exclude '.git*' --exclude ${this} --exclude 'gitup.dat' --exclude 'up.sh' $modulepath/ ${dir}"
+        echo "${cmd}"
+        y=$(${cmd})
         if [ $(echo -e "${y}" |wc -l) -lt 2 ]; then
             infos="${infos}'${modulename}' was up to date in '${dir}'\n"
         else

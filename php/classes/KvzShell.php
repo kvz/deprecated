@@ -8,7 +8,7 @@
  * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
  * @copyright 2009 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
- * @version   SVN: Release: $Id$
+ * @version   SVN: Release: $Id: KvzShell.php 371 2009-07-24 13:36:32Z kevin $
  * @link      http://kevin.vanzonneveld.net/code/
  */
 class KvzShell {

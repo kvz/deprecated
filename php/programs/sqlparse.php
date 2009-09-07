@@ -1,8 +1,7 @@
 <?php
-/**
+/* 
  * Pipe queries to this program and get returned the table names used,
  * comma seperated.
- * 
  */
 if (!include_once('SQL/Parser.php')) {
     echo "You need to: \n";
