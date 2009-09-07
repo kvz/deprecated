@@ -724,11 +724,11 @@ class EventCacheMemcachedAdapter {
 	}
 
 	public function get($key) {
-		return $this->Memcache->get($key);
+		return @$this->Memcache->get($key);
 	}
 
 	public function flush() {
-		return $this->Memcache->flush();
+		return @$this->Memcache->flush();
 	}
 
 	public function set($key, $val, $ttl = 0, $flag = 0) {
@@ -736,19 +736,19 @@ class EventCacheMemcachedAdapter {
 	}
 
 	public function add($key, $val, $ttl = 0) {
-		return $this->Memcache->add($key, $val, 0, $ttl);
+		return @$this->Memcache->add($key, $val, 0, $ttl);
 	}
 
 	public function delete($key, $ttl = 0) {
-		return $this->Memcache->delete($key, $ttl);
+		return @$this->Memcache->delete($key, $ttl);
 	}
 
 	public function increment($key, $value = 1) {
-		return $this->Memcache->increment($key, $value);
+		return @$this->Memcache->increment($key, $value);
 	}
 
 	public function decrement($key, $value = 1) {
-		return $this->Memcache->decrement($key, $value);
+		return @$this->Memcache->decrement($key, $value);
 	}
 }
 ?>
