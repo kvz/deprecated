@@ -1,0 +1,23 @@
+Controller:
+
+    class ClustersController extends AppController {
+        public $components = array(
+            'pdfview.PdfLayout',
+        );
+        
+    }
+
+Router:
+
+    Router::parseExtensions('rss', 'json', 'xml', 'pdf'); // <-- pdf somewhere in parseExtensions
+
+
+Views:
+    /custers/pdf/view.ctp
+        include dirname(__FILE__).'/../'.basename(__FILE__);
+        // Or custom PDF html
+
+
+
+Found that tcpdf doesn't support: <img src='' /> tags.
+I'm using <img src=""> instead
