@@ -12,15 +12,19 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
      */
     protected function setUp()
     {
-        EventCache::setOption(array(
+        $arr = array(
             'app' => 'testapp',
             'trackEvents' => true,
-        ));
+            'adapter' => 'EventCacheFileAdapter',
+        );
+        EventCache::setOption($arr);
+        EventCache::flush();
     }
     
     public function testRead() {
         EventCache::write('name', 'Kevin');
-        $this->assertEquals('Kevin', EventCache::read('name'));
+        $val = EventCache::read('name');
+        $this->assertEquals('Kevin', $val);
     }
     public function testSquashArrayTo1Dim() {
         $y = array(
@@ -41,19 +45,10 @@ class EventCacheTest extends PHPUnit_Framework_TestCase {
             'Customer',
         );
         
-//        $url = EventCache::magic('AppModel', 'url', $args, array(
-//            'deploy',
-//        ), array(
-//            'disable' => false,
-//            'lightning' => true,
-//        ));
-        
         $this->assertEquals('Kevin', $this->urlMappingFunction('Kevin'));
         $this->assertEquals('Kevin', EventCache::read($this->MagicKey));
 
-
         $keys = EventCache::getKeys('deploy');
-        print_r($keys);
         $this->assertTrue(count($keys) === 0);
     }
     

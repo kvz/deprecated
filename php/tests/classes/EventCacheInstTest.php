@@ -15,6 +15,7 @@ class EventCacheInstTest extends PHPUnit_Framework_TestCase {
         $this->EventCacheInst = new EventCacheInst(array(
             'app' => 'testapp',
             'trackEvents' => true,
+            'adapter' => 'EventCacheFileAdapter',
         ));
 
         $this->EventCacheInst->clear();
