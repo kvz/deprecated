@@ -18,7 +18,13 @@ function process {
 
     if [ -d "${apppath}/.git" ]; then
         if [ -d "${dir}/.git" ]; then
-            infos="${infos}'${modulename}' not synced to '${dir}; git repository is using submodule'\n"
+            set -x
+            cd ${apppath}
+            git submodule update
+            cd -
+            set +x
+
+            infos="${infos}'${modulename}' synced to '${dir}; using submodule'\n"
         else
             infos="${infos}'${modulename}' not synced to '${dir}; git repositories can use submodule'\n"
             gitsuggest ${apppath} ${modulename} ${dir}
