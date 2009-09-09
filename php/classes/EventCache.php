@@ -733,7 +733,6 @@ class EventCacheMemcachedAdapter {
 	public $Memcache;
 
 	public function __construct($options) {
-        trigger_error('Oh noes', E_USER_ERROR);
 		$this->_config =  $options + $this->_config;
 
 		$this->Memcache = new Memcache();

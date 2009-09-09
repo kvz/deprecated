@@ -59,10 +59,23 @@ function gitsuggest {
     local appname=$(subd "${apppath}")
     local modulename=${2}
     local dir=${3}
+    local inpath=$(echo "${dir}" |sed "s#${apppath}/##g")
 
     warnings="${warnings}Git repositories can use submodules. You probably need to: \n"
     warnings="${warnings}  cd ${apppath} \n"
-    warnings="${warnings}  git submodule git://github.com/kvz/${modulename}.git ${dir} \n"
+    warnings="${warnings}  rmdir ${dir} \n"
+    warnings="${warnings}  git rm --cached -r ${dir} \n"
+    warnings="${warnings}  git submodule add git://github.com/kvz/${modulename}.git ${inpath} \n"
+    warnings="${warnings}  git submodule update --init \n"
+    warnings="${warnings}  cd - \n"
+    warnings="${warnings}\n"
+    warnings="${warnings} OR, for Cake Plugins: \n"
+    warnings="${warnings}\n"
+    warnings="${warnings}  cd ${apppath} \n"
+    warnings="${warnings}  rmdir ${dir} \n"
+    warnings="${warnings}  git rm --cached -r ${dir} \n"
+    warnings="${warnings}  git submodule add git://github.com/kvz/cakephp-${modulename}-plugin.git ${inpath} \n"
+    warnings="${warnings}  git submodule update --init \n"
     warnings="${warnings}  cd - \n"
     warnings="${warnings}\n"
 }
@@ -94,11 +107,11 @@ function propsuggest {
 }
 
 # Vendor & Ext dirs that match modulename
-for dir in $(find ~/workspace -mindepth 3 -maxdepth 3 -regextype posix-extended -iregex ".*(code|ext|vendors|vendor)/${modulename}.*" -type d |egrep -v '(\.svn)'); do
+for dir in $(find ~/workspace -mindepth 3 -maxdepth 3 -regextype posix-extended -iregex ".*(code|ext|vendors|vendor)/${modulename}" -type d |egrep -v '(\.svn)'); do
     process "${dir}"
 done
 # Cake Plugins that match modulename
-for dir in $(find ~/workspace -mindepth 4 -maxdepth 5 -regextype posix-extended -iregex ".*(plugins)/${modulename}.*" -type d |egrep -v '(\.svn)'); do
+for dir in $(find ~/workspace -mindepth 4 -maxdepth 5 -regextype posix-extended -iregex ".*(plugins)/${modulename}" -type d |egrep -v '(\.svn)'); do
     process "${dir}"
 done
 
