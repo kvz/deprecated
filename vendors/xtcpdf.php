@@ -51,7 +51,7 @@ function writeHTMLSections(&$pdf, $htmlcontent = '') {
 	if (trim($htmlcontent)) {
 		$writeSections[] = array(0, trim($htmlcontent));
 	}
-
+    
 	// 2. Output each section in order. If section is flagged to not span across a page break,
 	//    use transactions to determine if a forced pagebreak is required before section output.
 	foreach ($writeSections as $writeSection) {
