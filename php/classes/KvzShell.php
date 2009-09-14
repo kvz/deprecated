@@ -592,6 +592,7 @@ class KvzShell {
         
         if ($level < self::LOG_CRIT) {
             $this->warning('Can\'t continue after last event');
+            trigger_error($str, E_USER_ERROR);
             $this->_die('Can\'t continue after last event', 1);
         }
         
