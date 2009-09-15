@@ -6,26 +6,19 @@ h2. Controller:
 
     class ClustersController extends AppController {
         public $components = array(
-            'pdfview.PdfLayout',
-        );
-        public $helpers = array(
-            'pdfview.Pdfit',
+            'Pdfview.PdfLayout' => array(
+                'debug' => 0,
+                'method' => 'dompdf',
+                'serve' => true,
+                'dumphtml' => false,
+            ),
         );
     }
 
 h2. Router:
-    Router::parseExtensions('rss', 'json', 'xml', 'pdf'); // <-- pdf somewhere in parseExtensions
+    Router::parseExtensions('rss', 'json', 'xml', 'pdf'); // <-- add pdf somewhere in parseExtensions
 
-h2. Layouts:
-    app/views/layouts/pdf/default.ctp
-        <?php
-            $pdfit->pdf($content_for_layout, array(
-                'method' => 'dompdf',
-                'serve' => true,
-            ));
-        ?>
-
-h1. PDF Libraries
+h1. About the PDF methods (Libraries)
 
 h2. dompdf (default)
  * http://code.google.com/p/dompdf/
