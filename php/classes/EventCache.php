@@ -16,7 +16,7 @@ class EventCache {
     static public $instanceClass = 'EventCacheInst';
     static public $config = array();
     static public $Instance = null;
-    
+
     static public function getInstance() {
         if (EventCache::$Instance === null) {
             EventCache::$Instance = new EventCache::$instanceClass(EventCache::$config);
@@ -94,9 +94,9 @@ class EventCache {
         if (!empty($options['unique'])) {
             $keyp = array_merge($keyp, self::squashArrayTo1Dim((array)$options['unique']));
         }
-        
+
         $args = self::squashArrayTo1Dim($args);
-        
+
         $keyp[] = join($dls, $args);
 
         $keyp = $_this->sane($keyp);
@@ -116,7 +116,7 @@ class EventCache {
     static public function magic($scope, $method, $args = array(), $events = array(), $options = array()) {
         $key      = self::magicKey($scope, $method, $args, $events, $options);
         $callback = array($scope, '_'.$method);
-        
+
         if (!empty($options['disable'])) {
             return self::_execute($callback, $args);
         }
@@ -124,13 +124,13 @@ class EventCache {
         if (false === ($val = self::read($key))) {
             $val = self::_execute($callback, $args);
             self::write($key, $val, $events, $options);
-        } 
-        
+        }
+
         // For testing purposes
         if (!empty($options['keypair'])) {
             return array($key, $val);
         }
-        
+
         return $val;
     }
 
@@ -138,7 +138,7 @@ class EventCache {
         $_this = EventCache::getInstance();
         return $_this->write($key, $val, $events, $options);
     }
-    
+
     static public function trigger($event) {
         $_this = EventCache::getInstance();
         return $_this->trigger($event);
@@ -167,7 +167,7 @@ class EventCacheInst {
     const LOG_NOTICE = 5;
     const LOG_INFO = 6;
     const LOG_DEBUG = 7;
-    
+
     protected $_logLevels = array(
         self::LOG_EMERG => 'emerg',
         self::LOG_ALERT => 'alert',
@@ -198,10 +198,10 @@ class EventCacheInst {
             '127.0.0.1',
         ),
     );
-    
+
     protected $_dir   = null;
     public    $Cache = null;
-    
+
     /**
      * Init
      *
@@ -277,7 +277,7 @@ class EventCacheInst {
 
             $this->debug('Set key: %s with val: %s', $key, $val);
         }
-        
+
         $kKey = $this->cKey('key', $key);
         return $this->_set($kKey, $val, $options['ttl']);
     }
@@ -291,10 +291,10 @@ class EventCacheInst {
         if (!empty($this->_config['disable'])) {
             return false;
         }
-        
+
         $kKey = $this->cKey('key', $key);
         $val  = $this->_get($kKey);
-        
+
         if (empty($options['lightning']) && empty($options['logHits'])) {
             if ($val === false) {
                 $this->debug(sprintf("%s miss", $key));
@@ -302,7 +302,7 @@ class EventCacheInst {
                 $this->debug(sprintf("%s hit", $key));
             }
         }
-        
+
         return $val;
     }
     /**
@@ -357,12 +357,12 @@ class EventCacheInst {
             foreach($events as $eKey=>$event) {
                 $cKeys = $this->getCKeys($event);
                 $this->_del($cKeys);
-                
+
                 $this->_del($eKey);
             }
         }
     }
-    
+
     /**
      * Kills everything in (mem) cache. Everything!
      *
@@ -381,7 +381,7 @@ class EventCacheInst {
     public function unregister($key, $events = array()) {
         return $this->register($key, $events, true);
     }
-    
+
     /**
      * Associate keys with events (if you can't do it immediately with 'write')
      *
@@ -435,7 +435,7 @@ class EventCacheInst {
             $this->err('You need to enable the slow "trackEvents" option for this');
             return false;
         }
-        
+
         $etKey  = $this->cKey('events', 'track');
         $events = $this->_get($etKey);
         return $events ? $events : array();
@@ -452,7 +452,7 @@ class EventCacheInst {
         $keys = $this->_get($eKey);
         return $keys ? $keys : array();
     }
-    
+
     /**
      * Get internal keys
      *
@@ -466,8 +466,8 @@ class EventCacheInst {
         }
         return array_keys($list);
     }
-    
-    
+
+
     /**
      * Returns a (mem)cache-ready key
      *
@@ -487,7 +487,7 @@ class EventCacheInst {
             $type .
             $this->_config['delimiter'] .
             $this->sane($key);
-        
+
         // http://groups.google.com/group/memcached/browse_thread/thread/4c9e28eb9e71620a
         // From: Brian Moon <br...@moonspot.net>
         // Date: Sun, 26 Apr 2009 22:59:29 -0500
@@ -522,7 +522,7 @@ class EventCacheInst {
             if (isset($sanitation[$str])) {
                 return $sanitation[$str];
             }
-            
+
             $allowed = array(
                 '0-9' => true,
                 'a-z' => true,
@@ -532,13 +532,13 @@ class EventCacheInst {
                 '\.' => true,
                 '\@' => true,
             );
-            
+
             if (isset($allowed['\\'.$this->_config['delimiter']])) {
                 unset($allowed['\\'.$this->_config['delimiter']]);
             }
 
             $sanitation[$str] = preg_replace('/[^'.join('', array_keys($allowed)).']/', '_', $str);
-            
+
             return $sanitation[$str];
         }
     }
@@ -577,7 +577,7 @@ class EventCacheInst {
                 $args[$k] = substr(var_export($arg, true), 0, 30);
             }
         }
-        
+
         $log  = '';
         $log .= '';
         $log .= '['.date('M d H:i:s').']';
@@ -609,7 +609,7 @@ class EventCacheInst {
             return $this->log;
         }
     }
-    
+
     public function out($str) {
         echo $str . "\n";
         return true;
@@ -674,6 +674,7 @@ class EventCacheInst {
      *
      * @param <type> $cKeys
      * @param <type> $ttl
+     *
      * @return <type>
      */
     protected function _del($cKeys, $ttl = 0) {
@@ -681,15 +682,26 @@ class EventCacheInst {
             return null;
         }
         if (is_array($cKeys)) {
+            $errors = array();
             foreach($cKeys as $cKey) {
                 if (!$this->_del($cKey)) {
-                    return false;
+                    $errors[] = $cKey;
                 }
             }
-            return true;
+
+            if (count($errors) === count($cKeys)) {
+                return false;
+            }
+
+            return count($cKeys) - count($errors);
         }
-        
-        return $this->Cache->delete($cKeys, $ttl);
+
+        if (!$this->Cache->delete($cKeys, $ttl)) {
+            trigger_error('Cant delete '.$cKeys, E_USER_NOTICE);
+            return false;
+        }
+
+        return true;
     }
     /**
      * Set real key
@@ -823,14 +835,14 @@ class EventCacheFileAdapter {
         if (false === ($value = @file_get_contents($path))) {
             return false;
         }
-        
+
         $value = unserialize($value);
         return $value;
     }
     protected function _write($key, $value) {
         $value = serialize($value);
         $path  = $this->_keypath($key);
-        
+
         if (!file_put_contents($path, $value)) {
             trigger_error('Unable to write to '.$path, E_USER_WARNING);
             return false;
@@ -842,13 +854,13 @@ class EventCacheFileAdapter {
         if ($key !== '*') {
             $key = $this->_safekey($key);
         }
-        
+
         foreach (glob($this->_config['dir'].'/'.$key.'.cache') as $file) {
             if (!unlink($file)) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
