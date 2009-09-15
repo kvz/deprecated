@@ -38,7 +38,7 @@ function process {
     else
         svn up ${apppath}
 
-        cmd="/usr/bin/rsync -a -i --size-only --exclude '*.git*' --exclude ${this} --exclude 'gitup.dat' --exclude 'up.sh' $modulepath/ ${dir};"
+        cmd="/usr/bin/rsync -a -i --size-only --exclude '*.git*' --exclude ${this} --exclude 'gitup.dat' --exclude 'up.sh' $modulepath/ ${dir}"
         echo "${cmd}"
         y=$(${cmd})
 
