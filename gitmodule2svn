@@ -38,9 +38,15 @@ function process {
     else
         svn up ${apppath}
 
-        cmd="/usr/bin/rsync -a -i --size-only --exclude '*.git*' --exclude ${this} --exclude 'gitup.dat' --exclude 'up.sh' $modulepath/ ${dir}"
+        cmd="/usr/bin/rsync -a -i --size-only --exclude '*.git*' --exclude ${this} --exclude 'gitup.dat' --exclude 'up.sh' $modulepath/ ${dir};"
         echo "${cmd}"
         y=$(${cmd})
+
+        if [ -d "${dir}/.git" ]; then
+            cmd="rm -rf ${dir}/.git"
+            echo "${cmd}"
+            z=$(${cmd})
+        fi
         if [ $(echo -e "${y}" |wc -l) -lt 2 ]; then
             infos="${infos}'${modulename}' was up to date in '${dir}'\n"
         else
