@@ -138,6 +138,21 @@ class PdfitHelper extends Helper {
         return $pdfFilePath;
     }
 
+    protected function _html2fpdf() {
+        App::import('Vendor', 'pdfview.html2pdf');
+        $pdfFilePath  = $this->_pdfFile('pdf');
+        
+        $pdf = new HTML2FPDF();
+        $pdf->DisableTags();
+        #$pdf->DisplayPreferences('FullScreen');
+
+        $pdf->AddPage();
+        $pdf->WriteHTML($this->_html);
+
+        $pdf->Output($pdfFilePath, 'F');
+        return $pdfFilePath;
+    }
+
     // Messes up SimpleTest:
     //    protected function _dompdf() {
     //        $pdfFilePath = $this->_pdfFile('pdf');
