@@ -697,7 +697,7 @@ class EventCacheInst {
         }
 
         if (!$this->Cache->delete($cKeys, $ttl)) {
-            trigger_error('Cant delete '.$cKeys, E_USER_NOTICE);
+            #trigger_error('Cant delete '.$cKeys, E_USER_NOTICE);
             return false;
         }
 
