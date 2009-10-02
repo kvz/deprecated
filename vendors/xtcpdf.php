@@ -75,72 +75,18 @@ function writeHTMLSections(&$pdf, $htmlcontent = '') {
 }
 
 App::import('Vendor','pdfview.tcpdf/tcpdf');
-class XTCPDF_report extends TCPDF {
-
-    var $footertext  = "Copyright � %d Credit Risk Management, L.L.C.. All rights reserved.";
-    var $footerfontsize = 6;
-
-    /**
-    * Overwrites the default header
-    * set the text in the view using
-    *    $fpdf->xheadertext = 'YOUR ORGANIZATION';
-    * set the fill color in the view using
-    *    $fpdf->xheadercolor = array(0,0,100); (r, g, b)
-    * set the font in the view using
-    *    $fpdf->setHeaderFont(array('YourFont','',fontsize));
-    */
-    function Header() {
-		$top_margin = 0.5;
-		$ormargins = $this->getOriginalMargins();
-		$headerfont = $this->getHeaderFont();
-		$headerdata = $this->getHeaderData();
-
-		$width = 0;
-		$border = 0;
-		$ln = 1; // current position should go after call, 0: right, 1: beginning of next line; 2: below;
-		$align = 'C';
-
-		// First header - Bank Name
-		list($r, $b, $g) = $this->headercolor;
-        $this->SetTextColor($r, $b, $g);
-		$this->SetFont($headerfont[0], 'B', $headerfont[2] * K_TITLE_MAGNIFICATION);
-		$cell_height = round(($this->getCellHeightRatio() * $headerfont[2] * K_TITLE_MAGNIFICATION) / $this->getScaleFactor(), 2);
-        $this->Cell($width, $cell_height, $this->headertext, $border, $ln, $align);
-
-		// Second header - Title
-		$this->SetX($ormargins['left']);
-		$this->SetFont($headerfont[0], $headerfont[1], $headerfont[2] * (0.5 * (K_TITLE_MAGNIFICATION - 1) + 1));
-		$cell_height = round(($this->getCellHeightRatio() * $headerfont[2] * (0.5 * (K_TITLE_MAGNIFICATION - 1) + 1)) / $this->getScaleFactor(), 2);
-		$this->Cell($width, $cell_height, $headerdata['title'], $border, $ln, $align);
-
-		// header string
-		$this->SetX($ormargins['left']);
-		$this->SetFont($headerfont[0], $headerfont[1], $headerfont[2] * 0.8);
-		$cell_height = round(($this->getCellHeightRatio() * $headerfont[2] * 0.8) / $this->getScaleFactor(), 2);
-
-		$fill = 0;
-		$reseth = true;
-		$strecth = 0;
-		$ishtml = false;
-		$this->MultiCell($width, $cell_height, $headerdata['string'], $border, $align, $fill, 1, '', '', $reseth, $strecth, $ishtml);
-	}
-
-	function Footer() {
-		$this->SetY(-1);
-		$this->SetFont('Helvetica', '', 6);
-		$tmpX = $this->getX();
-        $year = date('Y');
-        $footertext = sprintf($this->footertext, $year);
-		$this->Cell(0, 1, $footertext, 0, 0, 'C');
-		$this->SetX($tmpX);
-		$this->Cell(0, 1, 'Date/Time printed: '. date('Y-m-d H:i:s'), 0, 0, 'L');
-		$this->Cell(0, 1, 'Page ' . $this->PageNo() . '/{nb}', 0, 0, 'R');
-		$this->footerset[$this->page] = 1;
- 	}
-}
-
 class XTCPDF extends TCPDF {
+    public $backgroundImage;
     function Header() {
+
+        // Full background image
+        $auto_page_break = $this->AutoPageBreak;
+        $this->SetAutoPageBreak(false, 0);
+        $img_file = $this->backgroundImage;
+        $this->Image($img_file, $x=0, $y=0, $w=210, $h=297, $type='', $link='', $align='', $resize=false, $dpi=300, $palign='', $ismask=false, $imgmask=false, $border=0);
+        $this->SetAutoPageBreak($auto_page_break);
+        
+
 		$top_margin = 0.5;
 		$ormargins = $this->getOriginalMargins();
 		$headerfont = $this->getHeaderFont();
@@ -169,76 +115,6 @@ class XTCPDF extends TCPDF {
 		$this->SetX($tmpX);
 		$this->Cell(0, 1, 'Date/Time printed: '. date('Y-m-d H:i:s'), 0, 0, 'L');
 		$this->Cell(0, 1, 'Page ' . $this->PageNo() . '/{nb}', 0, 0, 'R');
-		$this->footerset[$this->page] = 1;
- 	}
-}
-
-class XTCPDF_RGA extends TCPDF {
-
-	// class for Risk Grade Analysis pdf
-
-	var $_bank = "";
-	var $_report = "";
-	var $_width = 197;
-
-	function InitReportValues($bank, $report, $hw=null) {
-		$this->_bank = $bank;
-		$this->_report = $report;
-		if (!$hw == null) {
-			$this->_width = $hw;
-		}
-	}
-
-	/**
-    * Allows you to control how the pdf is returned to the user, most of the time in CakePHP you probably want the string
-    *
-    * @param string $name name of the file.
-    * @param string $destination where to send the document values: I, D, F, S
-    * @return string if the $destination is S
-    */
-    function tcpdfOutput ($name = 'page.pdf', $destination = 'd') {
-        // I: send the file inline to the browser. The plug-in is used if available.
-        //    The name given by name is used when one selects the "Save as" option on the link generating the PDF.
-        // D: send to the browser and force a file download with the name given by name.
-        // F: save to a local file with the name given by name.
-        // S: return the document as a string. name is ignored.
-        return $this->Output($name, $destination);
-    }
-
-	 /**
-    * Overwrites the default header
-    * set the text in the view using
-    *    $fpdf->xheadertext = 'YOUR ORGANIZATION';
-    * set the fill color in the view using
-    *    $fpdf->xheadercolor = array(0,0,100); (r, g, b)
-    * set the font in the view using
-    *    $fpdf->setHeaderFont(array('YourFont','',fontsize));
-    */
-//    function Header()
-//    {
-//		#$this->ImageEps(WWW_ROOT.'client'.DS.'banklogo.ai',10,10,40);
-//		$this->SetFont('Helvetica','B', 14);
-//		$this->SetXY(10, 12);
-//		$this->Cell($this->_width, 5, $this->_bank, 0, 1, "C");
-//		$this->SetFont('Helvetica','', 12);
-//		$this->Cell($this->_width, 5, $this->_report, 0, 1, "C");
-//		$this->SetXY(10,28);
-//    }
-
-
-    /**
-    * Overwrites the default footer
-    * set the text in the view using
-    * $fpdf->xfootertext = 'Copyright � %d YOUR ORGANIZATION. All rights reserved.';
-    */
-    function Footer()
-    {
-		$this->SetY(-10);
-		//Page number
-		$this->SetFont('Helvetica','', 6);
-		$this->Cell(0,10,'Date/Time printed: '.date('Y-m-d H:i:s') ,0,0,'L');
-		$this->Cell(0,10,'Page '.$this->PageNo().'/{nb}',0,0,'R');
-		// set footerset
 		$this->footerset[$this->page] = 1;
  	}
 }
