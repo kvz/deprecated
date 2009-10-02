@@ -14,8 +14,9 @@ class PdfTest extends CakeTestCase {
         $this->html = file_get_contents($filename);
         
         $this->Pdf  = new PdfitHelper(array(
-            'method' => 'xtcpdf',
+            'method' => 'wkhtmltopdf',
             'serve' => false,
+            'tidy' => true,
             'background' => dirname(dirname(dirname(__FILE__))).'/fixtures/truetogether_a.jpg',
         ));
     }
@@ -23,6 +24,15 @@ class PdfTest extends CakeTestCase {
     public function testPdf() {
         $pdfFilePath = $this->Pdf->pdf($this->html);
 
+        echo 'logs'."\n";
+        print_r($this->Pdf->logs);
+
+        $this->assertTrue(!!$pdfFilePath);
+        $this->assertTrue(!count(@$this->Pdf->logs['err']));
+
+
+
+        
         $cmd = '/opt/Adobe/Reader9/bin/acroread '.$pdfFilePath;
         echo "$cmd\n";
         shell_exec($cmd);

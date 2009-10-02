@@ -3,14 +3,25 @@ Class PdfLayoutComponent extends Object{
     public $Controller;
     
     protected $_settings = array(
-        'debug' => '0',
+        // Passed as Component options
         'ext' => 'pdf',
         'reUseNormalView' => true,
-        'method' => 'tcpdf',
-        'serve' => true,
-        'dumphtml' => false,
+
+        // Passed as Both Helper & Component options
+        'debug' => '0',
+
+        // Passed as Helper options
+        'title' => null,
+        'subtitle' => null,
+        'dumphtml' => null,
+        'background' => null,
+        'serve' => null,
+        'tidy' => null,
+        'method' => null,
+        'dir' => null,
+        'filebase' => null,
     );
-    
+
 	public function initialize(&$Controller, $settings=array()) {
         $this->_settings = am($this->_settings, $settings);
         
