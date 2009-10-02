@@ -6,7 +6,7 @@ Class PdfLayoutComponent extends Object{
         'debug' => '0',
         'ext' => 'pdf',
         'reUseNormalView' => true,
-        'method' => 'dompdf',
+        'method' => 'tcpdf',
         'serve' => true,
         'dumphtml' => false,
     );

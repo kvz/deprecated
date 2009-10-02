@@ -6,6 +6,7 @@
 class PdfitHelper extends Helper {
     protected $_options;
     protected $_html;
+    protected $_served;
 
     public function  __construct($options) {
         $this->setup($options);
@@ -15,6 +16,7 @@ class PdfitHelper extends Helper {
         set_time_limit(0);
         ini_set('memory_limit', '1624M');
         $this->_options = $options;
+        $this->_served = false;
         $this->_defaultOpts();
     }
 
@@ -40,7 +42,9 @@ class PdfitHelper extends Helper {
         header("Content-Transfer-Encoding: binary");
         header('Content-Length: ' . filesize($filename));
     }
+    
     public function serve($filename) {
+        $this->_served = true;
         $this->_headers($filename);
         readfile($filename);
     }
@@ -51,10 +55,11 @@ class PdfitHelper extends Helper {
 
         if (!isset($this->_options['debug'])) $this->_options['debug'] = 0;
         if (!isset($this->_options['dumphtml'])) $this->_options['dumphtml'] = false;
+        if (!isset($this->_options['background'])) $this->_options['background'] = false;
         if (!isset($this->_options['serve'])) $this->_options['serve'] = false;
         if (!isset($this->_options['method'])) $this->_options['method'] = 'tcpdf';
         if (!isset($this->_options['dir'])) $this->_options['dir'] = '/tmp';
-        if (!isset($this->_options['filebase'])) $this->_options['filebase'] = tempnam($this->_options['dir'], 'pdfconv_'. date('Ymd_His').'_').'.%s';
+        if (!isset($this->_options['filebase'])) $this->_options['filebase'] = tempnam($this->_options['dir'], 'pdfconv_'. date('Ymd_His').'_').'%s.%s';
     }
 
     public function exe() {
@@ -79,7 +84,7 @@ class PdfitHelper extends Helper {
         }
 
         if (false !== ($pdfFilePath = call_user_func(array($this, '_'.$this->_options['method']), $this->_html))) {
-            if ($this->_options['serve']) {
+            if ($this->_options['serve'] && !$this->_served) {
                 return $this->serve($pdfFilePath);
             }
         }
@@ -87,14 +92,14 @@ class PdfitHelper extends Helper {
         return $pdfFilePath;
     }
 
-    protected function _pdfFile($extension = 'pdf') {
-        return sprintf($this->_options['filebase'], $extension);
+    protected function _pdfFile($extension = 'pdf', $method = '') {
+        return sprintf($this->_options['filebase'], $method, $extension);
     }
 
     protected function _html2ps() {
         $htmlFilePath = $this->_pdfFile('html');
         $psFilePath   = $this->_pdfFile('ps');
-        $pdfFilePath  = $this->_pdfFile('pdf');
+        $pdfFilePath  = $this->_pdfFile('pdf', __FUNCTION__);
 
         // save html
         file_put_contents($htmlFilePath, $this->_html);
@@ -124,7 +129,7 @@ class PdfitHelper extends Helper {
 
     protected function _dompdf() {
         $htmlFilePath = $this->_pdfFile('html');
-        $pdfFilePath  = $this->_pdfFile('pdf');
+        $pdfFilePath  = $this->_pdfFile('pdf', __FUNCTION__);
 
         // save html
         file_put_contents($htmlFilePath, $this->_html);
@@ -140,7 +145,7 @@ class PdfitHelper extends Helper {
 
     protected function _html2fpdf() {
         App::import('Vendor', 'pdfview.html2pdf');
-        $pdfFilePath  = $this->_pdfFile('pdf');
+        $pdfFilePath  = $this->_pdfFile('pdf', __FUNCTION__);
         
         $pdf = new HTML2FPDF();
         $pdf->DisableTags();
@@ -174,9 +179,9 @@ class PdfitHelper extends Helper {
     //    }
 
     protected function _tcpdf() {
-        $pdfFilePath = $this->_pdfFile('pdf');
-        App::import('Vendor', 'pdfview.xtcpdf');
-
+        $pdfFilePath = $this->_pdfFile('pdf', __FUNCTION__);
+        App::import('Vendor', 'pdfview.tcpdf');
+        
         // Logic to create specially formatted link goes here...
 
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -251,16 +256,22 @@ class PdfitHelper extends Helper {
         return $pdfFilePath;
     }
     protected function _xtcpdf() {
-        $pdfFilePath = $this->_pdfFile('pdf');
+        $pdfFilePath = $this->_pdfFile('pdf', __FUNCTION__);
         App::import('Vendor', 'pdfview.xtcpdf');
 
-        // Logic to create specially formatted link goes here...
+        //$this->_options['background']
 
+        // Logic to create specially formatted link goes here...
         $pdf = new XTCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+        if ($this->_options['background']) {
+            prd($this->_options['background']);
+            $pdf->backgroundImage = $this->_options['background'];
+        }
 
         //-- variable label names (see app\config\client\client.ini.php)
         $client = 'AnyClient';
-
+        
         $textfont = 'freesans'; // looks better, finer, and more condensed than 'dejavusans'
 
         // set document information
@@ -292,7 +303,7 @@ class PdfitHelper extends Helper {
 
         // set document information
         $pdf->SetTitle($this->_options['title']);
-
+        
         $pdf->setPageOrientation('P'); // or 'L'
 
         // set image scale factor
@@ -319,12 +330,19 @@ class PdfitHelper extends Helper {
         }
 
         $pdf->setY(1.0);
-
+        
         // output the HTML content
         //$pdf->writeHTML($htmlcontent, true, 0, true, 0);
         writeHTMLSections($pdf, $htmlcontent);
-
-        $pdf->Output($pdfFilePath, 'F');
+        
+        // XPDF Can Serve itsself
+        if ($this->_options['serve'] && !$this->_served) {
+            $this->_served = true;
+            $pdf->Output(basename($pdfFilePath), 'I');
+        } else {
+            $pdf->Output($pdfFilePath, 'F');
+        }
+        
         return $pdfFilePath;
     }
 }

@@ -3,7 +3,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-App::import('Helper', 'Pdfview.Pdf');
+App::import('Helper', 'Pdfview.Pdfit');
 
 class PdfTest extends CakeTestCase {
     public $Pdf;
@@ -13,9 +13,10 @@ class PdfTest extends CakeTestCase {
         $filename   = dirname(dirname(dirname(__FILE__))).'/fixtures/doc1.html';
         $this->html = file_get_contents($filename);
         
-        $this->Pdf  = new PdfHelper(array(
-            'method' => 'dompdf',
+        $this->Pdf  = new PdfitHelper(array(
+            'method' => 'xtcpdf',
             'serve' => false,
+            'background' => dirname(dirname(dirname(__FILE__))).'/fixtures/truetogether_a.jpg',
         ));
     }
 
