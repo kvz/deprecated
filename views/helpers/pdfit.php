@@ -7,7 +7,28 @@ class PdfitHelper extends Helper {
     protected $_options;
     protected $_html;
     protected $_served;
+    public    $logs;
 
+    protected function _defaultOpts() {
+        if (!isset($this->_options['title'])) $this->_options['title'] = '';
+        if (!isset($this->_options['subtitle'])) $this->_options['subtitle'] = '';
+        if (!isset($this->_options['debug'])) $this->_options['debug'] = 0;
+        if (!isset($this->_options['dumphtml'])) $this->_options['dumphtml'] = false;
+        if (!isset($this->_options['background'])) $this->_options['background'] = false;
+        if (!isset($this->_options['serve'])) $this->_options['serve'] = false;
+        if (!isset($this->_options['tidy'])) $this->_options['tidy'] = false;
+        if (!isset($this->_options['method'])) $this->_options['method'] = 'tcpdf';
+        if (!isset($this->_options['dir'])) $this->_options['dir'] = '/tmp';
+        if (!isset($this->_options['filebase'])) $this->_options['filebase'] = tempnam($this->_options['dir'], 'pdfconv_'. date('Ymd_His').'_').'%s.%s';
+    }
+
+    public function  __call($name,  $arguments) {
+        $format = array_shift($arguments);
+        $str    = vsprintf($format, $arguments);
+        $this->logs[$name][] = $str;
+        return false;
+    }
+    
     public function  __construct($options) {
         $this->setup($options);
     }
@@ -49,19 +70,6 @@ class PdfitHelper extends Helper {
         readfile($filename);
     }
 
-    protected function _defaultOpts() {
-        if (!isset($this->_options['title'])) $this->_options['title'] = '';
-        if (!isset($this->_options['subtitle'])) $this->_options['subtitle'] = '';
-
-        if (!isset($this->_options['debug'])) $this->_options['debug'] = 0;
-        if (!isset($this->_options['dumphtml'])) $this->_options['dumphtml'] = false;
-        if (!isset($this->_options['background'])) $this->_options['background'] = false;
-        if (!isset($this->_options['serve'])) $this->_options['serve'] = false;
-        if (!isset($this->_options['method'])) $this->_options['method'] = 'tcpdf';
-        if (!isset($this->_options['dir'])) $this->_options['dir'] = '/tmp';
-        if (!isset($this->_options['filebase'])) $this->_options['filebase'] = tempnam($this->_options['dir'], 'pdfconv_'. date('Ymd_His').'_').'%s.%s';
-    }
-
     public function exe() {
         $args = func_get_args();
         $cmd  = array_shift($args);
@@ -69,7 +77,37 @@ class PdfitHelper extends Helper {
             $cmd = vsprintf($cmd, $args);
         }
 
-        return shell_exec($cmd);
+        $buf = shell_exec($cmd);
+        $this->debug('Running \'%s\', returned: \'%s\'', $cmd, $buf);
+        return $buf;
+    }
+
+    public function tidy($html, $options = array()) {
+        $this->debug('%s() called', __FUNCTION__);
+        
+        // Prereqs
+        if (!function_exists('tidy_parse_string')) {
+            return $this->err('You need to: aptitude install php5-tidy');
+        }
+
+        // Specify configuration
+        $default_options = array(
+            'clean' => true,
+            'indent' => true,
+            'indent-spaces' => 4,
+            'output-html' => true,
+            'wrap' => 200,
+        );
+
+        $options = array_merge($default_options, $options);
+
+        // Tidy
+        $tidy = new tidy;
+        $tidy->parseString($html, $options, 'utf8');
+        $tidy->cleanRepair();
+
+        // Output
+        return (string)$tidy;
     }
 
     public function pdf($html, $options = array()) {
@@ -77,6 +115,10 @@ class PdfitHelper extends Helper {
             $this->setup($options);
         }
         $this->_html = $html;
+
+        if ($this->_options['tidy']) {
+            $this->_html = $this->tidy($html);
+        }
 
         if ($this->_options['dumphtml']) {
             echo sprintf('<xmp>%s</xmp>', $this->_html);
@@ -127,12 +169,81 @@ class PdfitHelper extends Helper {
         return $pdfFilePath;
     }
 
-    protected function _dompdf() {
+    protected function _wkhtmltopdf() {
+        $this->debug('%s() called', __FUNCTION__);
         $htmlFilePath = $this->_pdfFile('html');
         $pdfFilePath  = $this->_pdfFile('pdf', __FUNCTION__);
 
+        // Prereqs
+        if (!file_exists('/bin/wkhtmltopdf')) {
+            return $this->err('wkhtmltopdf is not installed. Try:
+
+sudo aptitude install openssl build-essential xorg libqt4-dev qt4-dev-tools xvfb
+
+STATIC:
+
+cd /usr/src
+wget http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.8.3-static.tar.bz2
+tar -xjvf wkhtmltopdf-0.8.3-static.tar.bz2
+mv wkhtmltopdf /bin/wkhtmltopdf
+
+OR, COMPILE:
+
+cd /usr/src
+wget http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.8.3.tar.bz2
+tar -xvf wkhtmltopdf-0.8.3.tar.bz2
+cd wkhtmltopdf-0.8.3
+qmake-qt4
+make && make install
+            ');
+        }
+
+        # From: http://code.google.com/p/wkhtmltopdf/issues/detail?id=3
+        $wkhDir = dirname(dirname(dirname(__FILE__))).'/vendors/wkhtmltopdf';
+        $wkhExe = $wkhDir.'/html2pdf.sh';
+
         // save html
-        file_put_contents($htmlFilePath, $this->_html);
+        if (!file_put_contents($htmlFilePath, $this->_html)) {
+            return $this->err('Unable to write %s', $htmlFilePath);
+        }
+
+        $opts = array(
+            '--toc',
+            '--page-size A4',
+            '--disable-javascript',
+            '--orientation Portrait',
+            '--margin-bottom 0mm',
+            '--margin-left 0mm',
+            '--margin-right 0mm',
+            '--margin-top 0mm',
+        );
+
+        $o = $this->exe('bash %s %s %s "'.join(' ', $opts).'"', $wkhExe, $htmlFilePath, $pdfFilePath);
+        $this->debug($o);
+        #@unlink($htmlFilePath);
+
+        return $pdfFilePath;
+    }
+
+    protected function _dompdf() {
+        $this->debug('%s() called', __FUNCTION__);
+        $htmlFilePath = $this->_pdfFile('html');
+        $pdfFilePath  = $this->_pdfFile('pdf', __FUNCTION__);
+
+        // Prereqs
+        if (!function_exists('imagecreatefromjpeg')) {
+            return $this->err('PHP running on your server does not support the GD image library, check with your webhost if ImageMagick is installed');
+        }
+        if (!function_exists('imagecreatetruecolor')) {
+            return $this->err('PHP running on your server does not support GD version 2.x, please switch to GD version 1.x on the admin page');
+        }
+
+        // pecl install pdflib
+
+        // save html
+        if (!file_put_contents($htmlFilePath, $this->_html)) {
+            return $this->err('Unable to write %s', $htmlFilePath);
+        }
         
         $domDir = dirname(dirname(dirname(__FILE__))).'/vendors/dompdf';
         $domExe = $domDir.'/dompdf.php';
@@ -256,7 +367,16 @@ class PdfitHelper extends Helper {
         return $pdfFilePath;
     }
     protected function _xtcpdf() {
+        $this->debug('%s() called', __FUNCTION__);
+        
         $pdfFilePath = $this->_pdfFile('pdf', __FUNCTION__);
+        
+        if (!isset($_SERVER['HTTP_HOST'])) $_SERVER['HTTP_HOST'] = 'localhost';
+        if (!isset($_SERVER['HTTP_PORT'])) $_SERVER['HTTP_PORT'] = '80';
+
+
+        $old_error_reporting = error_reporting(E_ALL ^ E_NOTICE);
+
         App::import('Vendor', 'pdfview.xtcpdf');
 
         //$this->_options['background']
@@ -265,7 +385,6 @@ class PdfitHelper extends Helper {
         $pdf = new XTCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
         if ($this->_options['background']) {
-            prd($this->_options['background']);
             $pdf->backgroundImage = $this->_options['background'];
         }
 
@@ -342,7 +461,9 @@ class PdfitHelper extends Helper {
         } else {
             $pdf->Output($pdfFilePath, 'F');
         }
-        
+
+        error_reporting($old_error_reporting);
+
         return $pdfFilePath;
     }
 }
