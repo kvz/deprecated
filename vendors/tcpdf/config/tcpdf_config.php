@@ -2,7 +2,7 @@
 //============================================================+
 // File name   : tcpdf_config.php
 // Begin       : 2004-06-11
-// Last Update : 2009-04-20
+// Last Update : 2009-09-30
 //
 // Description : Configuration file for TCPDF.
 //
@@ -65,11 +65,6 @@ if (!defined('K_TCPDF_EXTERNAL_CONFIG')) {
 			$k_path_url = 'http://';
 		}
 		$k_path_url .= $_SERVER['HTTP_HOST'];
-
-        if ($_SERVER['HTTP_PORT'] != 80) {
-            $k_path_url .= ':'.$_SERVER['HTTP_PORT'];
-        }
-
 		$k_path_url .= str_replace( '\\', '/', substr($_SERVER['PHP_SELF'], 0, -24));
 	}
 	
@@ -77,7 +72,7 @@ if (!defined('K_TCPDF_EXTERNAL_CONFIG')) {
 	 * URL path to tcpdf installation folder (http://localhost/tcpdf/).
 	 * By default it is automatically calculated but you can also set it as a fixed string to improve performances.
 	 */
-	define ('K_PATH_URL', @$k_path_url);
+	define ('K_PATH_URL', $k_path_url);
 	
 	/**
 	 * path for PDF fonts
