@@ -98,6 +98,10 @@ Class Movie{
             'CiNEFiLE',
             'txfiwtb',
             'proper\ 2',
+            'Monstie',
+            'lawrywild',
+            'INFAMOUS',
+            'NODLABS',
         );
 
         $blackLists['Subs'] = array(
@@ -129,6 +133,8 @@ Class Movie{
             'HDDVD',
             'xscr',
             'hdtv',
+            'FLHD',
+            'HDxT',
             'dvdscr',
             'dvd',
             'tc',
