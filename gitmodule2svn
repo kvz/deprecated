@@ -58,8 +58,11 @@ function gitsuggest {
 
     warnings="${warnings}Git repositories can use submodules. You probably need to: \n"
     warnings="${warnings}  cd ${apppath} \n"
-    warnings="${warnings}  git submodule git://github.com/kvz/${modulename}.git ${dir} \n"
+    [ -d "${dir}" ] && warnings="${warnings}  rm -rf ${dir} \n"
+    [ -d "${dir}" ] && warnings="${warnings}  git rm -r ${dir} \n"
+    warnings="${warnings}  git submodule add git://github.com/kvz/${modulename}.git ${modulename} \n"
     warnings="${warnings}  cd - \n"
+    warnings="${warnings}  nano ${apppath}/.gitmodules \n"
     warnings="${warnings}\n"
 }
 

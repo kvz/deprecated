@@ -26,7 +26,7 @@ if (!defined('DIR_ROOT')) {
 
 if (!defined('DIR_KVZLIB')) {
     $lookIn = array(
-        '/home/kevin/workspace/plutonia-kvzlib',
+        '/home/kevin/workspace/kvzlib',
         DIR_ROOT.'/ext/kvzlib',
     );
 

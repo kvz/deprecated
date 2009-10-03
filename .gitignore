@@ -2,3 +2,6 @@
 .project
 .settings
 nbproject
+gitup.dat
+php/programs/moviexplore/cache/
+
