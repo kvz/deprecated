@@ -26,6 +26,7 @@ if (!defined('DIR_ROOT')) {
 
 if (!defined('DIR_KVZLIB')) {
     $lookIn = array(
+        '/Users/kevin/workspace/kvzlib',
         '/home/kevin/workspace/kvzlib',
         DIR_ROOT.'/ext/kvzlib',
     );

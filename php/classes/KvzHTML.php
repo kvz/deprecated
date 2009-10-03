@@ -30,6 +30,7 @@ Class KvzHtml {
     public function  __construct($options = array()) {
         $this->_options = $options;
         
+        if (!isset($this->_options['xhtml'])) $this->_options['xhtml'] = true;
         if (!isset($this->_options['track_toc'])) $this->_options['track_toc'] = false;
         if (!isset($this->_options['link_toc'])) $this->_options['link_toc'] = true;
     }
@@ -159,7 +160,7 @@ Class KvzHtml {
         
         if (null === $body) {
             // self closing tag
-            return '<'.$tag.$argumentsT.' />'.($newLineAfterOpeningTag ? "\n" : "");
+            return '<'.$tag.$argumentsT.' '.($this->_options['xhtml'] ? '/' : '').'>'.($newLineAfterOpeningTag ? "\n" : "");
         } else if (false === $body) {
             // End tag
             return '</'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");

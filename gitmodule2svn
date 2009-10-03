@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#set -x
+
 executed=${0}
 this=$(basename ${0})
 modulepath=$(pwd |awk -F'/' '{print $1"/"$2"/"$3"/"$4"/"$5}')
@@ -16,7 +18,13 @@ function process {
 
     if [ -d "${apppath}/.git" ]; then
         if [ -d "${dir}/.git" ]; then
-            infos="${infos}'${modulename}' not synced to '${dir}; git repository is using submodule'\n"
+            set -x
+            cd ${apppath}
+            git submodule update
+            cd -
+            set +x
+
+            infos="${infos}'${modulename}' synced to '${dir}; using submodule'\n"
         else
             infos="${infos}'${modulename}' not synced to '${dir}; git repositories can use submodule'\n"
             gitsuggest ${apppath} ${modulename} ${dir}
@@ -29,8 +37,16 @@ function process {
         propsuggest ${vendorpath} ${modulename} ${dir}
     else
         svn up ${apppath}
-        
-        y=$(/usr/bin/rsync -a -i --size-only --exclude '.git*' --exclude ${this} --exclude 'gitup.dat' --exclude 'up.sh' $modulepath/ ${dir})
+
+        cmd="/usr/bin/rsync -a -i --size-only --exclude '*.git*' --exclude '.git' --exclude ${this} --exclude 'gitup.dat' --exclude 'up.sh' $modulepath/ ${dir}"
+        echo "${cmd}"
+        y=$(${cmd})
+
+        if [ -d "${dir}/.git" ]; then
+            cmd="rm -rf ${dir}/.git"
+            #echo "${cmd}"
+            #z=$(${cmd})
+        fi
         if [ $(echo -e "${y}" |wc -l) -lt 2 ]; then
             infos="${infos}'${modulename}' was up to date in '${dir}'\n"
         else
@@ -55,12 +71,29 @@ function gitsuggest {
     local appname=$(subd "${apppath}")
     local modulename=${2}
     local dir=${3}
+    local inpath=$(echo "${dir}" |sed "s#${apppath}/##g")
 
     warnings="${warnings}Git repositories can use submodules. You probably need to: \n"
     warnings="${warnings}  cd ${apppath} \n"
+<<<<<<< HEAD:gitmodule2svn
     [ -d "${dir}" ] && warnings="${warnings}  rm -rf ${dir} \n"
     [ -d "${dir}" ] && warnings="${warnings}  git rm -r ${dir} \n"
     warnings="${warnings}  git submodule add git://github.com/kvz/${modulename}.git ${modulename} \n"
+=======
+    warnings="${warnings}  rmdir ${dir} \n"
+    warnings="${warnings}  git rm --cached -r ${dir} \n"
+    warnings="${warnings}  git submodule add git://github.com/kvz/${modulename}.git ${inpath} \n"
+    warnings="${warnings}  git submodule update --init \n"
+    warnings="${warnings}  cd - \n"
+    warnings="${warnings}\n"
+    warnings="${warnings} OR, for Cake Plugins: \n"
+    warnings="${warnings}\n"
+    warnings="${warnings}  cd ${apppath} \n"
+    warnings="${warnings}  rmdir ${dir} \n"
+    warnings="${warnings}  git rm --cached -r ${dir} \n"
+    warnings="${warnings}  git submodule add git://github.com/kvz/cakephp-${modulename}-plugin.git ${inpath} \n"
+    warnings="${warnings}  git submodule update --init \n"
+>>>>>>> a4e96e9ab6124be71838e531de7f915d411f4af4:gitmodule2svn
     warnings="${warnings}  cd - \n"
     warnings="${warnings}  nano ${apppath}/.gitmodules \n"
     warnings="${warnings}\n"
@@ -93,11 +126,11 @@ function propsuggest {
 }
 
 # Vendor & Ext dirs that match modulename
-for dir in $(find ~/workspace -mindepth 3 -maxdepth 3 -regextype posix-extended -iregex ".*(code|ext|vendors|vendor)/${modulename}.*" -type d |egrep -v '(\.svn)'); do
+for dir in $(find ~/workspace -mindepth 3 -maxdepth 3 -regextype posix-extended -iregex ".*(code|ext|vendors|vendor)/${modulename}" -type d |egrep -v '(\.svn)'); do
     process "${dir}"
 done
 # Cake Plugins that match modulename
-for dir in $(find ~/workspace -mindepth 4 -maxdepth 4 -regextype posix-extended -iregex ".*(plugins)/${modulename}.*" -type d |egrep -v '(\.svn)'); do
+for dir in $(find ~/workspace -mindepth 4 -maxdepth 5 -regextype posix-extended -iregex ".*(plugins)/${modulename}" -type d |egrep -v '(\.svn)'); do
     process "${dir}"
 done
 

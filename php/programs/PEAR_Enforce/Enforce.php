@@ -11,7 +11,7 @@
  * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
  * @copyright 2009 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
- * @version   SVN: Release: $Id$
+ * @version   SVN: Release: $Id: Enforce.php 220 2009-01-12 16:41:34Z kevin $
  * @link      http://kevin.vanzonneveld.net/code/php_programs_PEAR_Enforce/
  */
 
