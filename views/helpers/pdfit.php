@@ -19,7 +19,7 @@ class PdfitHelper extends Helper {
         if (!isset($this->_options['tidy'])) $this->_options['tidy'] = false;
         if (!isset($this->_options['method'])) $this->_options['method'] = 'tcpdf';
         if (!isset($this->_options['dir'])) $this->_options['dir'] = '/tmp';
-        if (!isset($this->_options['filebase'])) $this->_options['filebase'] = tempnam($this->_options['dir'], 'pdfconv_'. date('Ymd_His').'_').'%s.%s';
+        if (!isset($this->_options['filebase'])) $this->_options['filebase'] = tempnam($this->_options['dir'], 'pdfit_'. date('Ymd_His').'_').'%s.%s';
     }
 
     public function  __call($name,  $arguments) {
@@ -169,10 +169,35 @@ class PdfitHelper extends Helper {
         return $pdfFilePath;
     }
 
+    protected function _retrieve($filepath) {
+        $this->debug('%s() called', __FUNCTION__);
+        
+        if (substr($filepath, 0, 4) === 'http') {
+            $temp = tempnam($this->_options['dir'], 'pdfit_cache_');
+            
+            if (!($buf = file_get_contents($filepath))) {
+                return $this->err('Unable to retrieve %s', $filepath);
+            }
+            
+            if (!file_put_contents($temp, $buf)) {
+                return $this->err('Unable to store %s in %s', $filepath, $temp);
+            }
+
+            $filepath = $temp;
+        }
+
+        if (!file_exists($filepath)) {
+            return $this->err('%s does not exist', $filepath);
+        }
+        
+        return $filepath;
+    }
+
     protected function _wkhtmltopdf() {
         $this->debug('%s() called', __FUNCTION__);
-        $htmlFilePath = $this->_pdfFile('html');
-        $pdfFilePath  = $this->_pdfFile('pdf', __FUNCTION__);
+        $htmlFilePath  = $this->_pdfFile('html');
+        $pdfFilePath   = $this->_pdfFile('pdf', __FUNCTION__);
+        $bgPdfFilePath = $this->_pdfFile('bg.pdf', __FUNCTION__);
 
         // Prereqs
         if (!file_exists('/bin/wkhtmltopdf')) {
@@ -198,29 +223,71 @@ make && make install
             ');
         }
 
+        $pdfTk = '/usr/bin/pdftk';
+        if ($this->_options['background'] && !file_exists($pdfTk)) {
+            return $this->err('For backgrounds in wkhtmltopdf you need pdftk but it is not installed. Try:
+
+aptitude install pdftk
+            ');
+        }
+
         # From: http://code.google.com/p/wkhtmltopdf/issues/detail?id=3
         $wkhDir = dirname(dirname(dirname(__FILE__))).'/vendors/wkhtmltopdf';
         $wkhExe = $wkhDir.'/html2pdf.sh';
+
 
         // save html
         if (!file_put_contents($htmlFilePath, $this->_html)) {
             return $this->err('Unable to write %s', $htmlFilePath);
         }
 
+        if (!isset($this->_options['title'])) $this->_options['title'] = '';
+        if (!isset($this->_options['subtitle'])) $this->_options['subtitle'] = '';
+        
         $opts = array(
             '--toc',
-            '--page-size A4',
-            '--disable-javascript',
-            '--orientation Portrait',
-            '--margin-bottom 0mm',
-            '--margin-left 0mm',
-            '--margin-right 0mm',
-            '--margin-top 0mm',
-        );
+            '--toc-font-name Helvetica',
+            '--toc-depth 4',
+            '--toc-no-dots',
+            '--outline',
 
-        $o = $this->exe('bash %s %s %s "'.join(' ', $opts).'"', $wkhExe, $htmlFilePath, $pdfFilePath);
+            '--margin-top 15mm',
+
+            '--dpi 96s',
+
+            '--no-background',
+            '--page-size A4',
+            '--dpi 96',
+            '--orientation Portrait',
+
+            '--disable-javascript',
+        );
+        
+//      @todo: Header text is breaking hard because of escaping issues
+//        $headertxt = '';
+//        if (!empty($this->_options['title'])) {
+//            $headertxt .= $this->_options['title'];
+//        }
+//        if (!empty($this->_options['subtitle'])) {
+//            $headertxt .= ' ndash; '.$this->_options['subtitle'];
+//        }
+//        if ($headertxt) {
+//            #$opts[] = '--header-left \''.$headertxt.'\'';
+//            $opts[] = '--header-right [page]/[toPage]';
+//            $opts[] = '--header-line';
+//        }
+        
+        $o = $this->exe('bash %s %s %s '.join(' ', $opts).'', $wkhExe, $htmlFilePath, $pdfFilePath);
         $this->debug($o);
-        #@unlink($htmlFilePath);
+
+        if ($this->_options['background']) {
+            $bgPath = $this->_retrieve($this->_options['background']);
+            $o = $this->exe('%s %s background %s output %s', $pdfTk, $pdfFilePath, $bgPath, $bgPdfFilePath);
+            $this->debug($o);
+            rename($bgPdfFilePath, $pdfFilePath);
+        }
+        
+        @unlink($htmlFilePath);
 
         return $pdfFilePath;
     }

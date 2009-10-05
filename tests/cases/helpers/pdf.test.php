@@ -17,7 +17,9 @@ class PdfTest extends CakeTestCase {
             'method' => 'wkhtmltopdf',
             'serve' => false,
             'tidy' => true,
-            'background' => dirname(dirname(dirname(__FILE__))).'/fixtures/truetogether_a.jpg',
+            'background' => 'http://admin.true.dev/img/backgrounds/truetogether_a.pdf',
+            'title' => 'Cluster report',
+            'subtitle' => 'DHL Productie cluster',
         ));
     }
 
