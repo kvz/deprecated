@@ -165,7 +165,7 @@ Class KvzHtml {
             $result = '<'.$tag.$argumentsT.' '.($this->_options['xhtml'] ? '/' : '').'>'.($newLineAfterOpeningTag ? "\n" : "");
         } else if (false === $body) {
             // End tag
-            $result = '</'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");
+            $result = '</'.$tag.'>'.($newLineAfterOpeningTag ? "\n" : "");
         } else if (true === $body) {
             // Opening tag
             $result = '<'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");
