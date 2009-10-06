@@ -207,15 +207,22 @@ Class KvzHtml {
     public function clear($body = '', $args = array()) {
         return $this->tag('div', $body, array_merge(array(
             'style' => array(
-                'clear' => 'both'
-            )
+                'clear' => 'both',
+            ),
         ), $args));
     }
     public function page($body = true, $args = array()) {
         return $this->tag('div', $body, array_merge(array(
             'class' => array(
                 'page'
-            )
+            ),
+        ), $args));
+    }
+    public function float($body = true, $args = array()) {
+        return $this->tag('div', $body, array_merge(array(
+            'style' => array(
+                'float' => 'left',
+            ),
         ), $args));
     }
 
