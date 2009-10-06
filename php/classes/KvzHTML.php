@@ -205,7 +205,7 @@ Class KvzHtml {
         ));
     }
 
-    public function img($link, $args) {
+    public function img($link, $args = array()) {
         $args = array_merge(array('src' => $link), $args);
         return $this->tag('img', null, $args);
     }
