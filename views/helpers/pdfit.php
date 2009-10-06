@@ -124,7 +124,9 @@ class PdfitHelper extends Helper {
         $this->_html = $html;
 
         if ($this->_options['tidy']) {
-            $this->_html = $this->tidy($html);
+            if (false === ($this->_html = $this->tidy($html))) {
+                return false;
+            }
         }
 
         if ($this->_options['dumphtml']) {
