@@ -26,6 +26,13 @@ class PdfitHelper extends Helper {
         $format = array_shift($arguments);
         $str    = vsprintf($format, $arguments);
         $this->logs[$name][] = $str;
+
+        if ($this->_options['debug'] > 0) {
+            if ($name === 'err') {
+                trigger_error($str, E_USER_ERROR);
+            }
+        }
+
         return false;
     }
     
