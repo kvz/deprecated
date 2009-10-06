@@ -102,7 +102,7 @@ Class KvzHtml {
         return end($this->_ids);
     }
 
-    public function tag($tag, $body = false, $args = array()) {
+    public function tag($tag, $body = true, $args = array()) {
         if (is_array($body)) {
             $body = implode("\n", $body);
         }
@@ -202,6 +202,21 @@ Class KvzHtml {
             'src'=> $link,
             '__trimbody' => true,
         ));
+    }
+
+    public function clear($body = '', $args = array()) {
+        return $this->tag('div', $body, array_merge(array(
+            'style' => array(
+                'clear' => 'both'
+            )
+        ), $args));
+    }
+    public function page($body = '', $args = array()) {
+        return $this->tag('div', $body, array_merge(array(
+            'class' => array(
+                'page'
+            )
+        ), $args));
     }
 
     public function img($link, $args = array()) {
