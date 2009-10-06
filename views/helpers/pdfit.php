@@ -32,6 +32,11 @@ class PdfitHelper extends Helper {
                 trigger_error($str, E_USER_ERROR);
             }
         }
+        if ($this->_options['debug'] > 1) {
+            if ($name === 'debug') {
+                echo($str."\n");
+            }
+        }
 
         return false;
     }
@@ -215,21 +220,29 @@ class PdfitHelper extends Helper {
 
 sudo aptitude install openssl build-essential xorg libqt4-dev qt4-dev-tools xvfb
 
-STATIC:
+# You will want to compile a patched static vertion of qt and build
+# wkhtmltopdf using that
+
+# 32 BIT LINUX - A STATIC IS READILY AVAILANLE:
 
 cd /usr/src
 wget http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.8.3-static.tar.bz2
 tar -xjvf wkhtmltopdf-0.8.3-static.tar.bz2
 mv wkhtmltopdf /bin/wkhtmltopdf
 
-OR, COMPILE:
+# OR, 64 BIT LINUX - MAKE YOUR OWN STATIC:
+
+# @todo: Maybe comment out the SVN export lines???
 
 cd /usr/src
 wget http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.8.3.tar.bz2
 tar -xvf wkhtmltopdf-0.8.3.tar.bz2
 cd wkhtmltopdf-0.8.3
-qmake-qt4
-make && make install
+./static-build.sh linux
+cd ./build/linux/wkhtmltopdf/wkhtmltopdf /bin/wkhtmltopdf
+chmod a+x /bin/wkhtmltopdf
+#qmake-qt4
+#make && make install
             ');
         }
 

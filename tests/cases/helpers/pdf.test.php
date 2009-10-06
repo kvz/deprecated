@@ -16,8 +16,9 @@ class PdfTest extends CakeTestCase {
         $this->Pdf  = new PdfitHelper(array(
             'method' => 'wkhtmltopdf',
             'serve' => false,
-            'tidy' => true,
-            'background' => 'http://admin.true.dev/img/backgrounds/truetogether_a.pdf',
+            'tidy' => false,
+            'debug' => 2,
+            'background' => 'http://true.nl/truetogether_a.pdf',
             'title' => 'Cluster report',
             'subtitle' => 'DHL Productie cluster',
         ));
