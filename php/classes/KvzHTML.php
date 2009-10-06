@@ -211,7 +211,7 @@ Class KvzHtml {
             )
         ), $args));
     }
-    public function page($body = '', $args = array()) {
+    public function page($body = true, $args = array()) {
         return $this->tag('div', $body, array_merge(array(
             'class' => array(
                 'page'
