@@ -94,7 +94,7 @@ class PdfitHelper extends Helper {
         
         // Prereqs
         if (!function_exists('tidy_parse_string')) {
-            return $this->err('You need to: aptitude install php5-tidy');
+            return $this->err('Function \'tidy_parse_string\' not found. You need to: aptitude install php5-tidy');
         }
 
         // Specify configuration
@@ -106,11 +106,12 @@ class PdfitHelper extends Helper {
             'wrap' => 200,
         );
 
+
         $options = array_merge($default_options, $options);
 
+
         // Tidy
-        $tidy = new tidy;
-        $tidy->parseString($html, $options, 'utf8');
+        $tidy = tidy_parse_string($html, $options, 'utf8');
         $tidy->cleanRepair();
 
         // Output
