@@ -33,6 +33,9 @@ Class KvzHtml {
         if (!isset($this->_options['xhtml'])) $this->_options['xhtml'] = true;
         if (!isset($this->_options['track_toc'])) $this->_options['track_toc'] = false;
         if (!isset($this->_options['link_toc'])) $this->_options['link_toc'] = true;
+
+        // Not recommended cause you cannot nest tags with echo:
+        if (!isset($this->_options['echo'])) $this->_options['echo'] = false;
     }
 
     public function __call($tag, $arguments) {
@@ -160,16 +163,23 @@ Class KvzHtml {
         
         if (null === $body) {
             // self closing tag
-            return '<'.$tag.$argumentsT.' '.($this->_options['xhtml'] ? '/' : '').'>'.($newLineAfterOpeningTag ? "\n" : "");
+            $result = '<'.$tag.$argumentsT.' '.($this->_options['xhtml'] ? '/' : '').'>'.($newLineAfterOpeningTag ? "\n" : "");
         } else if (false === $body) {
             // End tag
-            return '</'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");
+            $result = '</'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");
         } else if (true === $body) {
             // Opening tag
-            return '<'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");
+            $result = '<'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");
         } else {
             // Full tag
-            return '<'.$tag.$argumentsT.'>'. ($newLineAfterOpeningTag ? "\n" : "").$bodyIndented.'</'.$tag.'>'."\n";
+            $result = '<'.$tag.$argumentsT.'>'. ($newLineAfterOpeningTag ? "\n" : "").$bodyIndented.'</'.$tag.'>'."\n";
+        }
+
+        if ($this->_options['echo']) {
+            echo $result;
+            return true;
+        } else {
+            return $result;
         }
     }
 
