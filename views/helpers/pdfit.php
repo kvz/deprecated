@@ -272,9 +272,7 @@ aptitude install pdftk
             '--outline',
 
             '--margin-top 15mm',
-            '--margin-bottom 15mm',
-
-            '--dpi 96s',
+            '--margin-bottom 20mm',
 
             '--no-background',
             '--page-size A4',
