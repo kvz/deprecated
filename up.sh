@@ -22,4 +22,4 @@ fi
 echo "${COMMENT}" > gitup.dat
 
 echo "Committing: ${COMMENT}..."
-git commit -a -m "${COMMENT}" && git push
+git commit -a -m "${COMMENT}" && git push origin master
