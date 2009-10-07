@@ -223,7 +223,7 @@ sudo aptitude install openssl build-essential xorg libqt4-dev qt4-dev-tools xvfb
 # You will want to compile a patched static vertion of qt and build
 # wkhtmltopdf using that
 
-# 32 BIT LINUX - A STATIC IS READILY AVAILANLE:
+# 32 BIT LINUX - A STATIC IS READILY AVAILABLE, JUST COPY TO BIN:
 
 cd /usr/src
 wget http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.8.3-static.tar.bz2
@@ -232,17 +232,14 @@ mv wkhtmltopdf /bin/wkhtmltopdf
 
 # OR, 64 BIT LINUX - MAKE YOUR OWN STATIC:
 
-# @todo: Maybe comment out the SVN export lines???
-
 cd /usr/src
-wget http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.8.3.tar.bz2
-tar -xvf wkhtmltopdf-0.8.3.tar.bz2
-cd wkhtmltopdf-0.8.3
+svn checkout http://wkhtmltopdf.googlecode.com/svn/tags/0.8.3/ wkhtmltopdf
+cd wkhtmltopdf
+sed -i~ \'s#i386#amd64#g\' static-build.sh
 ./static-build.sh linux
-cd ./build/linux/wkhtmltopdf/wkhtmltopdf /bin/wkhtmltopdf
+cp ./wkhtmltopdf /bin/wkhtmltopdf
 chmod a+x /bin/wkhtmltopdf
-#qmake-qt4
-#make && make install
+
             ');
         }
 
@@ -275,6 +272,7 @@ aptitude install pdftk
             '--outline',
 
             '--margin-top 15mm',
+            '--margin-bottom 15mm',
 
             '--dpi 96s',
 
