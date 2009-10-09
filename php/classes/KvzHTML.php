@@ -32,14 +32,21 @@ Class KvzHtml {
         if (!isset($this->_options['xhtml'])) $this->_options['xhtml'] = true;
         if (!isset($this->_options['track_toc'])) $this->_options['track_toc'] = false;
         if (!isset($this->_options['link_toc'])) $this->_options['link_toc'] = true;
+        if (!isset($this->_options['indentation'])) $this->_options['indentation'] = 4;
+        if (!isset($this->_options['newlines'])) $this->_options['newlines'] = true;
 
         // Not recommended cause you cannot nest tags with echo:
         if (!isset($this->_options['echo'])) $this->_options['echo'] = false;
     }
 
     public function __call($tag, $arguments) {
-        $body       = array_shift($arguments);
-        $args       = array_shift($arguments);
+        if (!count($arguments)) {
+            $body       = true;
+            $args       = array();
+        } else {
+            $body       = array_shift($arguments);
+            $args       = array_shift($arguments);
+        }
         $bodySuffix = '';
 
         // TOC?
@@ -53,7 +60,7 @@ Class KvzHtml {
                 
                 if ($this->_tocIdPrev === false) {
                     // root element
-                    $prefix = $this->tag('a', '', array('name' => 'toc_'.'root', '__trimbody' => true));
+                    $prefix = $this->_tag('a', '', array('name' => 'toc_'.'root', '__trimbody' => true));
                 } elseif ($tocLevel < $this->_tocLevelPrev) {
                     $prefix = "\n". str_repeat('</ul>', ($this->_tocLevelPrev - $tocLevel));
                 } elseif ($this->_tocIdPrev === false || $tocLevel > $this->_tocLevelPrev) {
@@ -65,9 +72,9 @@ Class KvzHtml {
                 $tocLine .= trim($body);
                 if ($this->_options['link_toc']) {
                     // Add Jump link to anchor
-                    $tocLine .= ' '.$this->tag('a', '[jump]', array('href' => '#toc_'.$tocId, '__trimbody' => true));
-                    $bodySuffix .= $this->tag('a', '', array('name' => 'toc_'.$tocId, '__trimbody' => true));
-                    $bodySuffix .= $this->tag('a', '[toc]', array('href' => '#toc_'.'root', '__trimbody' => true));
+                    $tocLine .= ' '.$this->_tag('a', '[jump]', array('href' => '#toc_'.$tocId, '__trimbody' => true));
+                    $bodySuffix .= $this->_tag('a', '', array('name' => 'toc_'.$tocId, '__trimbody' => true));
+                    $bodySuffix .= $this->_tag('a', '[toc]', array('href' => '#toc_'.'root', '__trimbody' => true));
                 } 
                 $tocLine .= '</li>';
                 $tocLine .= $suffix;
@@ -78,7 +85,7 @@ Class KvzHtml {
             }
         }
 
-        return $this->tag($tag, (!is_string($body) ? $body : $body . $bodySuffix), $args);
+        return $this->_tag($tag, (!is_string($body) ? $body : $body . $bodySuffix), $args);
     }
 
     public function reset() {
@@ -102,12 +109,13 @@ Class KvzHtml {
         return end($this->_ids);
     }
 
-    public function tag($tag, $body = true, $args = array()) {
+    protected function _tag($tag, $body = true, $args = array()) {
         if (is_array($body)) {
             $body = implode("\n", $body);
         }
 
         $newLineAfterOpeningTag = true;
+        $newLineAfterClosingTag = true;
 
         $bodyIndented = $this->indent($body)."\n";
         if (!empty($args['__trimbody'])) {
@@ -165,7 +173,7 @@ Class KvzHtml {
             $result = '<'.$tag.$argumentsT.' '.($this->_options['xhtml'] ? '/' : '').'>'.($newLineAfterOpeningTag ? "\n" : "");
         } else if (false === $body) {
             // End tag
-            $result = '</'.$tag.'>'.($newLineAfterOpeningTag ? "\n" : "");
+            $result = '</'.$tag.'>'.($newLineAfterClosingTag ? "\n" : "");
         } else if (true === $body) {
             // Opening tag
             $result = '<'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");
@@ -183,13 +191,13 @@ Class KvzHtml {
     }
 
     public function a($link, $title = '') {
-        return $this->tag('link', $title, array(
+        return $this->_tag('link', $title, array(
             'href'=> $link,
         ));
     }
 
     public function css($link) {
-        return $this->tag('link', null, array(
+        return $this->_tag('link', null, array(
             'type' => 'text/css',
             'rel' => 'stylesheet',
             'href'=> $link,
@@ -197,7 +205,7 @@ Class KvzHtml {
     }
 
     public function js($link) {
-        return $this->tag('script', '', array(
+        return $this->_tag('script', '', array(
             'type' => 'text/javascript',
             'src'=> $link,
             '__trimbody' => true,
@@ -205,21 +213,21 @@ Class KvzHtml {
     }
 
     public function clear($body = '', $args = array()) {
-        return $this->tag('div', $body, array_merge_recursive(array(
+        return $this->_tag('div', $body, array_merge_recursive(array(
             'style' => array(
                 'clear' => 'both',
             ),
         ), $args));
     }
     public function page($body = true, $args = array()) {
-        return $this->tag('div', $body, array_merge_recursive(array(
+        return $this->_tag('div', $body, array_merge_recursive(array(
             'class' => array(
                 'page'
             ),
         ), $args));
     }
     public function float($body = true, $args = array()) {
-        return $this->tag('div', $body, array_merge_recursive(array(
+        return $this->_tag('div', $body, array_merge_recursive(array(
             'style' => array(
                 'float' => 'left',
             ),
@@ -228,7 +236,7 @@ Class KvzHtml {
 
     public function img($link, $args = array()) {
         $args = array_merge(array('src' => $link), $args);
-        return $this->tag('img', null, $args);
+        return $this->_tag('img', null, $args);
     }
 
     public function getToc() {
@@ -237,20 +245,69 @@ Class KvzHtml {
         return $toc;
     }
 
-    public function indent($str, $indent = 4) {
-        if (is_array($str)) {
-            $str = implode("\n", $str);
+    protected function _indent($indentation = null) {
+        if ($indentation === null && isset($this->_options['indentation'])) {
+            $indentation = $this->_options['indentation'];
         }
-        if (!is_string($str)) {
-            return $str;
+        // Lot of ways to set indent
+        if (is_numeric($indentation)) {
+            $indent = str_repeat(' ', $indentation);
+        } elseif (is_string($indentation)) {
+            $indent = $indentation;
+        } elseif ($indentation === true || $indentation === null) {
+            $indent = '    ';
+        } elseif ($indentation === false) {
+            $indent = '';
+        } else {
+            trigger_error(sprintf(
+                    'Indendation can be a lot of things but not "%s"',
+                    $indentation), E_USER_ERROR);
         }
 
-        $lines = explode("\n", $str);
+        return $indent;
+    }
+    
+    protected function _linesep($newlines = null) {
+        if ($newlines === null && isset($this->_options['newlines'])) {
+            $newlines = $this->_options['newlines'];
+        }
+
+        // Lot of ways to set line separators
+        if (is_numeric($newlines)) {
+            $linesep = str_repeat("\n", $newlines);
+        } elseif (is_string($newlines)) {
+            $linesep = $newlines;
+        } elseif ($newlines === true || $newlines === null ) {
+            $linesep = "\n";
+        } elseif ($newlines === false) {
+            $linesep = '';
+        } else {
+            trigger_error(sprintf(
+                    'Newlines can be a lot of things but not "%s"',
+                    $newlines), E_USER_ERROR);
+        }
+        
+        return $linesep;
+    }
+
+    public function indent($lines, $indentation = null, $newlines = null) {
+        // Setup Input
+        if (is_string($lines)) {
+            $lines = explode("\n", $lines);
+        }
+        if (!is_array($lines)) {
+            // Neither string nor array
+            // give this stuff back before accidents happen
+            return $lines;
+        }
+        
+        // Indent
         foreach ($lines as &$line) {
-            $line = str_repeat(' ', $indent) . $line;
+            $line = $this->_indent($indentation). $line;
         }
 
-        return implode("\n", $lines);
+        // Newline
+        return rtrim(join($this->_linesep($newlines), $lines));
     }
 }
 ?>
