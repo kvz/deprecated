@@ -9,7 +9,7 @@ require_once DIR_KVZLIB.'/php/classes/KvzHTML.php';
 // These are the default options, so might
 // as well have initialized KvzHTML with an
 // empty first argument
-$H = new KvzHTML(array(
+$E = new KvzHTML(array(
     'xhtml' => true,
     'track_toc' => false,
     'link_toc' => true,
