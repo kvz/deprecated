@@ -2,8 +2,9 @@
 if (!defined('DIR_KVZLIB')) {
     define('DIR_KVZLIB', dirname(dirname(dirname(dirname(dirname(__FILE__))))));
 }
-
+?>
 // Sample starts here
+<?php
 require_once DIR_KVZLIB.'/php/classes/KvzHTML.php';
 $E = new KvzHTML(array(
     'echo' => true,
