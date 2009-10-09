@@ -16,6 +16,7 @@ $H = new KvzHTML(array(
     'indentation' => 4,
     'newlines' => true,
     'echo' => false,
+    'buffer' => false,
 ));
 
 echo $H->html(
