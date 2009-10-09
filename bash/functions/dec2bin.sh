@@ -4,7 +4,7 @@
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   SVN: Release: $Id: dec2bin.sh 218 2009-01-12 14:59:57Z kevin $
+# * @version   SVN: Release: $Id: dec2bin.sh 89 2008-09-05 20:52:48Z kevin $
 # * @link      http://kevin.vanzonneveld.net/
 # * 
 # * @param integer INPUT the integer to convert
