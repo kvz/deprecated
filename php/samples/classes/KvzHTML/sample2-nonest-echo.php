@@ -1,5 +1,5 @@
 <?php
-if (!is_defined('DIR_KVZLIB')) {
+if (!defined('DIR_KVZLIB')) {
     define('DIR_KVZLIB', dirname(dirname(dirname(dirname(dirname(__FILE__))))));
 }
 
