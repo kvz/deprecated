@@ -41,6 +41,15 @@ Class KvzHtml {
         if (!isset($this->_options['echo'])) $this->_options['echo'] = false;
     }
 
+    public function setOption($key, $val) {
+        if (!array_key_exists($key, $this->_options)) {
+            trigger_error(sprintf('%s is not a valid options', $key), E_USER_ERROR);
+            return false;
+        }
+        
+        $this->_options[$key] = $val;
+    }
+
     public function __call($tag, $arguments) {
         if (!count($arguments)) {
             $body       = '';
@@ -154,6 +163,13 @@ Class KvzHtml {
             $body = implode("\n", $body);
         }
 
+        // Other defaults for XML
+        if ($this->_options['xml']) {
+            if (!isset($args['__trimbody']) && strpos($body, '<') === false) {
+                $args['__trimbody'] = true;
+            }
+        }
+
         $newLineAfterOpeningTag = true;
         $newLineAfterClosingTag = true;
 
@@ -162,6 +178,8 @@ Class KvzHtml {
             $bodyIndented           = trim($bodyIndented);
             $newLineAfterOpeningTag = false;
         }
+
+        $closeTag = !empty($args['__closetag']) ? $args['__closetag'] : '>';
 
         if (true === @$args['id']) {
             // auto id
@@ -176,7 +194,10 @@ Class KvzHtml {
             return $bodyIndented;
         }
 
-
+        if (!empty($args['__cdata']) && is_string($body)) {
+            $body = '<![CDATA[' . $body . ']]>';
+        }
+        
         $argumentsT = '';
         if (is_array($args) && count($args)) {
             foreach($args as $k=>$v) {
@@ -210,16 +231,16 @@ Class KvzHtml {
         
         if (null === $body) {
             // self closing tag
-            $result = '<'.$tag.$argumentsT.' '.($this->_options['xhtml'] ? '/' : '').'>'.($newLineAfterOpeningTag ? "\n" : "");
+            $result = '<'.$tag.$argumentsT.' '.($this->_options['xhtml'] ? '/' : '').$closeTag.($newLineAfterOpeningTag ? "\n" : "");
         } else if (false === $body) {
             // End tag
-            $result = '</'.$tag.'>'.($newLineAfterClosingTag ? "\n" : "");
+            $result = '</'.$tag.$closeTag.($newLineAfterClosingTag ? "\n" : "");
         } else if (true === $body) {
             // Opening tag
-            $result = '<'.$tag.$argumentsT.'>'.($newLineAfterOpeningTag ? "\n" : "");
+            $result = '<'.$tag.$argumentsT.$closeTag.($newLineAfterOpeningTag ? "\n" : "");
         } else {
             // Full tag
-            $result = '<'.$tag.$argumentsT.'>'. ($newLineAfterOpeningTag ? "\n" : "").$bodyIndented.'</'.$tag.'>'."\n";
+            $result = '<'.$tag.$argumentsT.$closeTag. ($newLineAfterOpeningTag ? "\n" : "").$bodyIndented.'</'.$tag.$closeTag."\n";
         }
 
         if ($this->_options['echo'] && @$args['__echo'] !== false) {
@@ -256,22 +277,55 @@ Class KvzHtml {
         ));
     }
 
+    /**
+     * Taken from CakePHP's Set Class
+     * array_merge & $this->_merge is just never what you need
+     *
+     * @param <type> $arr1
+     * @param <type> $arr2
+     * @return <type>
+     */
+    protected function _merge($arr1, $arr2 = null) {
+		$args = func_get_args();
+		$r = (array)current($args);
+		while (($arg = next($args)) !== false) {
+			foreach ((array)$arg as $key => $val)	 {
+				if (is_array($val) && isset($r[$key]) && is_array($r[$key])) {
+					$r[$key] = $this->_merge($r[$key], $val);
+				} elseif (is_int($key)) {
+					$r[] = $val;
+				} else {
+					$r[$key] = $val;
+				}
+			}
+		}
+		return $r;
+    }
+
     public function clear($body = '', $args = array()) {
-        return $this->_tag('div', $body, array_merge_recursive(array(
+        return $this->_tag('div', $body, $this->_merge(array(
             'style' => array(
                 'clear' => 'both',
             ),
         ), $args));
     }
     public function page($body = true, $args = array()) {
-        return $this->_tag('div', $body, array_merge_recursive(array(
+        return $this->_tag('div', $body, $this->_merge(array(
             'class' => array(
                 'page'
             ),
         ), $args));
     }
+    public function xml($body = true, $args = array()) {
+        return $this->_tag('?xml', $body, $this->_merge(array(
+            'version' => '1.0',
+            'encoding' => 'UTF-8',
+            '__closetag' => '?>',
+        ), $args));
+    }
+
     public function float($body = true, $args = array()) {
-        return $this->_tag('div', $body, array_merge_recursive(array(
+        return $this->_tag('div', $body, $this->_merge(array(
             'style' => array(
                 'float' => 'left',
             ),
@@ -279,7 +333,7 @@ Class KvzHtml {
     }
 
     public function img($link, $args = array()) {
-        $args = array_merge(array('src' => $link), $args);
+        $args = $this->_merge(array('src' => $link), $args);
         return $this->_tag('img', null, $args);
     }
 
@@ -318,7 +372,7 @@ Class KvzHtml {
 
         return $indent;
     }
-    
+
     protected function _linesep($newlines = null) {
         if ($newlines === null && isset($this->_options['newlines'])) {
             $newlines = $this->_options['newlines'];
