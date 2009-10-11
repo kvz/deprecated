@@ -59,7 +59,7 @@ qui officia deserunt mollit anim id est laborum';
         $this->_options[$key] = $val;
     }
 
-    protected function _tocTrack($tag) {
+    protected function _trackToc($tag) {
         if (preg_match('/h(\d)/i', $tag, $m)) {
             $tocId     = count($this->_toc);
             $tocLevel  = $m[1];
@@ -133,7 +133,7 @@ qui officia deserunt mollit anim id est laborum';
 
         // TOC?
         if ($this->_options['track_toc']) {
-            $bodySuffix = $this->_tocTrack($tag);
+            $bodySuffix = $this->_trackToc($tag);
         }
 
         if (is_string($body)) {
@@ -182,57 +182,7 @@ qui officia deserunt mollit anim id est laborum';
         return end($this->_ids);
     }
 
-    protected function _tag($tag, $body = true, $args = array()) {
-        if (is_array($body)) {
-            $body = implode("\n", $body);
-        }
-
-        $newLineAfterOpeningTag = isset($args['__newlineAfterOpeningTag']) 
-            ? $args['__newlineAfterOpeningTag']
-            : true;
-        $newLineAfterClosingTag = isset($args['__newlineAfterClosingTag']) 
-            ? $args['__newlineAfterClosingTag']
-            : true;
-        
-        $bodyIndented = $this->indent($body)."\n";
-
-        // Other defaults for XML
-        if ($this->_options['xml']) {
-            if (strtolower($tag) === '?xml')  {
-                $bodyIndented = ($body);
-            }
-            if (!isset($args['__trimbody']) && strpos($body, '<') === false) {
-                $bodyIndented           = trim($bodyIndented);
-                if ($body !== true) {
-                    $newLineAfterOpeningTag = false;
-                }
-            }
-        }
-
-        if (!empty($args['__trimbody'])) {
-            $bodyIndented           = trim($bodyIndented);
-            $newLineAfterOpeningTag = false;
-        }
-
-        $closeTag = !empty($args['__closetag']) ? $args['__closetag'] : '>';
-
-        if (true === @$args['id']) {
-            // auto id
-            $args['id'] = $this->_createId($tag);
-        }
-
-        if (!empty($args['__skip'])) {
-            return '';
-        }
-
-        if (!empty($args['__onlybody'])) {
-            return $bodyIndented;
-        }
-
-        if (!empty($args['__cdata']) && !is_bool($body)  && !is_null($body)) {
-            $bodyIndented = '<![CDATA[' . $bodyIndented . ']]>';
-        }
-        
+    protected function _args($args = array()) {
         $argumentsT = '';
         if (is_array($args) && count($args)) {
             foreach($args as $k=>$v) {
@@ -263,42 +213,123 @@ qui officia deserunt mollit anim id est laborum';
         } else {
             $argumentsT = '';
         }
-        
-        if (null === $body) {
-            // self closing tag
-            $result = '<'.$tag.$argumentsT . ' ' .
-                ($this->_options['xhtml']
-                    ? '/'
-                    : '') . $closeTag .
-                ($newLineAfterClosingTag
-                    || ($newLineAfterOpeningTag ? "\n" : "")
-                    ? "\n"
-                    : "");
-        } else if (false === $body) {
-            // End tag
-            $result = '</'.$tag.$closeTag.($newLineAfterClosingTag ? "\n" : "");
-        } else if (true === $body) {
-            // Opening tag
-            $result = '<'.$tag.$argumentsT.$closeTag.
-                ($newLineAfterOpeningTag
-                    ? "\n"
-                    : "");
-        } else {
-            // Full tag
-            $result = '<'.$tag.$argumentsT.$closeTag.
-                ($newLineAfterOpeningTag
-                    ? "\n"
-                    : "") .
-                $bodyIndented .
-                (strtolower($tag) === '?xml' 
-                    ? ''
-                    : '</' . $tag.$closeTag.($newLineAfterClosingTag 
-                        ? "\n"
-                        : ""));
+        return $argumentsT;
+    }
+
+    protected function _tag($tag, $body = true, $options = array()) {
+        if (!is_array($options)) $options = array();
+        if (is_array($body)) {
+            $body = implode("\n", $body);
         }
 
-        if ($this->_options['echo'] && @$args['__echo'] !== false) {
-            if ($this->_options['buffer']) {
+        // Set Class options if not present in Tag's args
+        foreach($this->_options as $key => $val) {
+            if (!array_key_exists('__' . $key, $options)) {
+                $options['__' . $key] = $val;
+            }
+        }
+
+        // Use a default for every Tag specific option that
+        // remains
+        if (!array_key_exists('__newlineAfterOpeningTag', $options))
+            $options['__newlineAfterOpeningTag'] = true;
+        if (!array_key_exists('__newlineAfterClosingTag', $options))
+            $options['__newlineAfterClosingTag'] = true;
+        if (!array_key_exists('__trimbody', $options)) $options['__trimbody'] = false;
+        if (!array_key_exists('__gt', $options)) $options['__gt'] = '>';
+        if (!array_key_exists('__lt', $options)) $options['__lt'] = '<';
+        if (!array_key_exists('__skip', $options)) $options['__skip'] = false;
+        if (!array_key_exists('__onlybody', $options)) $options['__onlybody'] = false;
+        if (!array_key_exists('__cdata', $options)) $options['__cdata'] = false;
+        if (!array_key_exists('__closetag', $options)) $options['__closetag'] = null;
+        if (!array_key_exists('__opentag', $options)) $options['__opentag'] = null;
+        if (!array_key_exists('__sclose', $options)) $options['__sclose'] = null;
+
+        // Indent body
+        $bodyIndented = $this->indent($body)."\n";
+        
+        // Other defaults for XML
+        if ($options['__xml']) {
+            if (strtolower($tag) === '?xml')  {
+                $bodyIndented = ($body);
+            }
+            if (!$options['__trimbody'] && strpos($body, '<') === false) {
+                $bodyIndented = trim($bodyIndented);
+                if ($body !== true) {
+                    $options['__newlineAfterOpeningTag'] = false;
+                }
+            }
+        }
+
+        if ($options['__trimbody']) {
+            $bodyIndented = trim($bodyIndented);
+            $options['__newlineAfterOpeningTag'] = false;
+        }
+
+        if (true === @$options['id']) {
+            // auto id
+            $options['id'] = $this->_createId($tag);
+        }
+
+        if ($options['__skip']) {
+            return '';
+        }
+
+        if ($options['__cdata'] && !is_bool($body)  && !is_null($body)) {
+            $bodyIndented = '<![CDATA[' . $bodyIndented . ']]>';
+        }
+        
+        if ($options['__onlybody']) {
+            return $bodyIndented;
+        }
+
+        $tagArguments = $this->_args($options);
+
+        if ($options['__opentag'] === null) {
+            $options['__opentag'] = $options['__lt'] .
+                '%s' .
+                $tagArguments .
+                $options['__gt'] .
+                $this->_linesep($options['__newlineAfterOpeningTag']);
+        }
+
+        if ($options['__closetag'] === null) {
+            $options['__closetag']  = $options['__lt'] .
+                '/%s' .
+                $options['__gt'] .
+                $this->_linesep($options['__newlineAfterClosingTag']);
+        }
+
+        if ($options['__sclose'] === null) {
+            $options['__sclose'] = $options['__lt'] .
+                '%s' .
+                $tagArguments . ' ' .
+                ($options['__xhtml'] ? '/' : '') . $options['__gt'] .
+                $this->_linesep($options['__newlineAfterClosingTag'] || $options['__newlineAfterOpeningTag']);
+        }
+
+        $options['__opentag']  = sprintf($options['__opentag'], $tag);
+        $options['__closetag'] = sprintf($options['__closetag'], $tag);
+        $options['__sclose']   = sprintf($options['__sclose'], $tag);
+        
+        if (true === $body) {
+            // Opening tag
+            $result = $options['__opentag'];
+        } else if (false === $body) {
+            // Close tag
+            $result = $options['__closetag'];
+        } else if (null === $body) {
+            // Self-closing tag
+            $result = $options['__sclose'];
+        } else {
+            // Full tag
+            $result = $options['__opentag'] . 
+                $bodyIndented .
+                $options['__closetag'];
+        }
+
+        if ($options['__echo']) {
+            if ($options['__buffer']) {
                 $this->_buffer[] = $result;
             } else {
                 echo $result;
@@ -375,7 +406,8 @@ qui officia deserunt mollit anim id est laborum';
         return $this->_tag('?xml', $body, $this->_merge(array(
             'version' => '1.0',
             'encoding' => 'UTF-8',
-            '__closetag' => '?>',
+            '__gt' => '?>',
+            '__closetag' => '',
         ), $args));
     }
 
