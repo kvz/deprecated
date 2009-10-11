@@ -36,6 +36,7 @@ Class KvzHtml {
         if (!isset($this->_options['indentation'])) $this->_options['indentation'] = 4;
         if (!isset($this->_options['newlines'])) $this->_options['newlines'] = true;
         if (!isset($this->_options['buffer'])) $this->_options['buffer'] = false;
+        if (!isset($this->_options['xml'])) $this->_options['xml'] = false;
 
         // Not recommended cause you cannot nest tags with echo:
         if (!isset($this->_options['echo'])) $this->_options['echo'] = false;
@@ -357,7 +358,7 @@ Class KvzHtml {
         }
 
         #$toc[] = str_repeat('</ul>'. $this->_linesep(), $this->_tocLevelPrev);
-        return join($this->_linesep, $toc);
+        return join('', $toc);
     }
 
     public function getBuffer($clear = true) {
