@@ -168,7 +168,6 @@ qui officia deserunt mollit anim id est laborum';
 
         return $id;
     }
-
     public function getLastId() {
         return end($this->_ids);
     }
@@ -323,7 +322,10 @@ qui officia deserunt mollit anim id est laborum';
                 $tagOptions['__closetag'];
         }
 
-        return $this->out($result, $tagOptions);
+        return $this->out($result, array(
+            'echo' => $tagOptions['__echo'],
+            'buffer' => $tagOptions['__buffer'],
+        ));
     }
 
     /**
@@ -352,28 +354,45 @@ qui officia deserunt mollit anim id est laborum';
     }
 
 
-    public function a($link, $title = '', $args = array()) {
+    /*
+     * Overrides - Non-standard tag implementations
+     */
+    public function img($link, $args = array()) {
+        $args = $this->_merge(array('src' => $link), $args);
+        return $this->_tag('img', null, $args);
+    }
+    public function a($url, $title = '', $args = array()) {
         return $this->_tag('a', $title, $this->_merge(array(
-            'href'=> $link,
+            'href'=> $url,
         ), $args));
     }
-
-    public function css($link, $args = array()) {
+    public function css($url, $args = array()) {
         return $this->_tag('link', null, $this->_merge(array(
             'type' => 'text/css',
             'rel' => 'stylesheet',
-            'href'=> $link,
+            'href'=> $url,
         ), $args));
     }
-
-    public function js($link, $args = array()) {
+    public function js($url, $args = array()) {
         return $this->_tag('script', '', $this->_merge(array(
             'type' => 'text/javascript',
-            'src'=> $link,
-            '__trimbody' => true,
+            'src'=> $url,
+        ), $args));
+    }
+    public function xml($body = true, $args = array()) {
+        return $this->_tag('?xml', $body, $this->_merge(array(
+            'version' => '1.0',
+            'encoding' => 'UTF-8',
+            '__gt' => '?>',
+            '__closetag' => '',
+            '__indentation' => false,
         ), $args));
     }
 
+
+    /*
+     * Shortcuts
+     */
     public function clear($body = '', $args = array()) {
         return $this->_tag('div', $body, $this->_merge(array(
             'style' => array(
@@ -388,16 +407,6 @@ qui officia deserunt mollit anim id est laborum';
             ),
         ), $args));
     }
-    public function xml($body = true, $args = array()) {
-        return $this->_tag('?xml', $body, $this->_merge(array(
-            'version' => '1.0',
-            'encoding' => 'UTF-8',
-            '__gt' => '?>',
-            '__closetag' => '',
-            '__indentation' => false,
-        ), $args));
-    }
-
     public function float($body = true, $args = array()) {
         return $this->_tag('div', $body, $this->_merge(array(
             'style' => array(
@@ -406,23 +415,6 @@ qui officia deserunt mollit anim id est laborum';
         ), $args));
     }
 
-    public function img($link, $args = array()) {
-        $args = $this->_merge(array('src' => $link), $args);
-        return $this->_tag('img', null, $args);
-    }
-
-    public function out($html, $options = array()) {
-        if (@$options['__echo'] || @$options['echo']) {
-            if (@$options['__buffer'] || @$options['buffer']) {
-                $this->_buffer[] = $html;
-            } else {
-                echo $html;
-            }
-            return true;
-        } else {
-            return $html;
-        }
-    }
 
     public function getToc() {
         $toc = $this->_toc;
@@ -437,6 +429,19 @@ qui officia deserunt mollit anim id est laborum';
         return join('', $toc);
     }
 
+    public function out($html, $options = array()) {
+        if (@$options['echo']) {
+            if (@$options['buffer']) {
+                $this->_buffer[] = $html;
+            } else {
+                echo $html;
+            }
+            return true;
+        } else {
+            return $html;
+        }
+    }
+    
     public function getBuffer($clear = true) {
         $r = join('', $this->_buffer);
 
@@ -449,6 +454,7 @@ qui officia deserunt mollit anim id est laborum';
         }
         return $r;
     }
+
 
     protected function _indent($indentation = null) {
         if ($indentation === null && isset($this->_options['indentation'])) {
@@ -471,7 +477,6 @@ qui officia deserunt mollit anim id est laborum';
 
         return $indent;
     }
-
     protected function _linesep($newlines = null) {
         if ($newlines === null && isset($this->_options['newlines'])) {
             $newlines = $this->_options['newlines'];
@@ -494,7 +499,6 @@ qui officia deserunt mollit anim id est laborum';
         
         return $linesep;
     }
-
     public function indent($lines, $indentation = null, $newlines = null) {
         // Setup Input
         if (is_string($lines)) {
@@ -514,6 +518,7 @@ qui officia deserunt mollit anim id est laborum';
         // Newline
         return rtrim(join($this->_linesep($newlines), $lines));
     }
+
 
     public function tidy($html, $options = array()) {
         // Prereqs
@@ -539,7 +544,7 @@ qui officia deserunt mollit anim id est laborum';
         $tidy->cleanRepair();
 
         // Output
-        $this->out((string)$tidy);
+        return (string)$tidy;
     }
 }
 ?>
