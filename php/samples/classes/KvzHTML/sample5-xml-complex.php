@@ -13,8 +13,9 @@ $H = new KvzHTML(array(
     'xml' => true,
 ));
 
-$lorem  = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum';
-
+$cdata = array(
+    '__cdata' => true,
+);
 
 $H->setOption('echo', true);
 $H->xml(true, array(
@@ -23,10 +24,19 @@ $H->xml(true, array(
 ));
 $H->setOption('echo', false);
 echo $H->auth(
-    $H->username('kvz') .
-    $H->api_key(sha1('xxxxxxxxxxxxxxxx')) 
+    $H->username('kvz', $cdata) .
+    $H->api_key(sha1('xxxxxxxxxxxxxxxx'), $cdata)
 );
-echo $H->request('request', array(
-    '__cdata' => true,
-));
+
+echo $H->users_list(true);
+    echo $H->users(true, array('type' => 'array'));
+        echo $H->user(
+            $H->id(442, $cdata) .
+            $H->name('Jason Shellen', $cdata) .
+            $H->screen_name('shellen', $cdata) .
+            $H->location('iPhone: 37.889321,-122.173345', $cdata) .
+            $H->description('CEO and founder of Thing Labs, makers of Brizzly! Former Blogger/Google dude, father of two little dudes.', $cdata)
+        );
+    echo $H->users(false);
+echo $H->users_list(false);
 ?>

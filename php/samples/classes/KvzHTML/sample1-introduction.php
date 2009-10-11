@@ -1,4 +1,5 @@
 <?php
+error_reporting(E_ALL);
 if (!defined('DIR_KVZLIB')) {
     define('DIR_KVZLIB', dirname(dirname(dirname(dirname(dirname(__FILE__))))));
 }
