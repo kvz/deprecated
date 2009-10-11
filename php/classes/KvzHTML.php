@@ -54,8 +54,8 @@ Class KvzHtml {
         if (!array_key_exists(0, $arguments)) {
             return $this->_tag($tag);
         }
-        $body       = $arguments[0];
-        $args       = $arguments[1];
+        $body       = array_shift($arguments);
+        $args       = array_shift($arguments);
         $bodySuffix = '';
 
         // TOC?
@@ -170,17 +170,20 @@ Class KvzHtml {
             $body = implode("\n", $body);
         }
 
+        $bodyIndented = $this->indent($body)."\n";
+        $newLineAfterOpeningTag = isset($args['__newlineAfterOpeningTag']) ? $args['__newlineAfterOpeningTag'] : true;
+        $newLineAfterClosingTag = isset($args['__newlineAfterClosingTag']) ? $args['__newlineAfterClosingTag'] : true;
+        
         // Other defaults for XML
         if ($this->_options['xml']) {
             if (!isset($args['__trimbody']) && strpos($body, '<') === false) {
-                $args['__trimbody'] = true;
+                $bodyIndented           = trim($bodyIndented);
+                if ($body !== true) {
+                    $newLineAfterOpeningTag = false;
+                }
             }
         }
 
-        $newLineAfterOpeningTag = isset($args['__newlineAfterOpeningTag']) ? $args['__newlineAfterOpeningTag'] : true;
-        $newLineAfterClosingTag = isset($args['__newlineAfterClosingTag']) ? $args['__newlineAfterClosingTag'] : true;
-
-        $bodyIndented = $this->indent($body)."\n";
         if (!empty($args['__trimbody'])) {
             $bodyIndented           = trim($bodyIndented);
             $newLineAfterOpeningTag = false;
@@ -201,8 +204,8 @@ Class KvzHtml {
             return $bodyIndented;
         }
 
-        if (!empty($args['__cdata']) && is_string($body)) {
-            $body = '<![CDATA[' . $body . ']]>';
+        if (!empty($args['__cdata']) && !is_bool($body)  && !is_null($body)) {
+            $bodyIndented = '<![CDATA[' . $bodyIndented . ']]>';
         }
         
         $argumentsT = '';
