@@ -13,7 +13,7 @@ $H = new KvzHTML(array(
     'xml' => true,
 ));
 
-$H->xml(
+echo $H->xml(
     $H->auth(
         $H->username('kvz') .
         $H->api_key(sha1('xxxxxxxxxxxxxxxx'))
