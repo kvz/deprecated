@@ -10,28 +10,35 @@ require_once DIR_KVZLIB.'/php/classes/KvzHTML.php';
 
 $E = new KvzHTML(array(
     'track_toc' => true,
-    'link_toc' => true,
+    'link_toc' => false,
     'echo' => true,
     'buffer' => true,
 ));
 
-$lorem  = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum';
-
 $E->h1('New application');
-$E->p($lorem);
+    $E->p($E->loremIpsum);
 $E->h2('Users');
-$E->blockquote($lorem);
+    $E->blockquote($E->loremIpsum);
 $E->h3('Permissions');
-$E->p($lorem);
+    $E->p($E->loremIpsum);
 $E->h4('General Concept');
-$E->p($lorem);
+    $E->p($E->loremIpsum);
 $E->h4('Exceptions');
-$E->p($lorem);
+    $E->p($E->loremIpsum);
 $E->h3('Usability');
-$E->p($lorem);
+    $E->ul(); // An empty body will just open the tag: <ul>
+        $E->li('Point 1');
+        $E->li('Point 2');
+        $E->li();
+            $E->span('Point 3');
+            $E->br(null);  // NULL will make a self closing tag: <br />
+        $E->li(false);
+    $E->ul(false);  // False will close the tag: </ul>
 
-$toc = $E->getToc();
+// Show TOC
 $E->h1('Table of Contents');
-echo $toc;
+echo $E->getToc();
+
+// Show document
 echo $E->getBuffer();
 ?>
