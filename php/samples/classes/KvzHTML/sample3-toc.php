@@ -8,11 +8,18 @@ if (!defined('DIR_KVZLIB')) {
 <?php
 require_once DIR_KVZLIB.'/php/classes/KvzHTML.php';
 
+// Some options:
+// - create a ToC
+// - don't automatically create links for ToC navigation
+// - echo output, don't return
+// - save all echoed output in a buffer
+// - Don't automatically Tidy the output (btw, only works with buffer on)
 $E = new KvzHTML(array(
     'track_toc' => true,
     'link_toc' => false,
     'echo' => true,
     'buffer' => true,
+    'tidy' => false,
 ));
 
 $E->h1('New application');
