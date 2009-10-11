@@ -44,6 +44,7 @@ qui officia deserunt mollit anim id est laborum';
         if (!isset($this->_options['newlines'])) $this->_options['newlines'] = true;
         if (!isset($this->_options['buffer'])) $this->_options['buffer'] = false;
         if (!isset($this->_options['xml'])) $this->_options['xml'] = false;
+        if (!isset($this->_options['tidy'])) $this->_options['tidy'] = false;
 
         // Not recommended cause you cannot nest tags with echo:
         if (!isset($this->_options['echo'])) $this->_options['echo'] = false;
@@ -322,16 +323,7 @@ qui officia deserunt mollit anim id est laborum';
                 $tagOptions['__closetag'];
         }
 
-        if ($tagOptions['__echo']) {
-            if ($tagOptions['__buffer']) {
-                $this->_buffer[] = $result;
-            } else {
-                echo $result;
-            }
-            return true;
-        } else {
-            return $result;
-        }
+        return $this->out($result, $tagOptions);
     }
 
     /**
@@ -360,26 +352,26 @@ qui officia deserunt mollit anim id est laborum';
     }
 
 
-    public function a($link, $title = '') {
-        return $this->_tag('link', $title, array(
+    public function a($link, $title = '', $args = array()) {
+        return $this->_tag('a', $title, $this->_merge(array(
             'href'=> $link,
-        ));
+        ), $args));
     }
 
-    public function css($link) {
-        return $this->_tag('link', null, array(
+    public function css($link, $args = array()) {
+        return $this->_tag('link', null, $this->_merge(array(
             'type' => 'text/css',
             'rel' => 'stylesheet',
             'href'=> $link,
-        ));
+        ), $args));
     }
 
-    public function js($link) {
-        return $this->_tag('script', '', array(
+    public function js($link, $args = array()) {
+        return $this->_tag('script', '', $this->_merge(array(
             'type' => 'text/javascript',
             'src'=> $link,
             '__trimbody' => true,
-        ));
+        ), $args));
     }
 
     public function clear($body = '', $args = array()) {
@@ -419,6 +411,19 @@ qui officia deserunt mollit anim id est laborum';
         return $this->_tag('img', null, $args);
     }
 
+    public function out($html, $options = array()) {
+        if (@$options['__echo'] || @$options['echo']) {
+            if (@$options['__buffer'] || @$options['buffer']) {
+                $this->_buffer[] = $html;
+            } else {
+                echo $html;
+            }
+            return true;
+        } else {
+            return $html;
+        }
+    }
+
     public function getToc() {
         $toc = $this->_toc;
 
@@ -434,6 +439,11 @@ qui officia deserunt mollit anim id est laborum';
 
     public function getBuffer($clear = true) {
         $r = join('', $this->_buffer);
+
+        if ($this->_options['tidy']) {
+            $r = $this->tidy($r);
+        }
+
         if ($clear) {
             $this->reset();
         }
@@ -503,6 +513,33 @@ qui officia deserunt mollit anim id est laborum';
 
         // Newline
         return rtrim(join($this->_linesep($newlines), $lines));
+    }
+
+    public function tidy($html, $options = array()) {
+        // Prereqs
+        if (!function_exists('tidy_parse_string')) {
+            trigger_error('You need to: aptitude install php5-tidy', E_USER_ERROR);
+            return false;
+        }
+
+        // Specify configuration
+        $default_options = array(
+            'clean' => true,
+            'indent' => true,
+            'indent-spaces' => 4,
+            'output-html' => true,
+            'wrap' => 200,
+        );
+
+        $options = array_merge($default_options, $options);
+
+        // Tidy
+        $tidy = new tidy;
+        $tidy->parseString($html, $options, 'utf8');
+        $tidy->cleanRepair();
+
+        // Output
+        $this->out((string)$tidy);
     }
 }
 ?>
