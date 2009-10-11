@@ -26,7 +26,13 @@ Class KvzHtml {
     
     protected $_options = array();
 
-    public $loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum';
+    public $loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipisicing 
+elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
+ut aliquip ex ea commodo consequat. Duis aute irure dolor in
+reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
+qui officia deserunt mollit anim id est laborum';
     
     public function  __construct($options = array()) {
         $this->_options = $options;
@@ -45,11 +51,76 @@ Class KvzHtml {
 
     public function setOption($key, $val) {
         if (!array_key_exists($key, $this->_options)) {
-            trigger_error(sprintf('%s is not a valid options', $key), E_USER_ERROR);
+            trigger_error(sprintf('%s is not a valid options',
+                $key), E_USER_ERROR);
             return false;
         }
         
         $this->_options[$key] = $val;
+    }
+
+    protected function _tocTrack($tag) {
+        if (preg_match('/h(\d)/i', $tag, $m)) {
+            $tocId     = count($this->_toc);
+            $tocLevel  = $m[1];
+            $tocLine   = '';
+            $suffix    = '';
+            $prefix    = '';
+
+            if ($this->_tocIdPrev === false) {
+                // root element
+                $prefix .= $this->_tag('a', '', array(
+                    'name' => 'toc_root',
+                    '__trimbody' => true,
+                    '__echo' => false,
+                ));
+            }
+
+            if ($this->_tocIdPrev === false
+                || $tocLevel > $this->_tocLevelPrev) {
+                // Indent
+                $prefix .= str_repeat(
+                    str_repeat(' ', $tocLevel-1) .
+                    '<ul>'.$this->_linesep(), ($tocLevel - $this->_tocLevelPrev)
+                );
+            } elseif ($tocLevel < $this->_tocLevelPrev) {
+                // Outdent
+                for($i = $this->_tocLevelPrev; $i >= $tocLevel; $i--) {
+                    $prefix .= str_repeat(' ', $i).'</ul>'.$this->_linesep();
+                }
+            }
+
+            $tocLine .= $prefix;
+            $tocLine .= str_repeat(' ', $tocLevel). '<li>';
+            $tocLine .= trim($body);
+            if ($this->_options['link_toc']) {
+                // Add Jump link to anchor
+                $tocLine .= ' '.$this->_tag('a', '[jump]', array(
+                    'href' => '#toc_'.$tocId,
+                    '__trimbody' => true,
+                    '__echo' => false,
+                    '__newlineAfterClosingTag' => false,
+                ));
+                $bodySuffix .= $this->_tag('a', '', array(
+                    'name' => 'toc_'.$tocId,
+                    '__trimbody' => true,
+                    '__echo' => false,
+                    '__newlineAfterClosingTag' => false,
+                ));
+                $bodySuffix .= $this->_tag('a', '[toc]', array(
+                    'href' => '#toc_'.'root',
+                    '__trimbody' => true,
+                    '__echo' => false,
+                    '__newlineAfterClosingTag' => false,
+                ));
+            }
+            $tocLine .= '</li>'.$this->_linesep();
+            $tocLine .= $suffix;
+
+            $this->_toc[$tocId]  = $tocLine;
+            $this->_tocLevelPrev = $tocLevel;
+            $this->_tocIdPrev    = $tocId;
+        }
     }
 
     public function __call($tag, $arguments) {
@@ -62,63 +133,7 @@ Class KvzHtml {
 
         // TOC?
         if ($this->_options['track_toc']) {
-            if (preg_match('/h(\d)/i', $tag, $m)) {
-                $tocId     = count($this->_toc);
-                $tocLevel  = $m[1];
-                $tocLine   = '';
-                $suffix    = '';
-                $prefix    = '';
-
-                if ($this->_tocIdPrev === false) {
-                    // root element
-                    $prefix .= $this->_tag('a', '', array(
-                        'name' => 'toc_root',
-                        '__trimbody' => true,
-                        '__echo' => false,
-                    ));
-                }
-
-                if ($this->_tocIdPrev === false || $tocLevel > $this->_tocLevelPrev) {
-                    // Indent
-                    $prefix .= str_repeat(str_repeat(' ', $tocLevel-1).'<ul>'.$this->_linesep(), ($tocLevel - $this->_tocLevelPrev));
-                } elseif ($tocLevel < $this->_tocLevelPrev) {
-                    // Outdent
-                    for($i = $this->_tocLevelPrev; $i >= $tocLevel; $i--) {
-                        $prefix .= str_repeat(' ', $i).'</ul>'.$this->_linesep();
-                    }
-                }
-                
-                $tocLine .= $prefix;
-                $tocLine .= str_repeat(' ', $tocLevel). '<li>';
-                $tocLine .= trim($body);
-                if ($this->_options['link_toc']) {
-                    // Add Jump link to anchor
-                    $tocLine .= ' '.$this->_tag('a', '[jump]', array(
-                        'href' => '#toc_'.$tocId,
-                        '__trimbody' => true,
-                        '__echo' => false,
-                        '__newlineAfterClosingTag' => false,
-                    ));
-                    $bodySuffix .= $this->_tag('a', '', array(
-                        'name' => 'toc_'.$tocId,
-                        '__trimbody' => true,
-                        '__echo' => false,
-                        '__newlineAfterClosingTag' => false,
-                    ));
-                    $bodySuffix .= $this->_tag('a', '[toc]', array(
-                        'href' => '#toc_'.'root',
-                        '__trimbody' => true,
-                        '__echo' => false,
-                        '__newlineAfterClosingTag' => false,
-                    ));
-                } 
-                $tocLine .= '</li>'.$this->_linesep();
-                $tocLine .= $suffix;
-
-                $this->_toc[$tocId]  = $tocLine;
-                $this->_tocLevelPrev = $tocLevel;
-                $this->_tocIdPrev    = $tocId;
-            }
+            $bodySuffix = $this->_tocTrack($tag);
         }
 
         if (is_string($body)) {
@@ -172,8 +187,12 @@ Class KvzHtml {
             $body = implode("\n", $body);
         }
 
-        $newLineAfterOpeningTag = isset($args['__newlineAfterOpeningTag']) ? $args['__newlineAfterOpeningTag'] : true;
-        $newLineAfterClosingTag = isset($args['__newlineAfterClosingTag']) ? $args['__newlineAfterClosingTag'] : true;
+        $newLineAfterOpeningTag = isset($args['__newlineAfterOpeningTag']) 
+            ? $args['__newlineAfterOpeningTag']
+            : true;
+        $newLineAfterClosingTag = isset($args['__newlineAfterClosingTag']) 
+            ? $args['__newlineAfterClosingTag']
+            : true;
         
         $bodyIndented = $this->indent($body)."\n";
 
@@ -247,18 +266,35 @@ Class KvzHtml {
         
         if (null === $body) {
             // self closing tag
-            $result = '<'.$tag.$argumentsT.' '.($this->_options['xhtml'] ? '/' : '').$closeTag.($newLineAfterClosingTag || ($newLineAfterOpeningTag ? "\n" : "") ? "\n" : "");
+            $result = '<'.$tag.$argumentsT . ' ' .
+                ($this->_options['xhtml']
+                    ? '/'
+                    : '') . $closeTag .
+                ($newLineAfterClosingTag
+                    || ($newLineAfterOpeningTag ? "\n" : "")
+                    ? "\n"
+                    : "");
         } else if (false === $body) {
             // End tag
             $result = '</'.$tag.$closeTag.($newLineAfterClosingTag ? "\n" : "");
         } else if (true === $body) {
             // Opening tag
-            $result = '<'.$tag.$argumentsT.$closeTag.($newLineAfterOpeningTag ? "\n" : "");
+            $result = '<'.$tag.$argumentsT.$closeTag.
+                ($newLineAfterOpeningTag
+                    ? "\n"
+                    : "");
         } else {
             // Full tag
-            $result = '<'.$tag.$argumentsT.$closeTag. ($newLineAfterOpeningTag ? "\n" : "") .
+            $result = '<'.$tag.$argumentsT.$closeTag.
+                ($newLineAfterOpeningTag
+                    ? "\n"
+                    : "") .
                 $bodyIndented .
-                (strtolower($tag) === '?xml' ? '' : '</' . $tag.$closeTag.($newLineAfterClosingTag ? "\n" : ""));
+                (strtolower($tag) === '?xml' 
+                    ? ''
+                    : '</' . $tag.$closeTag.($newLineAfterClosingTag 
+                        ? "\n"
+                        : ""));
         }
 
         if ($this->_options['echo'] && @$args['__echo'] !== false) {
@@ -271,28 +307,6 @@ Class KvzHtml {
         } else {
             return $result;
         }
-    }
-
-    public function a($link, $title = '') {
-        return $this->_tag('link', $title, array(
-            'href'=> $link,
-        ));
-    }
-
-    public function css($link) {
-        return $this->_tag('link', null, array(
-            'type' => 'text/css',
-            'rel' => 'stylesheet',
-            'href'=> $link,
-        ));
-    }
-
-    public function js($link) {
-        return $this->_tag('script', '', array(
-            'type' => 'text/javascript',
-            'src'=> $link,
-            '__trimbody' => true,
-        ));
     }
 
     /**
@@ -318,6 +332,29 @@ Class KvzHtml {
 			}
 		}
 		return $r;
+    }
+
+
+    public function a($link, $title = '') {
+        return $this->_tag('link', $title, array(
+            'href'=> $link,
+        ));
+    }
+
+    public function css($link) {
+        return $this->_tag('link', null, array(
+            'type' => 'text/css',
+            'rel' => 'stylesheet',
+            'href'=> $link,
+        ));
+    }
+
+    public function js($link) {
+        return $this->_tag('script', '', array(
+            'type' => 'text/javascript',
+            'src'=> $link,
+            '__trimbody' => true,
+        ));
     }
 
     public function clear($body = '', $args = array()) {
