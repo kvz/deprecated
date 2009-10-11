@@ -13,7 +13,7 @@ require_once DIR_KVZLIB.'/php/classes/KvzHTML.php';
 //     One that will echo directly: $E
 // and One that supports nesting: $H
 $H = new KvzHTML();
-$E = new KvzHTML(array('echo' => true));
+$E = new KvzHTML(array('echo' => true, 'tidy' => true));
 
 // To save you even more typing. The following tags
 // have an inconsistent interface:
