@@ -35,7 +35,7 @@ Class KvzHtml {
         if (!isset($this->_options['link_toc'])) $this->_options['link_toc'] = true;
         if (!isset($this->_options['indentation'])) $this->_options['indentation'] = 4;
         if (!isset($this->_options['newlines'])) $this->_options['newlines'] = true;
-        if (!isset($this->_options['buffer'])) $this->_options['newlines'] = false;
+        if (!isset($this->_options['buffer'])) $this->_options['buffer'] = false;
 
         // Not recommended cause you cannot nest tags with echo:
         if (!isset($this->_options['echo'])) $this->_options['echo'] = false;
@@ -82,12 +82,12 @@ Class KvzHtml {
 
                 if ($this->_tocIdPrev === false || $tocLevel > $this->_tocLevelPrev) {
                     // Indent
-                    $ulIndent = str_repeat('<ul>', ($tocLevel - $this->_tocLevelPrev));
-                    $prefix .= $ulIndent.$this->_linesep();
+                    $prefix .= str_repeat(str_repeat(' ', $tocLevel-1).'<ul>'.$this->_linesep(), ($tocLevel - $this->_tocLevelPrev));
                 } elseif ($tocLevel < $this->_tocLevelPrev) {
                     // Outdent
-                    $ulIndent = str_repeat('</ul>', ($this->_tocLevelPrev - $tocLevel));
-                    $prefix .= $this->_linesep().$ulIndent;
+                    for($i = $this->_tocLevelPrev; $i >= $tocLevel; $i--) {
+                        $prefix .= str_repeat(' ', $i).'</ul>'.$this->_linesep();
+                    }
                 }
                 
                 $tocLine .= $prefix;
@@ -99,19 +99,22 @@ Class KvzHtml {
                         'href' => '#toc_'.$tocId,
                         '__trimbody' => true,
                         '__echo' => false,
+                        '__newlineAfterClosingTag' => false,
                     ));
                     $bodySuffix .= $this->_tag('a', '', array(
                         'name' => 'toc_'.$tocId,
                         '__trimbody' => true,
                         '__echo' => false,
+                        '__newlineAfterClosingTag' => false,
                     ));
                     $bodySuffix .= $this->_tag('a', '[toc]', array(
                         'href' => '#toc_'.'root',
                         '__trimbody' => true,
                         '__echo' => false,
+                        '__newlineAfterClosingTag' => false,
                     ));
                 } 
-                $tocLine .= '</li>';
+                $tocLine .= '</li>'.$this->_linesep();
                 $tocLine .= $suffix;
 
                 $this->_toc[$tocId]  = $tocLine;
@@ -123,13 +126,17 @@ Class KvzHtml {
         return $this->_tag($tag, ($passBody . $bodySuffix), $args);
     }
 
-    public function prd() {
+    public function pr() {
         $args = func_get_args();
         echo '<pre>'."\n";
         foreach($args as $arg) {
             print_r($arg);
         }
         echo '</pre>'."\n";
+    }
+    public function prd() {
+        $args = func_get_args();
+        call_user_func_array(array($this, 'pr'), $args);
         die();
     }
 
@@ -170,8 +177,8 @@ Class KvzHtml {
             }
         }
 
-        $newLineAfterOpeningTag = true;
-        $newLineAfterClosingTag = true;
+        $newLineAfterOpeningTag = isset($args['__newlineAfterOpeningTag']) ? $args['__newlineAfterOpeningTag'] : true;
+        $newLineAfterClosingTag = isset($args['__newlineAfterClosingTag']) ? $args['__newlineAfterClosingTag'] : true;
 
         $bodyIndented = $this->indent($body)."\n";
         if (!empty($args['__trimbody'])) {
@@ -231,7 +238,7 @@ Class KvzHtml {
         
         if (null === $body) {
             // self closing tag
-            $result = '<'.$tag.$argumentsT.' '.($this->_options['xhtml'] ? '/' : '').$closeTag.($newLineAfterOpeningTag ? "\n" : "");
+            $result = '<'.$tag.$argumentsT.' '.($this->_options['xhtml'] ? '/' : '').$closeTag.($newLineAfterClosingTag || ($newLineAfterOpeningTag ? "\n" : "") ? "\n" : "");
         } else if (false === $body) {
             // End tag
             $result = '</'.$tag.$closeTag.($newLineAfterClosingTag ? "\n" : "");
@@ -240,7 +247,7 @@ Class KvzHtml {
             $result = '<'.$tag.$argumentsT.$closeTag.($newLineAfterOpeningTag ? "\n" : "");
         } else {
             // Full tag
-            $result = '<'.$tag.$argumentsT.$closeTag. ($newLineAfterOpeningTag ? "\n" : "").$bodyIndented.'</'.$tag.$closeTag."\n";
+            $result = '<'.$tag.$argumentsT.$closeTag. ($newLineAfterOpeningTag ? "\n" : "").$bodyIndented.'</'.$tag.$closeTag.($newLineAfterClosingTag ? "\n" : "");
         }
 
         if ($this->_options['echo'] && @$args['__echo'] !== false) {
@@ -339,7 +346,14 @@ Class KvzHtml {
 
     public function getToc() {
         $toc = $this->_toc;
-        $toc[] = str_repeat('</ul>', $this->_tocLevelPrev);
+
+        $t = &$toc[];
+
+        for($i = $this->_tocLevelPrev; $i >= 0; $i--) {
+            $t .= str_repeat(' ', $i).'</ul>'.$this->_linesep();
+        }
+
+        #$toc[] = str_repeat('</ul>'. $this->_linesep(), $this->_tocLevelPrev);
         return join($this->_linesep, $toc);
     }
 
