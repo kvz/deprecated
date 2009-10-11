@@ -16,31 +16,42 @@ $E = new KvzHTML(array(
 ));
 
 $E->h1('New application');
-    $E->p($E->loremIpsum);
-$E->h2('Users');
-    $E->blockquote($E->loremIpsum);
-$E->h3('Permissions');
-    $E->p($E->loremIpsum);
-$E->h4('General Concept');
-    $E->p($E->loremIpsum);
-$E->h4('Exceptions');
-    $E->p($E->loremIpsum);
-$E->h3('Usability');
-    $E->ul(); // An empty body will just open the tag: <ul>
-        $E->li('Point 1');
-        $E->li('Point 2');
-        $E->li();
-            $E->span('Point 3');
-            $E->br(null);  // NULL will make a self closing tag: <br />
-        $E->li(false);
-    $E->ul(false);  // False will close the tag: </ul>
+$E->p($E->loremIpsum);
 
-// Turn off document buffering
-$E->setOption('buffer', false);
+$E->h2('Users');
+$E->blockquote($E->loremIpsum);
+
+$E->h3('Permissions');
+$E->p($E->loremIpsum);
+
+$E->h4('General Concept');
+$E->p($E->loremIpsum);
+
+$E->h4('Exceptions');
+$E->p($E->loremIpsum);
+
+$E->h3('Usability');
+$E->ul(); // An empty body will just open the tag: <ul>
+    $E->li('Point 1');
+    $E->li('Point 2');
+    $E->li();
+        $E->strong('Point 3');
+        $E->br(null);  // NULL will make a self closing tag: <br />
+        $E->span('Has some implications.');
+    $E->li(false);
+$E->ul(false);  // False will close the tag: </ul>
+
+// Save both chucks so further KvzHTML calls
+// wont impact them anymore
 $toc      = $E->getToc();
 $document = $E->getBuffer();
 
-$E->h1('Table of Contents');
+// Print a heading that says TOC
+$E->h1('Table of Contents', array('__buffer' => false));
+
+// Print toc
 echo $toc;
+
+// Print original document
 echo $document;
 ?>
