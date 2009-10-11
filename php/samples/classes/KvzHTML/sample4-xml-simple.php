@@ -9,20 +9,19 @@ if (!defined('DIR_KVZLIB')) {
 <?php
 require_once DIR_KVZLIB.'/php/classes/KvzHTML.php';
 
-$E = new KvzHTML(array(
+$H = new KvzHTML(array(
     'xml' => true,
-    'echo' => true,
 ));
 
-$E->xml();
-
-$E->auth();
-    $E->username('kvz');
-    $E->api_key(sha1('xxxxxxxxxxxxxxxx'));
-$E->auth(false);
-
-$E->server_reboot();
-    $E->dry_run(null);
-    $E->server_id(888);
-$E->server_reboot(false);
+$H->xml(
+    $H->auth(
+        $H->username('kvz') .
+        $H->api_key(sha1('xxxxxxxxxxxxxxxx'))
+    ) .
+    $H->server_reboot(
+        $H->dry_run(null) .
+        $H->hostname('www1.example.com') .
+        $H->server_id(888)
+    )
+);
 ?>
