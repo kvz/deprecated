@@ -22,12 +22,15 @@ $E->h2('Users');
 $E->blockquote($lorem);
 $E->h3('Permissions');
 $E->p($lorem);
+$E->h4('General Concept');
+$E->p($lorem);
 $E->h4('Exceptions');
 $E->p($lorem);
 $E->h3('Usability');
 $E->p($lorem);
 
+$toc = $E->getToc();
 $E->h1('Table of Contents');
-echo $E->getToc();
+echo $toc;
 echo $E->getBuffer();
 ?>
