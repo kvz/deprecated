@@ -147,8 +147,8 @@ Class KvzHtml {
         $this->_ids = array();
         $this->_buffer = array();
         $this->_toc = array();
-        $this->_tocLevelPrev = array();
-        $this->_tocIdPrev = array();
+        $this->_tocLevelPrev = false;
+        $this->_tocIdPrev = false;
     }
 
     protected function _createId($tag) {
@@ -365,7 +365,7 @@ Class KvzHtml {
     public function getBuffer($clear = true) {
         $r = join('', $this->_buffer);
         if ($clear) {
-            $this->_buffer = array();
+            $this->reset();
         }
         return $r;
     }
