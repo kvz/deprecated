@@ -35,10 +35,12 @@ $E->h3('Usability');
         $E->li(false);
     $E->ul(false);  // False will close the tag: </ul>
 
-// Show TOC
-$E->h1('Table of Contents');
-echo $E->getToc();
+// Turn off document buffering
+$E->setOption('buffer', false);
+$toc      = $E->getToc();
+$document = $E->getBuffer();
 
-// Show document
-echo $E->getBuffer();
+$E->h1('Table of Contents');
+echo $toc;
+echo $document;
 ?>
