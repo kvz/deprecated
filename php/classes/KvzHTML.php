@@ -172,12 +172,16 @@ Class KvzHtml {
             $body = implode("\n", $body);
         }
 
-        $bodyIndented = $this->indent($body)."\n";
         $newLineAfterOpeningTag = isset($args['__newlineAfterOpeningTag']) ? $args['__newlineAfterOpeningTag'] : true;
         $newLineAfterClosingTag = isset($args['__newlineAfterClosingTag']) ? $args['__newlineAfterClosingTag'] : true;
         
+        $bodyIndented = $this->indent($body)."\n";
+
         // Other defaults for XML
         if ($this->_options['xml']) {
+            if (strtolower($tag) === '?xml')  {
+                $bodyIndented = ($body);
+            }
             if (!isset($args['__trimbody']) && strpos($body, '<') === false) {
                 $bodyIndented           = trim($bodyIndented);
                 if ($body !== true) {
@@ -252,7 +256,9 @@ Class KvzHtml {
             $result = '<'.$tag.$argumentsT.$closeTag.($newLineAfterOpeningTag ? "\n" : "");
         } else {
             // Full tag
-            $result = '<'.$tag.$argumentsT.$closeTag. ($newLineAfterOpeningTag ? "\n" : "").$bodyIndented.'</'.$tag.$closeTag.($newLineAfterClosingTag ? "\n" : "");
+            $result = '<'.$tag.$argumentsT.$closeTag. ($newLineAfterOpeningTag ? "\n" : "") .
+                $bodyIndented .
+                (strtolower($tag) === '?xml' ? '' : '</' . $tag.$closeTag.($newLineAfterClosingTag ? "\n" : ""));
         }
 
         if ($this->_options['echo'] && @$args['__echo'] !== false) {
