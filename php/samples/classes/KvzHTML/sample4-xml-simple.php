@@ -15,10 +15,12 @@ $E = new KvzHTML(array(
 ));
 
 $E->xml();
+
 $E->auth();
     $E->username('kvz');
     $E->api_key(sha1('xxxxxxxxxxxxxxxx'));
 $E->auth(false);
+
 $E->server_reboot();
     $E->dry_run(null);
     $E->server_id(888);

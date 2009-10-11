@@ -19,6 +19,7 @@ $H = new KvzHTML(array(
     'newlines' => true,
     'echo' => false,
     'buffer' => false,
+    'xml' => false,
 ));
 
 echo $H->html(
