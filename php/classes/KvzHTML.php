@@ -51,15 +51,11 @@ Class KvzHtml {
     }
 
     public function __call($tag, $arguments) {
-        if (!count($arguments)) {
-            $body       = '';
-            $args       = array();
-            $passBody   = true;
-        } else {
-            $body       = array_shift($arguments);
-            $args       = array_shift($arguments);
-            $passBody   = $body;
+        if (!array_key_exists(0, $arguments)) {
+            return $this->_tag($tag);
         }
+        $body       = $arguments[0];
+        $args       = $arguments[1];
         $bodySuffix = '';
 
         // TOC?
@@ -123,7 +119,11 @@ Class KvzHtml {
             }
         }
 
-        return $this->_tag($tag, ($passBody . $bodySuffix), $args);
+        if (is_string($body)) {
+            $body .= $bodySuffix;
+        } 
+        
+        return $this->_tag($tag, $body, $args);
     }
 
     public function pr() {
