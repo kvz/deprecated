@@ -4,7 +4,6 @@ if (!defined('DIR_KVZLIB')) {
     define('DIR_KVZLIB', dirname(dirname(dirname(dirname(dirname(__FILE__))))));
 }
 ?>
-// LANG::xml
 // Sample starts here
 <?php
 require_once DIR_KVZLIB.'/php/classes/KvzHTML.php';
@@ -13,7 +12,7 @@ require_once DIR_KVZLIB.'/php/classes/KvzHTML.php';
 //     One that will echo directly: $E
 // and One that supports nesting: $H
 $H = new KvzHTML();
-$E = new KvzHTML(array('echo' => true, 'tidy' => true));
+$E = new KvzHTML(array('echo' => true, 'buffer' => true, 'tidy' => true));
 
 // To save you even more typing. The following tags
 // have an inconsistent interface:
@@ -69,4 +68,6 @@ $E->html();
     );
 
 $E->html(false);
+
+echo $E->getBuffer();
 ?>

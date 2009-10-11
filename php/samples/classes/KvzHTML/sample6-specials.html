@@ -1,12 +1,12 @@
-// LANG::xml
 // Sample starts here
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
-<head>
-    <title>
-        Report
-    </title>
-    <style>
-        
+    <head>
+        <title>
+            Report
+        </title>
+        <style type="text/css">
+
                     div.page {
                         font-family: helvetica;
                         font-size: 12px;
@@ -14,52 +14,51 @@
                         min-height: 1220px;
                         width: 830px;
                     }
-    </style>
-    <link type='text/css' rel='stylesheet' href='/css/style.js' />
-    <script type='text/javascript' src='/js/jquery.js'></script>
-</head>
-<div class='page' style='page-break-before: always;'>
-<h1>
-    Report
-</h1>
-<p>
-    <a href='http://true.nl'>
-        Visit our homepage
-    </a>
-    <img src='http://true.truestatic.nl/pivotx/templates/true/img/logo.gif' />
-</p>
-<ul>
-    <li>
-        Health
-    </li>
-    <li>
-        Uptime
-    </li>
-    <li>
-        Logs
-    </li>
-    <li>
-        Recommendations
-    </li>
-</ul>
-</div>
-<div class='page'>
-<div style='float: left;'>
-    <img src='http://en.gravatar.com/userimage/3781109/874501515fabcf6069d64c626cf8e4f6.png' />
-</div>
-<div style='float: left;'>
-    <img src='http://en.gravatar.com/userimage/3781109/874501515fabcf6069d64c626cf8e4f6.png' />
-</div>
-<div style='clear: both;'>
-
-</div>
-</div>
-<div class='page'>
-    <h2>
-        Warnings
-    </h2>
-    <p class='warning'>
-        Disk space
-    </p>
-</div>
+        </style>
+        <link type='text/css' rel='stylesheet' href='/css/style.js'>
+        <script type='text/javascript' src='/js/jquery.js'>
+</script>
+        <style type="text/css">
+div.c3 {clear: both;}
+        div.c2 {float: left;}
+        div.c1 {page-break-before: always;}
+        </style>
+    </head>
+    <body>
+        <div class='page c1'>
+            <h1>
+                Report
+            </h1>
+            <p>
+                <a href='http://true.nl'>Visit our homepage</a> <img src='http://true.truestatic.nl/pivotx/templates/true/img/logo.gif'>
+            </p>
+            <ul>
+                <li>Health
+                </li>
+                <li>Uptime
+                </li>
+                <li>Logs
+                </li>
+                <li>Recommendations
+                </li>
+            </ul>
+        </div>
+        <div class='page'>
+            <div class='c2'>
+                <img src='http://en.gravatar.com/userimage/3781109/874501515fabcf6069d64c626cf8e4f6.png'>
+            </div>
+            <div class='c2'>
+                <img src='http://en.gravatar.com/userimage/3781109/874501515fabcf6069d64c626cf8e4f6.png'>
+            </div>
+            <div class='c3'></div>
+        </div>
+        <div class='page'>
+            <h2>
+                Warnings
+            </h2>
+            <p class='warning'>
+                Disk space
+            </p>
+        </div>
+    </body>
 </html>
