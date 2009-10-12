@@ -49,7 +49,7 @@ Class Store{
                         continue;
                     }
 
-                    if ($separate_on_dir = $this->getOption('separate_on_dir')) {
+                    if (($separate_on_dir = $this->getOption('separate_on_dir'))) {
                         $parts = explode(DIRECTORY_SEPARATOR, $file);
                         $dirname = $parts[($separate_on_dir-1)];
                     }
@@ -74,9 +74,17 @@ Class Store{
 
                     $movie['cast'] = array_slice($movie['cast'], 0, 3);
                     $castar = array();
+
                     foreach($movie['cast'] as $actor) {
                         $castar[] = $Html->span($actor['name'], array('class' => 'actor'));
                     }
+                    foreach($movie['director'] as $director) {
+                        $castar[] = $Html->span($director['name'], array('class' => 'director'));
+                    }
+                    foreach($movie['writing'] as $writter) {
+                        $castar[] = $Html->span($writter['name'], array('class' => 'writer'));
+                    }
+
                     $cast = implode(', ', $castar);
 
                     if ($separate_on_dir) {

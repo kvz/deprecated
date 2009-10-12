@@ -297,6 +297,8 @@ Class Movie{
             'votes',
             'year',
             'cast',
+            'director',
+            'writing',
             'rating',
             'goofs',
             'comment',

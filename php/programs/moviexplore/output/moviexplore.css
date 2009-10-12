@@ -69,7 +69,13 @@ div.movie img.poster {
     border: 0px;
 }
 div.movie span.actor {
-    background-color:#EFEFEF;
+    background-color: #EFEFEF;
+}
+div.movie span.director {
+    background-color: olive;
+}
+div.movie span.writer {
+    background-color: teal;
 }
 div.movie p.file, div.movie p.cleanedName {
     margin-top:0px;
