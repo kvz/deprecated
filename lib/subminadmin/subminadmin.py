@@ -76,6 +76,7 @@ svn_base_url = %(http base)s/svn
 
 [backend]
 bindir = %(share dir)s/bin
+#hook = /etc/submin/hook
 
 [generated]
 session_salt = %(session salt)s

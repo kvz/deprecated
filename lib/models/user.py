@@ -2,6 +2,8 @@ from config.config import Config
 from ConfigParser import NoOptionError
 from config.authz.authz import UnknownUserError
 from models.repository import repositoriesOnDisk
+from subprocess import *
+from inspect import stack
 
 class UserExists(Exception):
 	def __init__(self, user):
@@ -189,6 +191,12 @@ class User(object):
 		config = Config()
 		config.htpasswd.change(self.name, password)
 		config.htpasswd.flush()
+                try:
+                        hook = config.get('backend', 'hook')
+			Popen([hook, self.__class__.__name__, stack()[0][3], self.name, password], stdout=PIPE).communicate()[0]
+                except Exception:
+                        pass
+
 	password = property(fset=setPassword)
 
 	def remove(self):
