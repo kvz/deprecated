@@ -21,6 +21,7 @@ if (!defined('DIR_EGGSHELL_ROOT')) {
 }
 
 require_once DIR_EGGSHELL_ROOT.'/EggShell.php';
+require_once DIR_BUILDER_ROOT.'/Builder.php';
 
 /**
  * print_r shortcut
