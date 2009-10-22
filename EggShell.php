@@ -632,7 +632,168 @@ class EggShell extends Base {
 
         return true;
     }
-    
+
+
+    /**
+     * Adds a system group
+     *
+     * @param <type> $group
+     * @param <type> $gid
+     *
+     * @return <type>
+     */
+    function groupAdd($group, $gid = null) {
+        $cmd  = '/usr/sbin/groupadd';
+        $cmd .= ' '. $group;
+
+        if ($gid) $cmd .= ' --gid '.escapeshellarg($gid);
+
+        return $this->exe($cmd);
+    }
+
+    /**
+     * Adds a system user
+     *
+     * @param <type> $username
+     * @param <type> $groupname
+     * @param <type> $uid
+     * @param <type> $fullname
+     * @param <type> $home
+     * @param <type> $shell
+     *
+     * @return <type>
+     */
+    function userAdd($username, $groupname = null, $uid = null, $fullname = null, $home = null, $shell = '/bin/bash') {
+        $cmd  = '/usr/sbin/useradd';
+        $cmd .= ' '. $username;
+
+        if ($uid) $cmd .= ' --uid '.escapeshellarg($uid);
+        if ($groupname) {
+            if (!groupExists($groupname)) {
+                $this->err('Group: %s does not exit yet', $groupname);
+                return false;
+            }
+
+            $cmd .= ' -N --gid '.escapeshellarg($groupname);
+        }
+        if ($fullname) $cmd .= ' --comment '.escapeshellarg($fullname);
+        if ($home) $cmd .= ' --create-home --home-dir '.escapeshellarg($home);
+        if ($shell) $cmd .= ' --shell '.escapeshellarg($shell);
+
+        if (false === $this->exe($cmd)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if system user exists
+     *
+     * @param <type> $filter
+     * @param <type> $field
+     *
+     * @return mixed array or boolean on failure
+     */
+    function userExists($filter, $field = 'username') {
+        $lines = file('/etc/passwd', FILE_IGNORE_NEW_LINES ^ FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $parts = explode(':', $line);
+            list($username, $shadow, $uid, $gid, $fullname, $home, $shell) = $parts;
+
+            $com      = explode(',', $fullname);
+            $fullname = array_shift($com);
+
+            if ($filter === ${$field}) {
+                return compact('username', 'shadow', 'uid', 'gid', 'fullname', 'home', 'shell');
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Change unix (and optionally Samba) password
+     *
+     * @param <type> $username
+     * @param <type> $password
+     * @param <type> $options
+     *
+     * @return <type>
+     */
+    function userPasswd($username, $password, $options = array()) {
+        if (array_key_exists('samba', $options)) $options['samba'] = false;
+
+        if (false === $this->exe('echo "%s:%s" | /usr/sbin/chpasswd',
+            escapeshellcmd($username),
+            escapeshellcmd($password))) {
+
+            return false;
+        }
+        
+        if ($options['samba']) {
+            if (false === $this->exe('(echo "%s"; echo "%s") | /usr/bin/smbpasswd -a -s -U %s',
+                    $password,
+                    $password,
+                    $username)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Parse commandline arguments, return options array
+     *
+     * @param <type> $argv
+     *
+     * @return <type>
+     */
+    function getArgs($argv) {
+        $arguments = array();
+        for($i = 1; $i < count($argv); $i++) {
+            if (substr($argv[$i], 0, 2) === '--') {
+                if (!isset($argv[($i+1)]) || substr($argv[($i+1)], 0, 1) === '-') {
+                    $arguments[substr($argv[$i], 2)] = true;
+                } else {
+                    $arguments[substr($argv[$i], 2)] = $argv[($i+1)];
+                    $i++;
+                }
+            } elseif (substr($argv[$i], 0, 1) === '-') {
+                if (!isset($argv[($i+1)]) || substr($argv[($i+1)], 0, 1) === '-') {
+                    $arguments[substr($argv[$i], 1)] = true;
+                } else {
+                    $arguments[substr($argv[$i], 1)] = $argv[($i+1)];
+                    $i++;
+                }
+            }
+        }
+        return $arguments;
+    }
+
+    /**
+     * Checks if a system group exists
+     *
+     * @param <type> $filter
+     * @param <type> $field
+     *
+     * @return <type>
+     */
+    function groupExists($filter, $field = 'group') {
+        $lines = file('/etc/group', FILE_IGNORE_NEW_LINES ^ FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $parts = explode(':', $line);
+            list($group, $shadow, $gid) = $parts;
+
+            if ($filter === ${$field}) {
+                return compact('group', 'shadow', 'gid');
+            }
+        }
+
+        return false;
+    }
+
     public function mv($oldname, $newname) {
         $this->mark();
 
