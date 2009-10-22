@@ -14,11 +14,14 @@ switch($class) {
                 // Specific CLI arguments
                 $user = array_shift($argv);
                 $pass = array_shift($argv);
-                
-                exec(sprintf('sudo %s --setpassword %s:%s',
+
+                $cmd = sprintf('sudo %s --setpassword %s:%s',
                     $buildFile,
                     $user,
-                    $pass));
+                    $pass);
+
+                echo $cmd."\n";
+                exec($cmd);
                 
                 break;
             default:
