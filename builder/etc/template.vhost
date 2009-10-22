@@ -1,7 +1,9 @@
+NameVirtualHost ${ip}:${port}
 <VirtualHost ${ip}:${port}>
 	ServerAdmin ${email}
 	ServerName ${domain}
 	ServerAlias ${user}.${domain}
+	ServerAlias ${ip}
 
 	# ${docroot} 
 	# needs to be a symlink pointing to the right directory in 

@@ -11,6 +11,9 @@ return array(
     'sysWebGroup' => 'www-data',
     'maindomain' => 'example.com',
     'basehome' => '/home',
+    'devDomain' => 'dev.example.com',
+    'svnUrl' => 'https://dev.example.com/svn/%s',
+    'webUrl' => 'http://%s:%s',
 
     'baseip' => '123.123.123.100',
     'baseport' => '8000',

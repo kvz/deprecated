@@ -8,21 +8,7 @@ error_reporting(E_ALL);
  * Config
  */
 if (!isset($skipConf)) {
-    $config = indexConfig(array(
-        'authzFile' => '/data/submin/authz',
-        'userFile' => '/data/submin/userproperties.conf',
-        'ipFile' => '/etc/submin/ipmap',
-        'vhostTemplate' => '/etc/submin/template.vhost',
-        'devGroup' => 'developers',
-        'sysWebGroup' => 'www-data',
-        'maindomain' => 'webclusive.com',
-        'baseip' => '87.233.31.10',
-        'baseport' => '8000',
-        'basehome' => '/data/home',
-        'logFile' => '/var/log/submin.log',
-        'buildFile' => '/etc/submin/build.php',
-        'reloadFile' => '/etc/submin/reload.php',
-    ));
+    $config = indexConfig(include('/etc/submin/builder/config.php'));
 }
 
 /**
@@ -351,6 +337,7 @@ function indexConfig($config = array()) {
                     'users' => $groupusers,
                     'name' => $group,
                 );
+                asort($config['groups'][$group]['users']);
                 foreach($groupusers as $groupuser) {
                     $config['users'][$groupuser]['groups'][] = $group;
                 }
@@ -364,6 +351,8 @@ function indexConfig($config = array()) {
                 $user['email'] = $userSections[$username]['email'];
                 $user['port'] = claimIPPort($config, 'user', $username);
             }
+            ksort($config['users']);
+            ksort($config['groups']);
 
         } else {
             // unknown
@@ -375,6 +364,10 @@ function indexConfig($config = array()) {
 
 function claimIPPort($config, $type, $name) {
     $ipArr = (array)@json_decode(@file_get_contents($config['ipFile']), true);
+
+    if ($type === 'user' && $name === 'admin') {
+        return 80;
+    }
 
     if (!empty($ipArr[$type][$name])) {
         return $ipArr[$type][$name];
@@ -394,8 +387,6 @@ function claimIPPort($config, $type, $name) {
     }
 
     $ipArr[$type][$name] = $val;
-
-    pr(compact('ipArr'));
 
     return file_put_contents($config['ipFile'], json_encode($ipArr));
 }
@@ -463,4 +454,49 @@ function vhost($file, $user, $repo) {
 
 
 
+function htmUserBlock($user, $repo) {
+    global $config;
+    $indent = 4;
+
+    $indexH  = '';
+    $urls = array(
+        'svn' => sprintf($config['svnUrl'], $repo['name']),
+        'web' => sprintf($config['webUrl'], $repo['ip'], $user['port']),
+        '-',
+        'ftp' => sprintf('ftp://%s@%s', $user['name'], $repo['ip']),
+        'sftp' => sprintf('ssh://%s@%s', $user['name'], $repo['ip']),
+        '-',
+        'Source' => projPath($repo, $user, 'Source'),
+        'www' => 'Create a symlink from any directory in Source to '.projPath($repo, $user, 'www'),
+        'log' => projPath($repo, $user, 'log'),
+        'etc' => projPath($repo, $user, 'etc'),
+        'bin' => projPath($repo, $user, 'bin'),
+    );
+
+    if ($user['name'] === 'admin') {
+        $indent = 3;
+    } else {
+        $indexH .= '<h3>';
+        $indexH .= $user['name'];
+        $indexH .= '</h3>';
+    }
+
+    $indexH .= '<pre class="i'.$indent.'">';
+        foreach  ($urls as $key=>$url) {
+            if ($url === '-') {
+                $indexH .= ''."\n";
+                continue;
+            }
+            $indexH .= ''.str_pad($key.':', 7, ' ', STR_PAD_RIGHT).' ';
+            if ($key === 'web') {
+                $indexH .= '<a href="'.$url.'">'.$url.'</a>';
+            } else {
+                $indexH .= $url;
+            }
+            $indexH .= "\n";
+        }
+    $indexH .= '</pre>';
+    
+    return $indexH;
+}
 ?>
