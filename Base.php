@@ -6,7 +6,7 @@
  */
 class Base {
     protected $_options = array(
-        'log-print-level' => 'debug',
+        'log-print-level' => 'info',
         'log-file-level' => 'debug',
         'log-memory-level' => 'debug',
         'log-break-level' => 'err',
@@ -206,6 +206,11 @@ class Base {
     }
 
     public function  __construct($options = array()) {
+        // Get parent defined options
+        $parentVars    = @get_class_vars(@get_parent_class($this));
+        // Override with own defined options
+        $this->_options = $this->merge((array)@$parentVars['_options'], $this->_options);
+        // Override with own instance options
         $this->_options = $this->merge($this->_options, $options);
     }
 

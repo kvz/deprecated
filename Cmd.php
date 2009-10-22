@@ -20,7 +20,7 @@ class Cmd {
         $this->stderr   = array();
         $this->stdcmb   = array();
         $this->lastline = '';
-        $this->okaycode = array($this->okaycode);
+        $this->okaycode = (array)$this->okaycode;
     }
 
     public function join() {

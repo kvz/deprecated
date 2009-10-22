@@ -12,6 +12,7 @@ class EggShell extends Base {
 
     protected $_options = array(
         'dryrun' => false,
+        'write-replace' => false,
     );
 
     /**
@@ -24,7 +25,15 @@ class EggShell extends Base {
      */
     public function  __construct($options = array()) {
         $this->className = get_class($this);
-        parent::__construct($this->merge($this->_options, $options));
+        
+        // Take care of recursion when there are ++++ levels of inheritance
+        parent::__construct($options);
+        // Get direct parent defined options
+        $parentVars    = @get_class_vars(@get_parent_class(__CLASS__));
+        // Override with own defined options
+        $this->_options = $this->merge((array)@$parentVars['_options'], $this->_options);
+        // Override with own instance options
+        $this->_options = $this->merge($this->_options, $options);
     }
     
     /**
@@ -105,7 +114,10 @@ class EggShell extends Base {
         $this->stdout(rtrim($Cmd->stdcmb));
 
         if (false === $Cmd->okay) {
-            return $this->warning('Command: %s failed. %s', $cmd, $Cmd->stderr);
+            return $this->warning('Command: %s failed (%s). %s',
+                $cmd,
+                $Cmd->code,
+                $Cmd->stderr);
         }
         
         return $Cmd->stdout;
@@ -171,12 +183,16 @@ class EggShell extends Base {
 
         if ($options['write-once'] && file_exists($filename)) {
             if (strpos(file_get_contents($filename), $data) !== false) {
-                $this->notice('Skipping writing to %s. Content already there.', $filename);
+                $this->debug('Skipping writing to %s. Content already there.', $filename);
                 return null;
             }
         }
 
         if (!$options['dryrun']) {
+            if (!is_string($filename)) {
+                return $this->err('Filename cannot be: %s', $filename);
+            }
+
             $r = file_put_contents($filename, $data, $options['write-flags']);
         } else {
             $r = null;
@@ -703,6 +719,7 @@ class EggShell extends Base {
      */
     function userExists($filter, $field = 'username') {
         $lines = file('/etc/passwd', FILE_IGNORE_NEW_LINES ^ FILE_SKIP_EMPTY_LINES);
+
         foreach ($lines as $line) {
             $parts = explode(':', $line);
             list($username, $shadow, $uid, $gid, $fullname, $home, $shell) = $parts;
