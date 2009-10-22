@@ -6,7 +6,7 @@
  * @author kvz
  */
 require_once dirname(__FILE__).'/Base.php';
-require_once dirname(__FILE__).'/Cmd.php';\
+require_once dirname(__FILE__).'/Cmd.php';
 
 class EggShell extends Base {
 
