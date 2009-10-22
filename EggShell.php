@@ -6,8 +6,14 @@
  * @author kvz
  */
 require_once dirname(__FILE__).'/Base.php';
-require_once dirname(__FILE__).'/Cmd.php';
+require_once dirname(__FILE__).'/Cmd.php';\
+
 class EggShell extends Base {
+
+    protected $_options = array(
+        'dryrun' => false,
+    );
+
     /**
      * Contstructor. Options are passed to every Class contstructor
      * and hence available troughout the entire system.
