@@ -1,0 +1,3 @@
+[submodule "builder/eggshell"]
+	path = builder/eggshell
+	url = git://github.com/kvz/eggshell.git
