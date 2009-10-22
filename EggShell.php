@@ -5,6 +5,8 @@
  *
  * @author kvz
  */
+require_once dirname(__FILE__).'/Base.php';
+require_once dirname(__FILE__).'/Cmd.php';
 class EggShell extends Base {
     /**
      * Contstructor. Options are passed to every Class contstructor
@@ -16,8 +18,7 @@ class EggShell extends Base {
      */
     public function  __construct($options = array()) {
         $this->className = get_class($this);
-
-        parent::__construct($options);
+        parent::__construct($this->merge($this->_options, $options));
     }
     
     /**
@@ -91,64 +92,17 @@ class EggShell extends Base {
         if (count($args)) {
             $cmd = vsprintf($cmd, $args);
         }
-
-        $output     = '';
-        $return_var = 0;
-
+        
         $this->debug('Running \'%s\'', $cmd);
-        if (!$this->_options['dryrun']) {
-            if ($this->_options['exe-method'] === 'exec') {
-                $cmd .= ' 2>&1';
-                $lastline   = exec($cmd, $output, $return_var);
-            } elseif ($this->_options['exe-method'] === 'proc_open') {
-                $output = array();
-                $error  = '';
-                $descriptorspec = array(
-                    0 => array("pipe", "r"),  // stdin
-                    1 => array("pipe", "w"),  // stdout
-                    2 => array("pipe", "r")   // stderr ?? instead of a file
-                );
-                $process = proc_open($cmd, $descriptorspec, $pipes);
-                if (is_resource($process)) {
-                    #fwrite($pipes[0], $secret);
-                    #fclose($pipes[0]);
-                    while ($lastline = fgets($pipes[1], 1024)) {
-                    // read from the pipe
-                        $output[] = $lastline;
-                        $this->stdout(rtrim($lastline));
-                    }
-                    fclose($pipes[1]);
-                    // optional:
-                    while ($lastline = fgets($pipes[2], 1024)) {
-                        $error .= $lastline . "\n";
-                        $this->stderr(rtrim($lastline));
-                    }
-                    fclose($pipes[2]);
-                }
+        $Cmd = new Cmd($cmd, $this->_options);
 
-                $return_var = proc_close($process);
-            } else {
-                return $this->err('exe-method %s not supported', $this->_options['exe-method']);
-            }
-        } else {
-            $lastline   = '(dryrun)';
-            $output     = (array)'(dryrun)';
-            $return_var = 0;
+        $this->stdout(rtrim($Cmd->stdcmb));
+
+        if (false === $Cmd->okay) {
+            return $this->warning('Command: %s failed. %s', $cmd, $Cmd->stderr);
         }
-
-        $output = join("\n", $output);
-
-        #$this->debug('Running \'%s\', returned: %s: \'%s\'', $cmd, $return_var, $lastline);
-
-        if ($return_var !== 0 && $return_var !== 255) {
-            // 255 for aptitude when 1 ppa cannot be found
-            // in a different distro.
-            // and === 1 is to rigureus.
-            return $this->warning('Command: %s failed', $cmd);
-            return false;
-        }
-
-        return $output;
+        
+        return $Cmd->stdout;
     }
 
     /**
@@ -309,34 +263,6 @@ class EggShell extends Base {
     public function getHostname() {
         return trim($this->read('/etc/hostname'));
     }
-
-    /**
-     * Sets a machine's role.
-     *  e.g.: queen, drone, primary
-     *
-     * @param <type> $role
-     *
-     * @return boolean
-     */
-    public function setRole($role) {
-        $this->mark();
-
-        $this->info('Setting role to: %s', $role);
-        $this->write('/etc/transload.role', $role);
-        return true;
-    }
-
-    /**
-     * Gets a machine's role
-     *  e.g.: queen, drone, primary
-     *
-     *
-     * @return mixed string or boolean on failure
-     */
-    public function getRole() {
-        return $this->read('/etc/transload.role');
-    }
-
 
     /**
      * Mkdir once
@@ -785,45 +711,6 @@ class EggShell extends Base {
             if (false === $this->chown($filename, $user, $group)) {
                 return false;
             }
-        }
-
-        return true;
-    }
-
-    /**
-     * Replaces vars & writes config files
-     * Can also set permCopy options like: user, group, mode, etc
-     *
-     * @param string $dst     e.g.: /etc/postfix/main.cf
-     * @param array  $options
-     *
-     * @return boolean
-     */
-    public function dynamicConfig($dst, $options = array()) {
-        $this->mark();
-
-        $baseopts = $this->_options;
-        $src      = $this->_options['egg-root'].$dst;
-
-        $baseopts['user']  = 'root';
-        $baseopts['group'] = 'root';
-        $baseopts['mode']  = 0644;
-        $baseopts['replaceVars'] = array(
-            'OPT_EGG_FILE' => $baseopts['egg-file'],
-            'USER_WWW' => $baseopts['perm-user-www'],
-            'GROUP_WWW' => $baseopts['perm-group-www'],
-            'HOSTNAME' => $this->getHostname(),
-            'DOMAIN' => $baseopts['domain'],
-            'CFGSOURCE' => $src,
-            'CFGCMD' => 'cd '.dirname($options['egg-root-ingit']).'; ./bin/egg.php '. $this->className. ' config',
-        );
-
-        $options = $this->merge($baseopts, $options);
-
-        if (false === $this->permCopy($src, $dst, $options['mode'], $options['user'], $options['group'], array(
-            'write-replace' => $options['replaceVars'],
-        ))) {
-            return false;
         }
 
         return true;

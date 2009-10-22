@@ -15,6 +15,7 @@ class Base {
         'log-section-open' => array('section_open'),
         'log-section-close' => array('section_close'),
         'log-trail-level' => 'trail',
+        'app-root' => '',
     );
 
     public $logs;
@@ -45,6 +46,16 @@ class Base {
         }
         
         return $methods;
+    }
+
+    public function conclude($res) {
+        if (false === $res) {
+            return 'Fail';
+        } else if (null === $res) {
+            return 'Skip';
+        } else {
+            return 'Okay';
+        }
     }
 
     public function out($str) {
@@ -175,7 +186,7 @@ class Base {
 
     public function inPath($filename) {
         if (is_string($filename)) {
-            $filename = str_replace($this->_options['egg-root'], '', $filename);
+            $filename = str_replace($this->_options['app-root'], '', $filename);
         }
 
         return $filename;
@@ -304,7 +315,7 @@ class Base {
         if ($msgWeight <= $breakWeight) {
             
             $this->trail('');
-            $this->trail(' Egg halt, triggered by the following path: ');
+            $this->trail(' Process halt, triggered by the following path: ');
             $this->trail('');
             $this->trail($this->trace(4));
             $traces = $this->trace(4);
