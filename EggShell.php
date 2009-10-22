@@ -16,7 +16,8 @@ class EggShell extends Base {
      */
     public function  __construct($options = array()) {
         $this->className = get_class($this);
-        $this->_options = $options;
+
+        parent::__construct($options);
     }
     
     /**

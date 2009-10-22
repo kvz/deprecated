@@ -5,7 +5,17 @@
  * @author kvz
  */
 class Base {
-    protected $_options = array();
+    protected $_options = array(
+        'log-print-level' => 'debug',
+        'log-file-level' => 'debug',
+        'log-memory-level' => 'debug',
+        'log-break-level' => 'err',
+        'log-mark-trace' => false,
+        'log-file' => '/var/log/egg.log',
+        'log-section-open' => array('section_open'),
+        'log-section-close' => array('section_close'),
+        'log-trail-level' => 'trail',
+    );
 
     public $logs;
 
@@ -182,6 +192,10 @@ class Base {
     public function __call($name, $arguments) {
         array_unshift($arguments, $name);
         return call_user_func_array(array($this, '_log'), $arguments);
+    }
+
+    public function  __construct($options = array()) {
+        $this->_options = $this->merge($this->_options, $options);
     }
 
     /**
