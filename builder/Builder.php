@@ -7,17 +7,23 @@
 class Builder extends EggShell{
     protected $_config = array();
 
-    public function setConfig($config) {
-        $this->_config = $config;
-        $this->_users  = $this->_config['users'];
-        $this->_groups = $this->_config['groups'];
-        $this->_repos  = $this->_config['repos'];
+    public function  __construct($options = array()) {
+        // Take care of recursion when there are ++++ levels of inheritance
+        parent::__construct($options);
+        // Get direct parent defined options
+        $parentVars    = @get_class_vars(@get_parent_class(__CLASS__));
+        // Override with own defined options
+        $this->_config = $this->merge((array)@$parentVars['_options'], $this->_config);
+        // Override with own instance options
+        $this->_config = $this->merge($this->_config, $options);
+    }
 
-        $d = $this->_groups[$this->_config['devGroup']]['users'];
-        $this->_developers = array();
-        foreach($d as $i=>$username) {
-            $this->_developers[$username] = $this->_users[$username];
+    public function getCfg($name) {
+        if (!array_key_exists($name, $this->_config)) {
+            return $this->debug('Config parameter %s does not exist in current config',
+                $name);
         }
+        return $this->_config[$name];
     }
 
     public function setPassword($username, $password) {
@@ -43,8 +49,8 @@ class Builder extends EggShell{
         // Create Developer homes
         foreach($this->_developers as $user) {
             // Add developers as system users
-            if (!userExists($user['name'])) {
-                if (false === userAdd($user['name'], $this->_config['sysWebGroup'], null, null, $user['homedir'])) exit(1);
+            if (!$this->userExists($user['name'])) {
+                if (false === $this->userAdd($user['name'], $this->_config['sysWebGroup'], null, null, $user['homedir'])) exit(1);
                 $this->info('Created user %s belonging to group: %s',
                     $user['name'],
                     $this->_config['sysWebGroup']);
@@ -59,7 +65,7 @@ class Builder extends EggShell{
 
                 // Vhosts
                 $file = $this->projPath($repo, $user, 'etc/default');
-                $res  = vhost($file, $user, $repo);
+                $res  = $this->createVHost($file, $user, $repo);
                 if (false === ($res)) {
                     $this->err('Error while writing vhost: %s', $file);
                     exit(1);
@@ -95,11 +101,7 @@ class Builder extends EggShell{
     }
 
     public function createApacheConf() {
-
         // Save TCP information for Apache Listen instructions
-        $tcp[$repo['ip']][80] = true;
-        $tcp[$repo['ip']][$user['port']] = true;
-
         foreach($this->_developers as $username=>$user) {
             foreach($this->_repos as $reponame=>$repo) {
                 $this->appendOnce('/etc/apache2/httpd.conf', "Listen ".$repo['ip'].":".$user['port']."\n");
@@ -110,15 +112,15 @@ class Builder extends EggShell{
         // (even custom created ones)
         $vpaths = $this->_config['basehome'] .'/*/Projects/*/etc/' ;
         foreach (glob($vpaths) as $file) {
-            $this->appendOnce('/etc/apache2/httpd.conf', "Include ".$f."\n");
+            $this->appendOnce('/etc/apache2/httpd.conf', "Include ".$file."\n");
         }
 
         return true;
     }
 
     public function createIndexHtml() {
-        $indexH = htmIndex();
-        $this->write('/var/www/index.html', $indexH);
+        $html = $this->htmIndex();
+        $this->write('/var/www/index.html', $html);
         $this->info('Written %s', '/var/www/index.html');
         return true;
     }
@@ -135,7 +137,7 @@ class Builder extends EggShell{
         $html .= '<h1>Links</h1>';
         $html .= '<ul>';
             $html .= '<li>';
-                $html .= '<a href="https://'.$config['devDomain'].'/submin/login">https://'.$config['devDomain'].'/submin/login</a> (admin can manage repositories &amp; users)';
+                $html .= '<a href="https://'.$this->_config['devDomain'].'/submin/login">https://'.$this->_config['devDomain'].'/submin/login</a> (admin can manage repositories &amp; users)';
             $html .= '</li>';
             $html .= '<li>';
                 $html .= '<a href="https://www.truecare.nl">https://www.truecare.nl</a> (manage DNS records, create tickets, etc)';
@@ -147,7 +149,12 @@ class Builder extends EggShell{
         addresses..</p>';
 
         foreach($this->_repos as $reponame=>$repo) {
-            $html .= '<h2>'.$reponame.'</h2>';
+            $html .= '<h2>';
+            $html .= $reponame;
+            $html .= ' (';
+            $html .= (ip2long($repo['ip']) - ip2long($this->_config['baseip']));
+            $html .= ')';
+            $html .= '</h2>';
             $html .= $this->htmUserBlock($this->_developers['admin'], $repo);
             foreach($this->_developers as $username=>$user) {
                 if ($username === 'admin') {
@@ -183,6 +190,9 @@ class Builder extends EggShell{
         } else {
             $html .= '<h3>';
             $html .= $user['name'];
+            $html .= ' (';
+            $html .= $user['port'] - $this->_config['baseport'];
+            $html .= ')';
             $html .= '</h3>';
         }
 
@@ -208,64 +218,73 @@ class Builder extends EggShell{
     /**
      * Readz authz file and returns users, groups, repos
      *
-     * @param <type> $config
+     * @param <type> $cfgFile
      * @return <type>
      */
-    public function indexConfig($config = array()) {
-        if (is_string($config)) {
-            $config = require($config);
-        }
+    public function indexConfig($cfgFile, $overruleConfig) {
+        $this->_config = require($cfgFile);
+        $this->_config = $this->merge($this->_config, $overruleConfig);
 
-        $config['repos'] = array();
-        $authSections    = parse_ini_file($config['authzFile'], true);
-        $userSections    = parse_ini_file($config['userFile'], true);
+        $this->_config['repos'] = array();
+        $authSections    = parse_ini_file($this->_config['authzFile'], true);
+        $userSections    = parse_ini_file($this->_config['userFile'], true);
         $repoCnt         = 0;
         foreach ($authSections as $authSection=>$authKeys) {
             if (substr($authSection, -2) === ':/') {
                 $repo = substr($authSection, 0, -2);
                 // repos
-                $config['repos'][$repo] = array (
+                $this->_config['repos'][$repo] = array (
                     'name' => $repo,
                     'repo' => $authKeys,
-                    'ip' => $this->claimIPPort($config, 'repo', $repo),
+                    'ip' => $this->claimIPPort('repo', $repo),
                 );
             } elseif($authSection === 'groups') {
                 // groups
-                $config['groups'] = $authKeys;
-                $config['users']  = array();
-                foreach ($config['groups'] as $group => $userlist) {
+                $this->_config['groups'] = $authKeys;
+                $this->_config['users']  = array();
+                foreach ($this->_config['groups'] as $group => $userlist) {
                     $groupusers = explode(', ', $userlist);
-                    $config['groups'][$group] = array(
+                    $this->_config['groups'][$group] = array(
                         'users' => $groupusers,
                         'name' => $group,
                     );
-                    asort($config['groups'][$group]['users']);
+                    asort($this->_config['groups'][$group]['users']);
                     foreach($groupusers as $groupuser) {
-                        $config['users'][$groupuser]['groups'][] = $group;
+                        $this->_config['users'][$groupuser]['groups'][] = $group;
                     }
                 }
 
                 // users
-                foreach($config['users'] as $username => &$user) {
+                foreach($this->_config['users'] as $username => &$user) {
                     $user['name'] = $username;
-                    $user['homedir'] = $config['basehome'].'/'.$username;
+                    $user['homedir'] = $this->_config['basehome'].'/'.$username;
                     $user['fullname'] = $userSections[$username]['fullname'];
                     $user['email'] = $userSections[$username]['email'];
-                    $user['port'] = $this->claimIPPort($config, 'user', $username);
+                    $user['port'] = $this->claimIPPort('user', $username);
                 }
-                ksort($config['users']);
-                ksort($config['groups']);
+                ksort($this->_config['users']);
+                ksort($this->_config['groups']);
 
             } else {
-                // unknown
+                $this->notice('Unknow config section: %s', $authSection);
             }
         }
 
-        return $config;
+        $this->_users  = $this->_config['users'];
+        $this->_groups = $this->_config['groups'];
+        $this->_repos  = $this->_config['repos'];
+
+        $d = $this->_groups[$this->_config['devGroup']]['users'];
+        $this->_developers = array();
+        foreach($d as $i=>$username) {
+            $this->_developers[$username] = $this->_users[$username];
+        }
+
+        return true;
     }
 
-    public function claimIPPort($config, $type, $name) {
-        $ipArr = (array)@json_decode(@$this->write($config['ipFile']), true);
+    public function claimIPPort($type, $name) {
+        $ipArr = (array)@json_decode(@$this->read($this->_config['ipFile']), true);
 
         if ($type === 'user' && $name === 'admin') {
             return 80;
@@ -281,16 +300,16 @@ class Builder extends EggShell{
         $cnt = count($ipArr[$type]) + 1;
 
         if ($type === 'user') {
-            $val = $config['baseport'] + $cnt;
+            $val = $this->_config['baseport'] + $cnt;
         } elseif ($type === 'repo') {
-            $val = long2ip(ip2long($config['baseip']) + $cnt);
+            $val = long2ip(ip2long($this->_config['baseip']) + $cnt);
         } else {
             return false;
         }
 
         $ipArr[$type][$name] = $val;
 
-        return $this->write($config['ipFile'], json_encode($ipArr));
+        return $this->write($this->_config['ipFile'], json_encode($ipArr));
     }
 
     public function projPath($repo, $user, $type) {

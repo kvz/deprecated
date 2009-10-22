@@ -1,12 +1,11 @@
 #!/usr/bin/php
 <?php
-require_once dirname(__FILE__).'/init.inc.php';
-extract($config);
-
 // General CLI arguments
 $script = array_shift($argv);
 $class  = array_shift($argv);
 $method = array_shift($argv);
+
+$buildFile = dirname(__FILE__).'/build.php';
 
 switch($class) {
     case 'User':
@@ -16,20 +15,20 @@ switch($class) {
                 $user = array_shift($argv);
                 $pass = array_shift($argv);
                 
-                exe('sudo %s --setpassword %s:%s',
-                    $config['buildFile'],
+                exec(sprintf('sudo %s --setpassword %s:%s',
+                    $buildFile,
                     $user,
-                    $pass);
+                    $pass));
                 
                 break;
             default:
-                err('No handler for class: %s, method: %s', $class, $method);
+                trigger_error(sprintf('No handler for class: "%s", method: "%s"', $class, $method), E_USER_ERROR);
                 exit(1);
                 break;
         }
         break;
     default:
-        err('No handler for class: %s', $class);
+        trigger_error(sprintf('No handler for class: "%s"', $class), E_USER_ERROR);
         exit(1);
         break;
 }
