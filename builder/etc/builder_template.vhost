@@ -1,0 +1,30 @@
+<VirtualHost ${ip}:${port}>
+	ServerAdmin ${email}
+	ServerName ${domain}
+	ServerAlias ${user}.${domain}
+
+	# ${docroot} 
+	# needs to be a symlink pointing to the right directory in 
+	# ${source}
+	
+	DocumentRoot ${docroot}
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride All
+	</Directory>
+	<Directory ${docroot}/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride All
+		Order allow,deny
+		allow from all
+	</Directory>
+
+	ErrorLog ${error_log}
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog ${access_log} combined
+</VirtualHost>
+

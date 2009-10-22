@@ -1,0 +1,63 @@
+From fb91c4616585b92bdeb4513278ddbaae087864f9 Mon Sep 17 00:00:00 2001
+From: Kevin van Zonneveld <kevin@vanzonneveld.net>
+Date: Tue, 20 Oct 2009 15:07:12 +0200
+Subject: [PATCH] Added support for backend.hook
+ Set it to a file that's executable for submin, and it will
+ be called when an important event takes place.
+
+For now only:
+    User.setPassword
+
+e.g. for setPassword, the hook would now called like this:
+    /etc/submin/hook <Class> <method> <user> <pass> <arguments>
+
+You can then use the arguments in your own code
+(typically a BASH script but can be anything)
+in /etc/submin/hook, to add FTP or system users with the same credentials,
+notify people, etc.
+---
+ lib/models/user.py             |    8 ++++++++
+ lib/subminadmin/subminadmin.py |    1 +
+ 2 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/lib/models/user.py b/lib/models/user.py
+index bf72543..957bb93 100644
+--- a/lib/models/user.py
++++ b/lib/models/user.py
+@@ -2,6 +2,8 @@ from config.config import Config
+ from ConfigParser import NoOptionError
+ from config.authz.authz import UnknownUserError
+ from models.repository import repositoriesOnDisk
++from subprocess import *
++from inspect import stack
+ 
+ class UserExists(Exception):
+ 	def __init__(self, user):
+@@ -189,6 +191,12 @@ class User(object):
+ 		config = Config()
+ 		config.htpasswd.change(self.name, password)
+ 		config.htpasswd.flush()
++                try:
++                        hook = config.get('backend', 'hook')
++			Popen([hook, self.__class__.__name__, stack()[0][3], self.name, password], stdout=PIPE).communicate()[0]
++                except Exception:
++                        pass
++
+ 	password = property(fset=setPassword)
+ 
+ 	def remove(self):
+diff --git a/lib/subminadmin/subminadmin.py b/lib/subminadmin/subminadmin.py
+index 84752af..9061520 100644
+--- a/lib/subminadmin/subminadmin.py
++++ b/lib/subminadmin/subminadmin.py
+@@ -76,6 +76,7 @@ svn_base_url = %(http base)s/svn
+ 
+ [backend]
+ bindir = %(share dir)s/bin
++#hook = /etc/submin/hook
+ 
+ [generated]
+ session_salt = %(session salt)s
+-- 
+1.6.0.4
+
