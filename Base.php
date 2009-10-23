@@ -75,6 +75,39 @@ class Base {
         return substr($str, 0, $canBe). $suffix;
     }
 
+    public function indent($lines, $indentation = 4, $newlines = "\n") {
+        // Setup Input
+        if (is_string($lines)) {
+            $lines = explode("\n", $lines);
+        }
+        if (!is_array($lines)) {
+            // Neither string nor array
+            // give this stuff back before accidents happen
+            return $lines;
+        }
+
+        // Lot of ways to set indent
+        if (is_numeric($indentation)) {
+            $indent = str_repeat(' ', $indentation);
+        } elseif (is_string($indentation)) {
+            $indent = $indentation;
+        } elseif ($indentation === true || $indentation === null) {
+            $indent = '    ';
+        } elseif ($indentation === false) {
+            $indent = '';
+        } else {
+            return $this->err('Indendation can be a lot of things but not "%s"', $indentation);
+        }
+
+        // Indent
+        foreach ($lines as &$line) {
+            $line = $indent . $line;
+        }
+
+        // Newline
+        return join($newlines, $lines);
+    }
+
     public function sensible($arguments) {
         if (!is_array($arguments)) {
             if (!is_numeric($arguments) && !is_bool($arguments)) {
