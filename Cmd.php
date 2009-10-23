@@ -61,11 +61,13 @@ class Cmd {
         $process = proc_open($cmd, $descriptorspec, $pipes);
         if (is_resource($process)) {
             while ($this->lastline = fgets($pipes[1], 1024)) {
+                $this->lastline = rtrim($this->lastline);
                 $this->stdout[] = $this->lastline;
                 $this->stdcmb[] = $this->lastline;
             }
             fclose($pipes[1]);
             while ($this->lastline = fgets($pipes[2], 1024)) {
+                $this->lastline = rtrim($this->lastline);
                 $this->stderr[] = $this->lastline;
                 $this->stdcmb[] = $this->lastline;
             }
