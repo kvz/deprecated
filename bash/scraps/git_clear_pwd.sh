@@ -1,4 +1,4 @@
-#// LANG::bash
+#// LANG::Bash
 #// Sample starts here
 # Import from SVN
 cd ${HOME}/workspace
