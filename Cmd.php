@@ -66,8 +66,8 @@ class Cmd {
             }
             fclose($pipes[1]);
             while ($this->lastline = fgets($pipes[2], 1024)) {
-                $this->stdout[] = $this->lastline;
                 $this->stderr[] = $this->lastline;
+                $this->stdcmb[] = $this->lastline;
             }
             fclose($pipes[2]);
         }
