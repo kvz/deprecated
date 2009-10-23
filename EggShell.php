@@ -111,9 +111,9 @@ class EggShell extends Base {
         $this->debug('Running \'%s\'', $cmd);
         $Cmd = new Cmd($cmd, $this->_options);
 
-        $lines = explode("\n", $Cmd->stdcmb);
+        $lines = explode("\n", $Cmd->stdout);
         foreach($lines as $line) {
-            $this->stdout(rtrim($Cmd->stdcmb));
+            $this->stdout(rtrim($Cmd->stdout));
         }
 
         if (false === $Cmd->okay) {
