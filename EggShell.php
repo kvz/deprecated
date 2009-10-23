@@ -583,7 +583,13 @@ class EggShell extends Base {
     }
 
     public function aptSourcesUpdate() {
-        return $this->exe('aptitude -o Aptitude::Cmdline::ignore-trust-violations=true -y update');
+        if (false === $this->exe('aptitude -o Aptitude::Cmdline::ignore-trust-violations=true -y update')) {
+            return false;
+        }
+        if (false === $this->exe('sudo dpkg --configure -a')) {
+            return false;
+        }
+        return true;
     }
 
     public function aptDistUpgrade() {
