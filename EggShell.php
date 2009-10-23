@@ -111,7 +111,10 @@ class EggShell extends Base {
         $this->debug('Running \'%s\'', $cmd);
         $Cmd = new Cmd($cmd, $this->_options);
 
-        $this->stdout(rtrim($Cmd->stdcmb));
+        $lines = explode("\n", $Cmd->stdcmb);
+        foreach($lines as $line) {
+            $this->stdout(rtrim($Cmd->stdcmb));
+        }
 
         if (false === $Cmd->okay) {
             return $this->warning('Command: %s failed (%s). %s',
