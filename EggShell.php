@@ -586,7 +586,7 @@ class EggShell extends Base {
         if (false === $this->exe('aptitude -o Aptitude::Cmdline::ignore-trust-violations=true -y update')) {
             return false;
         }
-        if (false === $this->exe('sudo dpkg --configure -a')) {
+        if (false === $this->exe('dpkg --configure -a')) {
             return false;
         }
         return true;
