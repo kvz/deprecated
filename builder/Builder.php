@@ -333,7 +333,7 @@ class Builder extends EggShell{
         $access  = $this->projPath($repo, $user, 'log/access.log');
         $error   = $this->projPath($repo, $user, 'log/error.log');
 
-        if (!($template = $this->write($config['vhostTemplate']))) {
+        if (!($template = $this->read($config['vhostTemplate']))) {
             return false;
         }
 
