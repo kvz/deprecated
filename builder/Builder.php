@@ -106,13 +106,13 @@ class Builder extends EggShell{
             foreach($this->_repos as $reponame=>$repo) {
                 $this->appendOnce('/etc/apache2/httpd.conf', "Listen ".$repo['ip'].":".$user['port']."\n");
             }
-        }
 
-        // Include all found developer vhosts to apache
-        // (even custom created ones)
-        $vpaths = $this->_config['basehome'] .'/*/Projects/*/etc/' ;
-        foreach (glob($vpaths) as $file) {
-            $this->appendOnce('/etc/apache2/httpd.conf', "Include ".$file."\n");
+            // Include all found developer vhosts to apache
+            // (even custom created ones)
+            $vpaths = $this->_config['basehome'] .'/'.$username.'/Projects/*/etc/';
+            foreach (glob($vpaths) as $file) {
+                $this->appendOnce('/etc/apache2/httpd.conf', "Include ".$file."\n");
+            }
         }
 
         return true;
@@ -128,19 +128,28 @@ class Builder extends EggShell{
     public function htmIndex() {
         // Index HTML
         $html  = '<html>';
+        $html .= '<head>';
         $html .= '<style>';
-        $html .= 'h1, .i1{padding-left: 0px;}';
-        $html .= 'h2, .i2{padding-left: 20px;}';
-        $html .= 'h3, .i3{padding-left: 40px;}';
-        $html .= 'h4, .i4{padding-left: 60px;}';
+        $html .= 'body {font-family: "Lucida Grande", verdana, arial, helvetica, sans-serif;
+                      font-size: 14px;
+                    } '."\n";
+        $html .= 'h1, .i1{padding-left: 0px;} '."\n";
+        $html .= 'h2, .i2{padding-left: 20px;} '."\n";
+        $html .= 'h3, .i3{padding-left: 40px;} '."\n";
+        $html .= 'h4, .i4{padding-left: 60px;} '."\n";
         $html .= '</style>';
+        $html .= '</head>';
+        $html .= '<body>';
         $html .= '<h1>Links</h1>';
         $html .= '<ul>';
             $html .= '<li>';
-                $html .= '<a href="https://'.$this->_config['devDomain'].'/submin/login">https://'.$this->_config['devDomain'].'/submin/login</a> (admin can manage repositories &amp; users)';
+                $html .= '<a href="https://'.$this->_config['devDomain'].'/submin/submin.cgi/login">https://'.$this->_config['devDomain'].'/submin/submin.cgi/login</a> (admin can manage repositories &amp; users)';
             $html .= '</li>';
             $html .= '<li>';
                 $html .= '<a href="https://www.truecare.nl">https://www.truecare.nl</a> (manage DNS records, create tickets, etc)';
+            $html .= '</li>';
+            $html .= '<li>';
+                $html .= '<a href="https://'.$this->_config['devDomain'].'/phpmyadmin">https://'.$this->_config['devDomain'].'/phpmyadmin</a>';
             $html .= '</li>';
         $html .= '</ul>';
         $html .= '<h1>Project Index</h1>';
@@ -163,6 +172,8 @@ class Builder extends EggShell{
                 $html .= $this->htmUserBlock($user, $repo);
             }
         }
+        $html .= '</body>';
+        $html .= '</html>';
         
         return $html;
     }
@@ -173,6 +184,7 @@ class Builder extends EggShell{
         $html  = '';
         $urls = array(
             'svn' => sprintf($this->_config['svnUrl'], $repo['name']),
+            'trac' => sprintf($this->_config['tracUrl'], $repo['name']),
             'web' => sprintf($this->_config['webUrl'], $repo['ip'], $user['port']),
             '-',
             'ftp' => sprintf('ftp://%s@%s', $user['name'], $repo['ip']),
@@ -203,7 +215,7 @@ class Builder extends EggShell{
                     continue;
                 }
                 $html .= ''.str_pad($key.':', 7, ' ', STR_PAD_RIGHT).' ';
-                if ($key === 'web') {
+                if ($key === 'web' || $key === 'svn' || $key === 'trac') {
                     $html .= '<a href="'.$url.'">'.$url.'</a>';
                 } else {
                     $html .= $url;
@@ -359,11 +371,11 @@ class Builder extends EggShell{
 
         // touch log
         touch($access);
-        $this->chgrp($access, $this->_config['sysWebGroup']);
+        $this->chown($access, null, $this->_config['sysWebGroup']);
         $this->chmod($access, 0664);
 
         touch($error);
-        $this->chgrp($error, $this->_config['sysWebGroup']);
+        $this->chown($error, null, $this->_config['sysWebGroup']);
         $this->chmod($error, 0664);
 
         return true;

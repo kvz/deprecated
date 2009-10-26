@@ -13,6 +13,7 @@ return array(
     'basehome' => '/home',
     'devDomain' => 'dev.example.com',
     'svnUrl' => 'https://dev.example.com/svn/%s',
+    'tracUrl' => 'https://dev.example.com/trac/%s',
     'webUrl' => 'http://%s:%s',
 
     'baseip' => '123.123.123.100',
