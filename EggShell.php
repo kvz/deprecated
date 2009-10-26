@@ -848,11 +848,13 @@ class EggShell extends Base {
     }
 
 
-    public function chown($filename, $user, $group = null) {
+    public function chown($filename, $user = null, $group = null) {
         $this->mark();
-
-        if (false === chown($filename, $user)) {
-            return $this->err('Unable to chown(%s) %s', $user, $filename);
+        
+        if ($user !== null) {
+            if (false === chown($filename, $user)) {
+                return $this->err('Unable to chown(%s) %s', $user, $filename);
+            }
         }
 
         if ($group !== null) {
@@ -860,7 +862,7 @@ class EggShell extends Base {
                 return $this->err('Unable to chrp(%s) %s', $group, $filename);
             }
         }
-
+        
         return true;
     }
 
