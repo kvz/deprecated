@@ -322,9 +322,7 @@ class Builder extends EggShell{
     }
 
     public function createVHost($file, $user, $repo) {
-        global $config;
-
-        if (file_exists($file) && empty($config['force'])) {
+        if (file_exists($file) && empty($this->_config['force'])) {
             return null;
         }
 
@@ -333,7 +331,7 @@ class Builder extends EggShell{
         $access  = $this->projPath($repo, $user, 'log/access.log');
         $error   = $this->projPath($repo, $user, 'log/error.log');
 
-        if (!($template = $this->read($config['vhostTemplate']))) {
+        if (!($template = $this->read($this->_config['vhostTemplate']))) {
             return false;
         }
 
@@ -341,7 +339,7 @@ class Builder extends EggShell{
             '${email}' => $user['email'],
             '${docroot}' => $docroot,
             '${home}' => $user['homedir'],
-            '${domain}' => $repo['name'].'.'.$config['maindomain'],
+            '${domain}' => $repo['name'].'.'.$this->_config['maindomain'],
             '${ip}' => $repo['ip'],
             '${port}' => $user['port'],
             '${source}' => $source,
@@ -361,17 +359,14 @@ class Builder extends EggShell{
 
         // touch log
         touch($access);
-        $this->chgrp($access, $config['sysWebGroup']);
+        $this->chgrp($access, $this->_config['sysWebGroup']);
         $this->chmod($access, 0664);
 
         touch($error);
-        $this->chgrp($error, $config['sysWebGroup']);
+        $this->chgrp($error, $this->_config['sysWebGroup']);
         $this->chmod($error, 0664);
 
         return true;
     }
-
-
-
 }
 ?>
