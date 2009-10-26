@@ -298,7 +298,7 @@ class EggShell extends Base {
      *
      * @return <type>
      */
-    public function mkdirOnce($pathname, $mode = null, $recursive = null) {
+    public function mkdirOnce($pathname, $mode = 0777, $recursive = false) {
         $this->mark();
 
         if (!is_dir($pathname)) {
