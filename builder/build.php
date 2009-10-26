@@ -4,6 +4,7 @@ require_once dirname(__FILE__).'/init.inc.php';
 
 $Builder = new Builder(array(
     'log-file' => '/var/log/builder.log',
+    'log-file-level' => 'info',
     'app-root' => DIR_BUILDER_ROOT,
 ));
 
