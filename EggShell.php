@@ -16,7 +16,7 @@ class EggShell extends Base {
     );
 
     /**
-     * Contstructor. Options are passed to every Class contstructor
+     * Options are passed to every Class contstructor
      * and hence available troughout the entire system.
      *
      * To avoid collission, That's why they're prefixed with scope.
@@ -184,7 +184,7 @@ class EggShell extends Base {
             $this->replace($data, $options['write-replace']);
         }
 
-        if ($options['write-once'] && file_exists($filename)) {
+        if ($options['write-once'] && $this->fileExists($filename)) {
             if (strpos(file_get_contents($filename), $data) !== false) {
                 $this->debug('Skipping writing to %s. Content already there.', $filename);
                 return null;
@@ -207,6 +207,10 @@ class EggShell extends Base {
         }
 
         return true;
+    }
+
+    public function fileExists($filename) {
+        return file_exists($filename);
     }
 
     public function mountpoint($device) {
@@ -276,7 +280,13 @@ class EggShell extends Base {
         // Protection againt mail storm
         $this->write('/etc/mailname', 'localhost');
 
-        $this->exe('/etc/init.d/hostname.sh');
+        $hostscript = '/etc/init.d/hostname.sh';
+        if ($this->fileExists($hostscript)) {
+            $this->exe($hostscript);
+        } else {
+            $this->exe('/bin/hostname %s', $hostname);
+        }
+        
         return true;
     }
 
