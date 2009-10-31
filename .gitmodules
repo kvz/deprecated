@@ -1,0 +1,3 @@
+[submodule "vendors/eggshell"]
+	path = vendors/eggshell
+	url = git://github.com/kvz/eggshell.git
