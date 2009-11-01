@@ -16,9 +16,19 @@ class Base {
         'log-section-close' => array('section_close'),
         'log-trail-level' => 'trail',
         'app-root' => '',
+        'class-autobind' => false,
+        'class-autosetup' => false,
     );
 
     public $logs;
+
+    /**
+     * Allows to automatically instantiate other Objects
+     * re-using the $options array for their constructors
+     *
+     * @var array
+     */
+    public $register = array();
 
     /**
      * Apparently not even Reflection can get a classes
@@ -138,7 +148,7 @@ class Base {
      * @param <type> $arr2
      * @return <type>
      */
-    protected function merge($arr1, $arr2 = null) {
+    public function merge($arr1, $arr2 = null) {
         $args = func_get_args();
         $r = (array)current($args);
         while (($arg = next($args)) !== false) {
@@ -233,8 +243,52 @@ class Base {
      *
      * @return false so you can easily break out of a function
      */
-    public function __call($name, $arguments) {
+    public function log($name, $arguments) {
         array_unshift($arguments, $name);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function emerg() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function crit() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function err() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function warning() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function notice() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function info() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function debug() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function debugv() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function section_open() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function section_close() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function trail() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
 
@@ -245,6 +299,24 @@ class Base {
         $this->_options = $this->merge((array)@$parentVars['_options'], $this->_options);
         // Override with own instance options
         $this->_options = $this->merge($this->_options, $options);
+
+        // Automatically instantiate classes
+        if ($this->_options['class-autobind']) {
+            foreach(get_class_vars(get_class($this)) as $property=>$val) {
+                if ($val === null && substr($property, 0 , 1) === strtoupper(substr($property, 0 , 1))) {
+                    if (class_exists($property)) {
+                        $this->{$property} = new $property($this->_options);
+                    }
+                }
+            }
+        }
+
+        if ($this->_options['class-autosetup']) {
+            // Call setup method if it exists
+            if (method_exists($this, '__setup')) {
+                call_user_func(array($this, '__setup'));
+            }
+        }
     }
 
     /**
