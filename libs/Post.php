@@ -55,8 +55,7 @@ class Post extends Base {
         if (empty($this->_data)) {
             return $this->err('No post selected');
         }
-
-        return @$this->_customFields['sourceEpoch'];
+        return $this->_customFields['sourceEpoch'];
     }
 }
 ?>

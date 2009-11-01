@@ -68,8 +68,10 @@ class VBlogTest extends PHPUnit_Framework_TestCase
 
         $this->assertTrue ($this->object->canPost($s, 9, 10));
         $this->assertFalse($this->object->canPost($s, 10, 9));
-        $this->assertTrue ($this->object->canPost($s, 14, 23));
+        $this->assertFalse($this->object->canPost($s, 14, 23));
         $this->assertFalse($this->object->canPost($s, 3, 4));
+        $this->assertFalse($this->object->canPost($s, 14, 14));
+        $this->assertFalse($this->object->canPost($s, 0, 9));
     }
 
     /**

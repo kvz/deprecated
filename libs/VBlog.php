@@ -10,10 +10,11 @@ class VBlog extends Base {
     public $Rpc;
     
     public function itemToPost($item) {
+        $cat = $this->_options['default_category'];
         $post = array(
             'title' => $item['title'],
             'description' => $item['content'],
-            'categories' => 'Uncategorized',
+            'categories' => $cat,
             'custom_fields' => array(
                 array(
                     'key' => 'sourceEpoch',
@@ -64,34 +65,48 @@ class VBlog extends Base {
     }
 
     public function canPost($schema, $last, $cur) {
-        
-        prd(compact('schema', 'last', 'cur'));
+        if ($last >= $cur) {
+            return false;
+        }
+        // last 14
+        // cur  23
+        if (!in_array($cur, $schema)) {
+            return false;
+        }
+
+        return true;
     }
 
     public function run() {
         $LastPost = $this->Posts->last();
 
-        $sourceEpoc = $LastPost->sourceEpoch();
-        $postHour   = $LastPost->date('G');
+        if (!$LastPost) {
+            $sourceEpoch = 0;
+        } else {
+            $sourceEpoch = $LastPost->sourceEpoch();
+            $postHour    = $LastPost->date('G');
 
-        if (!$this->canPost($this->_options['schema'], $postHour, date('G'))) {
-            $this->info('Cant add anything now because of schedule.', $item['title']);
-            return null;
+            if (!$this->canPost($this->_options['schema'], $postHour, date('G'))) {
+                $this->info('Cant add anything now because of schedule.');
+                return null;
+            }
         }
-
         $items = $this->Source->items();
+        $items = array_reverse($items);
         foreach ($items as $item) {
-            if ($item['epoch'] <= $sourceEpoc) {
-                $this->info('Skipped adding item %s. Already exists in blog.', $item['title']);
+            if ($item['epoch'] <= $sourceEpoch) {
+                $this->info('Skipped adding item %s with epoch %s cause blog is already at %s.', 
+                    $item['title'], date('Y-m-d H:i:s', $item['epoch']), date('Y-m-d H:i:s', $sourceEpoch));
             } else {
                 // Item doesn't exist.
                 // add
                 $post = $this->itemToPost($item);
-                continue;
                 if (!($id = $this->Posts->add($post))) {
                     return $this->err('Something went wrong while adding item %s', $item['title']);
                 } else {
+                    // Break out of loop. Only add 1 item at a time
                     $this->info('Successfully added item %s', $item['title']);
+                    return true;
                 }
             } 
         }
