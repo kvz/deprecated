@@ -22,10 +22,10 @@ require_once DIR_VBLOG."/vendors/simplepie_delicious.inc";
 require_once DIR_VBLOG."/vendors/class-IXR.php";
 
 if (!defined('DIR_EGGSHELL_ROOT')) {
-	if (file_exists('/home/kevin/workspace/eggshell')) {
+	if (file_exists('/home/kevin/workspace/eggshell/Base.php')) {
 		define('DIR_EGGSHELL_ROOT', '/home/kevin/workspace/eggshell');
 	} else {
-		define('DIR_EGGSHELL_ROOT', DIR_VBLOG."/vendors/eggshell/Base.php");
+		define('DIR_EGGSHELL_ROOT', DIR_VBLOG."/vendors/eggshell");
 	}
 }
 
