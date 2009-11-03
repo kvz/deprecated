@@ -6,19 +6,16 @@
  * The following code block can be utilized by PEAR's Testing_DocTest
  * <code>
  * // Input //
- * $input = array(0 => array('name' => 'Kevin van Zonneveld', 'age' => 26), 0 => array('name' => 'Someone else', 'age' => 26));
+ * $input = array(0 => array('name' => 'Kevin van Zonneveld', 'age' => 26), 1 => array('name' => 'Someone else', 'age' => 26));
  *
  * // Execute //
- * $output = uniqify($input, array('age'), true);
+ * $output = uniqifyRecords($input, array('age'), false);
  *
  * // Show //
- * print_r($output[0]['name']);
+ * echo $output[0]['name'];
  *
  * // expects:
- * // Array
- * // (
- * //     [0] => Kevin van Zonneveld
- * // )
+ * // Kevin van Zonneveld
  * </code>
  *
  * @param array $data Two Dimensional array. Typically a dataset
