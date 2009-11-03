@@ -24,9 +24,15 @@ class Posts extends Base {
         $this->_index($cache);
         
         foreach($this->_Posts as $Post) {
-            if (!$Post->isTrash()) {
-                return $Post;
+            if ($Post->isTrash()) {
+                continue;
             }
+
+            if (!$Post->sourceEpoch()) {
+                continue;
+            }
+
+            return $Post;
         }
 
         return null;
