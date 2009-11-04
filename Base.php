@@ -320,6 +320,28 @@ class Base {
     }
 
     /**
+     * Get or set ->_options
+     *
+     * @param mixed string or array $key
+     * @param mixed                 $val
+     * @param boolean               $forceWrite if value is set, it will be written. unless you want to write null. use force in that case
+     *
+     * @return mixed
+     */
+    public function opt($key, $val = null, $forceWrite = false) {
+        if (is_array($key)) {
+            foreach($key as $k => $v) {
+                $this->opt($k, $v);
+            }
+            return $this->_options;
+        }
+        if ($val !== null || $forceWrite) {
+            $this->_options[$key] = $val;
+        }
+        return $this->_options[$key];
+    }
+
+    /**
      * Internal log function. Always address it via another function
      * or the traces wont work
      *
