@@ -291,6 +291,14 @@ class Base {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
+    public function stdout() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
+    public function stderr() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
 
     public function  __construct($options = array()) {
         // Get parent defined options
