@@ -58,6 +58,14 @@ class Base {
         return $methods;
     }
 
+    /**
+     * null means skipped, false means fail, true means okay.
+     * Usefull for logging purposes
+     *
+     * @param mixed null or boolean $res
+     * 
+     * @return string
+     */
     public function conclude($res) {
         if (false === $res) {
             return 'Fail';
@@ -68,13 +76,28 @@ class Base {
         }
     }
 
+    /**
+     * Echo something.
+     * @todo should use propper STDOUT at some point
+     *
+     * @param <type> $str
+     */
     public function out($str) {
         $args = func_get_args();
         $str  = array_shift($args);
         echo vsprintf($str, $args);
         echo "\n";
     }
-    
+
+    /**
+     * Abbreviate a string. e.g: Kevin van zonneveld -> Kevin van Z...
+     *
+     * @param string  $str
+     * @param integer $cutAt
+     * @param string  $suffix
+     *
+     * @return string
+     */
     public function abbr($str, $cutAt = 30, $suffix = '...') {
         if (strlen($str) <= 30) {
             return $str;
@@ -85,6 +108,26 @@ class Base {
         return substr($str, 0, $canBe). $suffix;
     }
 
+    /**
+     * Turns server_types into ServerTypes/
+     * Borrowed from CakePHP's Inflector
+     *
+     * @param <type> $lowerCaseAndUnderscoredWord
+     * @return <type>
+     */
+    public function classify($lowerCaseAndUnderscoredWord) {
+        return str_replace(" ", "", ucwords(str_replace("_", " ", $lowerCaseAndUnderscoredWord)));
+    }
+
+    /**
+     * Indent an entire block of lines
+     *
+     * @param mixed string or array $lines
+     * @param mixed                 $indentation kind of intendation to use: 4, '    ', true
+     * @param string                 $newlines   the char to use for newlines
+     *
+     * @return string
+     */
     public function indent($lines, $indentation = 4, $newlines = "\n") {
         // Setup Input
         if (is_string($lines)) {
@@ -141,11 +184,12 @@ class Base {
     }
 
     /**
-     * Taken from CakePHP's Set Class
      * array_merge & $this->_merge is just never what you need
+     * Borrowed from CakePHP's Set
      *
      * @param <type> $arr1
      * @param <type> $arr2
+     *
      * @return <type>
      */
     public function merge($arr1, $arr2 = null) {
@@ -164,13 +208,22 @@ class Base {
         }
         return $r;
     }
-
+    
     public function camelize($str) {
         // for now a ucfirst will do.
         // can take cake inflector later if necessary
         return ucfirst($str);
     }
 
+    /**
+     * Returns or dumps a trace of the last steps in code execution
+     *
+     * @param <type> $strip
+     * @param <type> $dump
+     * @param <type> $array
+     * 
+     * @return <type>
+     */
     public function trace($strip = 2, $dump = false, $array=false) {
         $want = array(
             'file',
@@ -213,6 +266,14 @@ class Base {
         return $traces;
     }
 
+    /**
+     * Breadcrum tool. Place it inside a function to leave a trace in the
+     * logfiles. Will look at ->_options['log-mark-trace'] to determine what
+     * loglevel/type to use.
+     *
+     * @param <type> $level
+     * @return <type>
+     */
     public function mark($level = 'debug') {
         if (empty($this->_options['log-mark-trace'])) {
             return null;
@@ -227,6 +288,14 @@ class Base {
         );
     }
 
+    /**
+     * Strips the application root from a path, so will return the relative path
+     * inside the app.
+     *
+     * @param string $filename
+     *
+     * @return string
+     */
     public function inPath($filename) {
         if (is_string($filename)) {
             $filename = str_replace($this->_options['app-root'], '', $filename);
@@ -343,7 +412,7 @@ class Base {
             }
             return $this->_options;
         }
-        if ($val !== null || $forceWrite) {
+        if ($val !== null || $forceWrite || func_num_args() === 2) {
             $this->_options[$key] = $val;
         }
         return $this->_options[$key];
