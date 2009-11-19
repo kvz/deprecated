@@ -1,5 +1,5 @@
 #!/bin/bash
-git pull origin master
+git pull origin
 git submodule status
 git submodule update --init
 

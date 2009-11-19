@@ -457,7 +457,7 @@ class EggShell extends Base {
         }
 
         #return $this->exe('export DEBIAN_FRONTEND=noninteractive && aptitude -y install %s', $package);
-        return $this->exe('export DEBIAN_FRONTEND=noninteractive && apt-get -y --force-yes install %s', $package);
+        return $this->exe('export DEBIAN_FRONTEND=noninteractive && apt-get -yfq --force-yes install %s', $package);
     }
 
     /**
