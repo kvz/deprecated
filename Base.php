@@ -85,7 +85,10 @@ class Base {
     public function out($str) {
         $args = func_get_args();
         $str  = array_shift($args);
-        echo vsprintf($str, $args);
+        if (count($args)) {
+            $str = vsprintf($str, (array)$args);
+        }
+        echo $str;
         echo "\n";
     }
 
@@ -444,7 +447,10 @@ class Base {
             unset($arguments[1]);
         }
 
-        $str       = @vsprintf($format, $arguments);
+        $str = $format;
+        if (count($arguments)) {
+            $str = vsprintf($str, $arguments);
+        }
 
         $levels = array_flip(array(
             'emerg',
