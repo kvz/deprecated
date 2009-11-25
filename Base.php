@@ -345,6 +345,10 @@ class Base {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
+    public function error() {
+        $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
+        return call_user_func_array(array($this, '_log'), $arguments);
+    }
     public function warning() {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
