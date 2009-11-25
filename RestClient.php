@@ -1,31 +1,35 @@
 <?php
-
 // Restful Rails
 //
 // Author:  Sean Huber (shuber@huberry.com)
 // Date:    January 2008
 //
-// View the README for documentation/examples
+// Author:  Kevin van Zonneveld (kvz@php.net)
+// Date:    November 2009
+//
+// View the README.markdown for documentation/examples
 
 require_once dirname(__FILE__). '/Curl.php'; // http://github.com/shuber/curl
 require_once dirname(__FILE__). '/CurlResponse.php';
 require_once dirname(__FILE__). '/RestClientResponse.php';
 
 class RestClient {
-    
     public $request_prefix = 'http://';
     public $request_suffix = '';
     
-    protected $curl;
+    protected $Curl;
     protected $error = '';
     protected $response_type;
     protected $response_types = array();
 
-    protected $fail_codes = array(403, 404, 500);
+    protected $failCodes = array(403);
+    protected $crashCodes = array(404, 500);
     
-    public function __construct($request_prefix = false, $request_suffix = false) {
-        $this->curl = new Curl;
-        $this->curl->user_agent = $this->user_agent;
+    public function __construct($request_prefix = false, $request_suffix = false, $restOpts = array()) {
+        $this->Curl = new Curl();
+        if (!empty($restOpts['userAgent'])) {
+            $this->Curl->user_agent = $restOpts['userAgent'];
+        }
         
         $this->add_response_type('json', array('RestClientResponse', 'json'), '.json');
         $this->add_response_type('text', array('RestClientResponse', 'text'), '');
@@ -35,6 +39,19 @@ class RestClient {
         
         if ($request_prefix) $this->request_prefix = $request_prefix;
         if ($request_suffix) $this->request_suffix = $request_suffix;
+    }
+
+    public function headers($key, $val = null, $forceWrite = false) {
+        if (is_array($key)) {
+            foreach($key as $k => $v) {
+                $this->headers($k, $v);
+            }
+            return $this->Curl->headers;
+        }
+        if ($val !== null || $forceWrite || func_num_args() === 2) {
+            $this->Curl->headers[$key] = $val;
+        }
+        return $this->Curl->headers[$key];
     }
     
     public function error() {
@@ -88,14 +105,16 @@ class RestClient {
     
     protected function request($method, $url, $vars = array()) {
         if ($method != 'get') $vars['_method'] = $method;
-        $url = $this->request_prefix.$url.$this->request_suffix;
-        $response = ($method == 'get') ? $this->curl->get($url, $vars) : $this->curl->post($url, $vars);
+        $url      = $this->request_prefix.$url.$this->request_suffix;
+        $response = ($method == 'get') ? $this->Curl->get($url, $vars) : $this->Curl->post($url, $vars);
+        $crash    = $fail = false;
         if ($response) {
-            if (in_array($response->headers['Status-Code'], $this->fail_codes)) {
+            if (($fail = in_array($response->headers['Status-Code'], $this->failCodes))
+                || ($crash = in_array($response->headers['Status-Code'], $this->crashCodes))) {
                 $this->error = 'Request to "'.$url.'" responded with a ' . $response->headers['Status'];
             }
             
-            if ('404' == $response->headers['Status-Code']) {
+            if ($crash) {
                 return false;
             }
 
@@ -107,10 +126,9 @@ class RestClient {
             }
             return $type_casted_response;
         } else {
-            $this->error = $this->curl->error();
+            $this->error = $this->Curl->error();
             return false;
         }
     }
-    
 }
 ?>
