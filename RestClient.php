@@ -17,12 +17,14 @@ class RestClient {
     public $request_prefix = 'http://';
     public $request_suffix = '';
     
+    protected $url;
+    
     protected $Curl;
     protected $error = '';
     protected $response_type;
     protected $response_types = array();
 
-    protected $failCodes = array(403);
+    protected $failCodes  = array(403);
     protected $crashCodes = array(404, 500);
     
     public function __construct($request_prefix = false, $request_suffix = false, $restOpts = array()) {
@@ -41,23 +43,24 @@ class RestClient {
         if ($request_suffix) $this->request_suffix = $request_suffix;
     }
 
-    public function headers($key, $val = null, $forceWrite = false) {
+    public function error() {
+        return $this->error;
+    }
+
+    public function headers($key, $val = null) {
         if (is_array($key)) {
             foreach($key as $k => $v) {
                 $this->headers($k, $v);
             }
-            return $this->Curl->headers;
+            return $this->_options;
         }
-        if ($val !== null || $forceWrite || func_num_args() === 2) {
+        if (func_num_args() === 2) {
             $this->Curl->headers[$key] = $val;
         }
         return $this->Curl->headers[$key];
     }
-    
-    public function error() {
-        return $this->error;
-    }
-    
+
+
     public function delete($url, $vars = array()) {
         return $this->request('delete', $url, $vars);
     }
@@ -102,16 +105,20 @@ class RestClient {
             return false;
         }
     }
+
+    public function lastUrl() {
+        return $this->url;
+    }
     
     protected function request($method, $url, $vars = array()) {
         if ($method != 'get') $vars['_method'] = $method;
-        $url      = $this->request_prefix.$url.$this->request_suffix;
-        $response = ($method == 'get') ? $this->Curl->get($url, $vars) : $this->Curl->post($url, $vars);
-        $crash    = $fail = false;
+        $this->url = $this->request_prefix.$url.$this->request_suffix;
+        $response  = ($method == 'get') ? $this->Curl->get($this->url, $vars) : $this->Curl->post($this->url, $vars);
+        $crash     = $fail = false;
         if ($response) {
             if (($fail = in_array($response->headers['Status-Code'], $this->failCodes))
                 || ($crash = in_array($response->headers['Status-Code'], $this->crashCodes))) {
-                $this->error = 'Request to "'.$url.'" responded with a ' . $response->headers['Status'];
+                $this->error = 'Request to "'.$this->url.'" responded with a ' . $response->headers['Status'];
             }
             
             if ($crash) {
