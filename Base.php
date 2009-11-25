@@ -455,7 +455,7 @@ class Base {
 
         $alias = array(
             'error' => 'err',
-        )
+        );
 
         if (isset($alias[$level])) {
             $level = $alias[$level];
