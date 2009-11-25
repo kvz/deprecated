@@ -453,6 +453,14 @@ class Base {
         $level     = $arguments[0];
         $format    = $arguments[1];
 
+        $alias = array(
+            'error' => 'err',
+        )
+
+        if (isset($alias[$level])) {
+            $level = $alias[$level];
+        }
+
         // recurse?
         if (is_array($format)) {
             foreach($format as $f) {
