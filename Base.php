@@ -112,15 +112,32 @@ class Base {
     }
 
     /**
-     * Turns server_types into ServerTypes/
-     * Borrowed from CakePHP's Inflector
+     * Returns the given camelCasedWord as an underscored_word.
+     * Taken from CakePHP's Inflector
      *
-     * @param <type> $lowerCaseAndUnderscoredWord
-     * @return <type>
+     * @param string $camelCasedWord Camel-cased word to be "underscorized"
+     * @return string Underscore-syntaxed version of the $camelCasedWord
+     * @access public
+     * @static
+     * @link http://book.cakephp.org/view/572/Class-methods
      */
-    public function classify($lowerCaseAndUnderscoredWord) {
-        return str_replace(" ", "", ucwords(str_replace("_", " ", $lowerCaseAndUnderscoredWord)));
-    }
+	public function underscore($camelCasedWord) {
+		return strtolower(preg_replace('/(?<=\\w)([A-Z])/', '_\\1', $camelCasedWord));
+	}
+
+    /**
+     * Returns the given lower_case_and_underscored_word as a CamelCased word.
+     * Taken from CakePHP's Inflector
+     *
+     * @param string $lower_case_and_underscored_word Word to camelize
+     * @return string Camelized word. LikeThis.
+     * @access public
+     * @static
+     * @link http://book.cakephp.org/view/572/Class-methods
+     */
+	public function camelize($lowerCaseAndUnderscoredWord) {
+		return str_replace(" ", "", ucwords(str_replace("_", " ", $lowerCaseAndUnderscoredWord)));
+	}
 
     /**
      * Indent an entire block of lines
@@ -165,6 +182,9 @@ class Base {
     }
 
     public function sensible($arguments) {
+        if (is_object($arguments)) {
+            return get_class($arguments);
+        }
         if (!is_array($arguments)) {
             if (!is_numeric($arguments) && !is_bool($arguments)) {
                 $arguments = "'".$arguments."'";
@@ -212,12 +232,6 @@ class Base {
         return $r;
     }
     
-    public function camelize($str) {
-        // for now a ucfirst will do.
-        // can take cake inflector later if necessary
-        return ucfirst($str);
-    }
-
     /**
      * Returns or dumps a trace of the last steps in code execution
      *
@@ -449,6 +463,9 @@ class Base {
 
         $str = $format;
         if (count($arguments)) {
+            foreach($arguments as $k => $v) {
+                $arguments[$k] = $this->sensible($v);
+            }
             $str = vsprintf($str, $arguments);
         }
 
