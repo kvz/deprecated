@@ -1,5 +1,4 @@
 <?php
-
 /**
  * A basic CURL wrapper
  *
@@ -23,6 +22,13 @@ class Curl {
      * @var boolean
     **/
     public $follow_redirects = true;
+
+    /**
+     * Determines whether or not to enforce SSL
+     *
+     * @var boolean
+    **/
+    public $verify_ssl = true;
 
     /**
      * An associative array of headers to send along with requests
@@ -244,6 +250,10 @@ class Curl {
             curl_setopt($this->request, CURLOPT_COOKIEFILE, $this->cookie_file);
             curl_setopt($this->request, CURLOPT_COOKIEJAR, $this->cookie_file);
         }
+
+        curl_setopt($this->request, CURLOPT_SSL_VERIFYHOST, !!$this->verify_ssl);
+        curl_setopt($this->request, CURLOPT_SSL_VERIFYPEER, !!$this->verify_ssl);
+        
         if ($this->follow_redirects) curl_setopt($this->request, CURLOPT_FOLLOWLOCATION, true);
         if ($this->referer) curl_setopt($this->request, CURLOPT_REFERER, $this->referer);
 

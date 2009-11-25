@@ -35,6 +35,9 @@ class RestClient {
         if (array_key_exists('cookieFile', $restOpts)) {
             $this->Curl->cookie_file = $restOpts['cookieFile'];
         }
+        if (array_key_exists('verifySSL', $restOpts)) {
+            $this->Curl->verify_ssl = $restOpts['verifySSL'];
+        }
         
         $this->add_response_type('json', array('RestClientResponse', 'json'), '.json');
         $this->add_response_type('text', array('RestClientResponse', 'text'), '');
