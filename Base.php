@@ -330,7 +330,7 @@ class Base {
      * @return false so you can easily break out of a function
      */
     public function log($name, $arguments) {
-        array_unshift($arguments, $name);
+        $arguments = func_get_args(); 
         return call_user_func_array(array($this, '_log'), $arguments);
     }
     public function emerg() {
