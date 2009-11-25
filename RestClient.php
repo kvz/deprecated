@@ -16,11 +16,11 @@ require_once dirname(__FILE__). '/RestClientResponse.php';
 class RestClient {
     public $request_prefix = 'http://';
     public $request_suffix = '';
+    public $error = '';
     
     protected $url;
     
     protected $Curl;
-    protected $error = '';
     protected $response_type;
     protected $response_types = array();
 
@@ -44,10 +44,6 @@ class RestClient {
         
         if ($request_prefix) $this->request_prefix = $request_prefix;
         if ($request_suffix) $this->request_suffix = $request_suffix;
-    }
-
-    public function error() {
-        return $this->error;
     }
 
     public function headers($key, $val = null) {
@@ -118,6 +114,7 @@ class RestClient {
         $this->url = $this->request_prefix.$url.$this->request_suffix;
         $response  = ($method == 'get') ? $this->Curl->get($this->url, $vars) : $this->Curl->post($this->url, $vars);
         $crash     = $fail = false;
+        
         if ($response) {
             if (($fail = in_array($response->headers['Status-Code'], $this->failCodes))
                 || ($crash = in_array($response->headers['Status-Code'], $this->crashCodes))) {
