@@ -29,8 +29,11 @@ class RestClient {
     
     public function __construct($request_prefix = false, $request_suffix = false, $restOpts = array()) {
         $this->Curl = new Curl();
-        if (!empty($restOpts['userAgent'])) {
+        if (array_key_exists('userAgent', $restOpts)) {
             $this->Curl->user_agent = $restOpts['userAgent'];
+        }
+        if (array_key_exists('cookieFile', $restOpts)) {
+            $this->Curl->cookie_file = $restOpts['cookieFile'];
         }
         
         $this->add_response_type('json', array('RestClientResponse', 'json'), '.json');
