@@ -31,12 +31,7 @@ class Cmd {
 
     public function  __construct($cmd = null) {
         if (null !== $cmd) {
-            $args = func_get_args();
-            $cmd  = array_shift($args);
-            if (count($args)) {
-                $cmd = vsprintf($cmd, $args);
-            }
-            $this->cmdf($cmd);
+            $this->cmd($cmd);
         }
     }
     

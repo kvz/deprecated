@@ -102,14 +102,16 @@ class EggShell extends Base {
      * @return mixed string or boolean on failure
      */
     protected function _exe($cmd, $args = array()) {
-        $args = func_get_args();
-        $cmd  = array_shift($args);
-        if (count($args)) {
-            $cmd = vsprintf($cmd, $args);
+        if ($args !== 'plain') {
+            $args = func_get_args();
+            $cmd  = array_shift($args);
+            if (count($args)) {
+                $cmd = vsprintf($cmd, $args);
+            }
         }
         
         $this->debug('Running \'%s\'', $cmd);
-        $Cmd = new Cmd($cmd, $this->_options);
+        $Cmd = new Cmd($cmd);
 
         $lines = explode("\n", $Cmd->stdout);
         foreach($lines as $line) {
