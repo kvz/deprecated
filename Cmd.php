@@ -13,6 +13,7 @@ class Cmd {
     public $okaycode = array(0, 255);
     public $lastline;
     public $callbacks = array();
+    public $collect = false;
 
     public function reset() {
         $this->okay     = null;
@@ -47,20 +48,18 @@ class Cmd {
     }
 
     public function stdout($str) {
+        $this->stdout[] = $str;
+        $this->stdcmb[] = $str;
         if (isset($this->callbacks[__FUNCTION__])) {
             return call_user_func($this->callbacks[__FUNCTION__], $str);
-        } else {
-            $this->stdout[] = $str;
-            $this->stdcmb[] = $str;
         }
     }
     
     public function stderr($str) {
+        $this->stderr[] = $str;
+        $this->stdcmb[] = $str;
         if (isset($this->callbacks[__FUNCTION__])) {
             return call_user_func($this->callbacks[__FUNCTION__], $str);
-        } else {
-            $this->stderr[] = $str;
-            $this->stdcmb[] = $str;
         }
     }
     
