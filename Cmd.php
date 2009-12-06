@@ -12,6 +12,7 @@ class Cmd {
     public $okay;
     public $okaycode = array(0, 255);
     public $lastline;
+    public $callbacks = array();
 
     public function reset() {
         $this->okay     = null;
@@ -44,6 +45,24 @@ class Cmd {
 
         return $this->cmd($cmd);
     }
+
+    public function stdout($str) {
+        if (isset($this->callbacks[__FUNCTION__])) {
+            return call_user_func($this->callbacks[__FUNCTION__], $str);
+        } else {
+            $this->stdout[] = $str;
+            $this->stdcmb[] = $str;
+        }
+    }
+    
+    public function stderr($str) {
+        if (isset($this->callbacks[__FUNCTION__])) {
+            return call_user_func($this->callbacks[__FUNCTION__], $str);
+        } else {
+            $this->stderr[] = $str;
+            $this->stdcmb[] = $str;
+        }
+    }
     
     public function cmd($cmd) {
         $this->reset();
@@ -55,16 +74,14 @@ class Cmd {
         );
         $process = proc_open($cmd, $descriptorspec, $pipes);
         if (is_resource($process)) {
-            while ($this->lastline = fgets($pipes[1], 1024)) {
+            while ($this->lastline = fgets($pipes[1])) {
                 $this->lastline = rtrim($this->lastline);
-                $this->stdout[] = $this->lastline;
-                $this->stdcmb[] = $this->lastline;
+                $this->stdout($this->lastline);
             }
             fclose($pipes[1]);
-            while ($this->lastline = fgets($pipes[2], 1024)) {
+            while ($this->lastline = fgets($pipes[2])) {
                 $this->lastline = rtrim($this->lastline);
-                $this->stderr[] = $this->lastline;
-                $this->stdcmb[] = $this->lastline;
+                $this->stderr($this->lastline);
             }
             fclose($pipes[2]);
         }
