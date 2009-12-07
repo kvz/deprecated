@@ -18,7 +18,7 @@ class PdfTest extends CakeTestCase {
             'serve' => false,
             'tidy' => false,
             'debug' => 2,
-            'background' => 'http://true.nl/truetogether_a.pdf',
+            'background' => 'http://true.nl/files/truetogether_a.pdf',
             'title' => 'Cluster report',
             'subtitle' => 'DHL Productie cluster',
         ));
