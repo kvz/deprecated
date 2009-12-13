@@ -399,7 +399,7 @@ class Base {
         $this->_options = $this->merge($this->_options, $options);
 
         // Automatically instantiate classes
-        if ($this->_options['class-autobind']) {
+        if (@$this->_options['class-autobind']) {
             foreach(get_class_vars(get_class($this)) as $property=>$val) {
                 if ($val === null && substr($property, 0 , 1) === strtoupper(substr($property, 0 , 1))) {
                     if (class_exists($property)) {
@@ -409,7 +409,7 @@ class Base {
             }
         }
 
-        if ($this->_options['class-autosetup']) {
+        if (@$this->_options['class-autosetup']) {
             // Call setup method if it exists
             if (method_exists($this, '__setup')) {
                 call_user_func(array($this, '__setup'));
