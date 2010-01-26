@@ -78,7 +78,11 @@ function nmap($argIps, $argPorts = array(21, 25, 22, 110, 143, 80, 443, 1433, 33
     // Init Params
     if (is_string($argIps)) {
         $argIps = str_replace(' ', '', $argIps);
-        $argIps = explode("\n", $argIps);
+        if (false !== strpos($argIps, ',')) {
+            $argIps = explode(",", $argIps);
+        } else {
+            $argIps = explode("\n", $argIps);
+        }
     }
     if (is_string($argPorts)) {
         $argPorts = str_replace(' ', '', $argPorts);
