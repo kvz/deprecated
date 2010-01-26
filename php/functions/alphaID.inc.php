@@ -61,17 +61,20 @@
  * }
  * 
  * // Show //
- * echo $number_in." => ".$alpha_out."\n";
+ * echo $number_out." => ".$alpha_out."\n";
  * echo $alpha_in." => ".$number_out."\n";
+ * echo alphaID(238328, false)." => ".alphaID(alphaID(238328, false), true)."\n";
  * 
  * // expects:
  * // 2188847690240 => SpQXn7Cb
  * // SpQXn7Cb => 2188847690240
+ * // aaab => 238328
  * 
  * </code>
  * 
  * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
  * @author    Simon Franz
+ * @author    Deadfish
  * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
  * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
  * @version   SVN: Release: $Id: alphaID.inc.php 344 2009-06-10 17:43:59Z kevin $
@@ -129,6 +132,8 @@ function alphaID($in, $to_num = false, $pad_up = false, $passKey = null)
                 $out -= pow($base, $pad_up);
             }
         }
+        $out = sprintf('%F', $out);
+        $out = substr($out, 0, strpos($out, '.'));
     } else { 
         // Digital number  -->>  alphabet letter code
         if (is_numeric($pad_up)) {
@@ -139,10 +144,11 @@ function alphaID($in, $to_num = false, $pad_up = false, $passKey = null)
         }
 
         $out = "";
-        for ($t = floor(log10($in) / log10($base)); $t >= 0; $t--) {
-            $a   = floor($in / bcpow($base, $t));
+        for ($t = floor(log($in, $base)); $t >= 0; $t--) {
+            $bcp = bcpow($base, $t);
+            $a   = floor($in / $bcp) % $base;
             $out = $out . substr($index, $a, 1);
-            $in  = $in - ($a * bcpow($base, $t));
+            $in  = $in - ($a * $bcp);
         }
         $out = strrev($out); // reverse
     }
