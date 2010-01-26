@@ -23,20 +23,21 @@ Class KvzHtml {
     protected $_idCnt = array();
     protected $_ids = array();
     protected $_buffer = array();
-    
+    protected $_cache = array();
+
     protected $_options = array();
 
-    public $loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipisicing 
+    public $loremIpsum = 'Lorem ipsum dolor sit amet, consectetur adipisicing
 elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi
 ut aliquip ex ea commodo consequat. Duis aute irure dolor in
 reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
 pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
 qui officia deserunt mollit anim id est laborum';
-    
+
     public function  __construct($options = array()) {
         $this->_options = $options;
-        
+
         if (!isset($this->_options['xhtml'])) $this->_options['xhtml'] = true;
         if (!isset($this->_options['track_toc'])) $this->_options['track_toc'] = false;
         if (!isset($this->_options['link_toc'])) $this->_options['link_toc'] = true;
@@ -56,7 +57,7 @@ qui officia deserunt mollit anim id est laborum';
                 $key), E_USER_ERROR);
             return false;
         }
-        
+
         $this->_options[$key] = $val;
     }
 
@@ -130,7 +131,7 @@ qui officia deserunt mollit anim id est laborum';
         }
         $body       = array_shift($arguments);
         $args       = array_shift($arguments);
-        
+
         return $this->_tag($tag, $body, $args);
     }
 
@@ -161,7 +162,7 @@ qui officia deserunt mollit anim id est laborum';
         if (!isset($this->_idCnt[$tag])) {
             $this->_idCnt[$tag] = 0;
         }
-        
+
         $this->_idCnt[$tag]++;
         $id = $tag . '-' . $this->_idCnt[$tag];
         $this->_ids[] = $id;
@@ -175,13 +176,13 @@ qui officia deserunt mollit anim id est laborum';
     protected function _args($args = array()) {
         $argumentsT = '';
         if (is_array($args) && count($args)) {
-            foreach($args as $k=>$v) {
-                if (substr($k, 0, 2) == '__') {
+            foreach ($args as $k => $v) {
+                if (substr($k, 0, 2) === '__') {
                     continue;
                 }
 
                 if (is_array($v)) {
-                    if ($k == 'style') {
+                    if ($k === 'style') {
                         $v2 = '';
                         foreach($v as $stylek => $stylev) {
                             $v2 .= sprintf(' %s: %s;', $stylek, $stylev);
@@ -218,7 +219,7 @@ qui officia deserunt mollit anim id est laborum';
                 $tagOptions['__' . $key] = $val;
             }
         }
-        
+
         // Use a default for every Tag specific option that
         // remains
         if (!array_key_exists('__newlineAfterOpeningTag', $tagOptions))
@@ -244,7 +245,7 @@ qui officia deserunt mollit anim id est laborum';
 
         // Indent body
         $bodyIndented = $this->indent($body, $tagOptions['__indentation'])."\n";
-        
+
         // Other defaults for XML
         if ($tagOptions['__xml']) {
             if (!$tagOptions['__trimbody'] && strpos($body, '<') === false) {
@@ -272,7 +273,7 @@ qui officia deserunt mollit anim id est laborum';
         if ($tagOptions['__cdata'] && !is_bool($body)  && !is_null($body)) {
             $bodyIndented = '<![CDATA[' . $bodyIndented . ']]>';
         }
-        
+
         if ($tagOptions['__onlybody']) {
             return $bodyIndented;
         }
@@ -305,7 +306,7 @@ qui officia deserunt mollit anim id est laborum';
         $tagOptions['__opentag']  = sprintf($tagOptions['__opentag'], $tag);
         $tagOptions['__closetag'] = sprintf($tagOptions['__closetag'], $tag);
         $tagOptions['__sclose']   = sprintf($tagOptions['__sclose'], $tag);
-        
+
         if (true === $body) {
             // Opening tag
             $result = $tagOptions['__opentag'];
@@ -441,7 +442,7 @@ qui officia deserunt mollit anim id est laborum';
             return $html;
         }
     }
-    
+
     public function getBuffer($clear = true) {
         $r = join('', $this->_buffer);
 
@@ -460,6 +461,12 @@ qui officia deserunt mollit anim id est laborum';
         if ($indentation === null && isset($this->_options['indentation'])) {
             $indentation = $this->_options['indentation'];
         }
+
+        // Cached cause this can easily be called 10k times:
+        if (isset($this->_cache[$indentation])) {
+            return $this->_cache[$indentation];
+        }
+
         // Lot of ways to set indent
         if (is_numeric($indentation)) {
             $indent = str_repeat(' ', $indentation);
@@ -475,7 +482,7 @@ qui officia deserunt mollit anim id est laborum';
                     $indentation), E_USER_ERROR);
         }
 
-        return $indent;
+        return ($this->_cache[$indentation] = $indent);
     }
     protected function _linesep($newlines = null) {
         if ($newlines === null && isset($this->_options['newlines'])) {
@@ -496,7 +503,7 @@ qui officia deserunt mollit anim id est laborum';
                     'Newlines can be a lot of things but not "%s"',
                     $newlines), E_USER_ERROR);
         }
-        
+
         return $linesep;
     }
     public function indent($lines, $indentation = null, $newlines = null) {
@@ -509,7 +516,7 @@ qui officia deserunt mollit anim id est laborum';
             // give this stuff back before accidents happen
             return $lines;
         }
-        
+
         // Indent
         foreach ($lines as &$line) {
             $line = $this->_indent($indentation). $line;
