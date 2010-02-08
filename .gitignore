@@ -3,3 +3,5 @@
 .settings
 nbproject
 gitup.dat
+tests/
+.gitup.dat

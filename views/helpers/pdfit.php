@@ -22,7 +22,7 @@ class PdfitHelper extends Helper {
         if (!isset($this->_options['filebase'])) $this->_options['filebase'] = tempnam($this->_options['dir'], 'pdfit_'. date('Ymd_His').'_').'%s.%s';
     }
 
-    public function  __call($name,  $arguments) {
+    public function  __call($name, $arguments) {
         $format = array_shift($arguments);
         $str    = vsprintf($format, $arguments);
         $this->logs[$name][] = $str;
@@ -553,4 +553,3 @@ aptitude install pdftk
         return $pdfFilePath;
     }
 }
-?>
