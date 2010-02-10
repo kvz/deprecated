@@ -267,7 +267,7 @@ aptitude install pdftk
         $opts = array(
             '--toc',
             '--toc-font-name Helvetica',
-            '--toc-depth 4',
+            '--toc-depth 2',
             '--toc-no-dots',
             '--outline',
 

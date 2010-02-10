@@ -48,4 +48,3 @@ Class PdfLayoutComponent extends Object{
         }
     }
 }
-?>
