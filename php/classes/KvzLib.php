@@ -39,6 +39,7 @@ class KvzLib extends KvzShell {
         $this->blackList["bash.dev"] = true;
         $this->blackList["bash"]['scraps'] = true;
         $this->blackList["nbproject"] = true;
+        $this->blackList["php"]['samples'] = true;
 
         $options = array(
             "bash_support" => true,
