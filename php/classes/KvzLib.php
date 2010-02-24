@@ -37,11 +37,12 @@ class KvzLib extends KvzShell {
 
         $this->blackList = array();
         $this->blackList["bash.dev"] = true;
+        $this->blackList["bash"]['scraps'] = true;
         $this->blackList["nbproject"] = true;
 
         $options = array(
             "bash_support" => true,
-            "one" => true
+            "one" => true,
         );
         $this->DocBlockReader = new DocBlockReader($options);
         
