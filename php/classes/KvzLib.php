@@ -129,7 +129,7 @@ class KvzLib extends KvzShell {
         try {
             $info["docblocks"] = $this->DocBlockReader->getDocBlocks($source);
         } catch (DocBlockReader_Exception $e) {
-            throw new KvzLib_Exception("Unable to parse ".$pathSource);
+            // throw new KvzLib_Exception("Unable to parse ".$pathSource);
         }
 
         return $info;
