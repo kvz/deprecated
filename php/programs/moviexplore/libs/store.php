@@ -94,6 +94,9 @@ Class Store{
                         }
                     }
 
+                    $movie['tagline'] = strip_tags($movie['tagline']);
+                    $movie['plotoutline'] = strip_tags($movie['plotoutline']);
+
                     $index .= $Html->div(
                         $Html->div(
                             $Html->a($movie['main_url'], $Html->img($imgFile, array('class' => 'poster'))) .
@@ -103,7 +106,6 @@ Class Store{
                         ). $Html->div(
                             $Html->h1($movie['title'], array('class' => 'title')) .
                             $Html->h2($movie['tagline'], array('class' => 'tagline')) .
-                            $Html->p($file.' --&gt;&gt; '.$movie['cleanedName'], array('class' => 'file')) .
                             $Html->p($movie['plotoutline'], array('class' => 'plotoutline')) .
                             $Html->p(implode(', ', $movie['genres']), array('class' => 'genres')) .
                             $Html->p($cast, array('class' => 'cast')),

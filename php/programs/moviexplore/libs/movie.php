@@ -102,6 +102,17 @@ Class Movie{
             'lawrywild',
             'INFAMOUS',
             'NODLABS',
+            'EbP',
+            'HDBRiSe',
+            'CRiSC',
+            'OAR',
+            'DD2',
+            'Lchd',
+            'RamPeD',
+            'TR',
+            'CBGB',
+            'Stv',
+            'RuDE',
         );
 
         $blackLists['Subs'] = array(
@@ -122,6 +133,7 @@ Class Movie{
             'ger',
             'fr',
             'pl',
+            'subs',
         );
 
         $blackLists['Source'] = array(
@@ -142,6 +154,7 @@ Class Movie{
             'kvcd',
             'svcd',
             'vcd',
+            'Avchd',
             'bluray',
             'repack',
             'r5',
@@ -149,6 +162,9 @@ Class Movie{
             'vc1',
             'novo',
             'dvd5',
+            'Dvd9',
+            'Blu-ray',
+            'h264',
         );
 
         $blackLists['Release'] = array(
