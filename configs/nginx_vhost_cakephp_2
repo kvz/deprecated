@@ -8,13 +8,15 @@ server {
     index       index.php index.html index.htm;
 
     # Compression
-    gzip              on;
-    gzip_types        text/plain text/css;
-    gzip_vary         on;
+    gzip       on;
+    gzip_types text/plain text/css;
+    gzip_vary  on;
 
     # Redirect from www to non-www
-    if ($host = 'www.example.com' ) {
-        rewrite  ^/(.*)$  http://example.com/$1  permanent;
+    # One thing to know: 'permanent' forwards the browser
+    # 'last' rewrites under the hood
+    if ($host = 'www.example.com') {
+        rewrite ^/(.*)$ http://example.com/$1 permanent;
         break;
     }
 
