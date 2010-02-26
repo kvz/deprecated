@@ -1,0 +1,20 @@
+server {
+    listen       80;
+    server_name  phpmyadmin.example.com;
+    root         /usr/share/phpmyadmin;
+    index        index.php;
+    
+    # Add your IP to the allow list!
+    location / {
+        allow 123.123.123.123;
+        deny all;
+    }
+    
+    location ~ \.php$ {
+        index          index.php index.html;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_index  index.php;
+        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include        fastcgi_params;
+    }
+}
