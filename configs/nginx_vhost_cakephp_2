@@ -1,0 +1,66 @@
+server {
+    listen      80;
+    server_name example.com www.example.com;
+    access_log  /var/log/nginx/example.com.access.log;
+    error_log   /var/log/nginx/example.com.error.log;
+    rewrite_log on;
+    root        /var/www/example.com/app/webroot;
+    index       index.php index.html index.htm;
+
+    # Compression
+    gzip              on;
+    gzip_types        text/plain text/css;
+    gzip_vary         on;
+
+    # Redirect from www to non-www
+    if ($host = 'www.example.com' ) {
+        rewrite  ^/(.*)$  http://example.com/$1  permanent;
+        break;
+    }
+
+    # No hotlinking of images
+    location ~* (\.jpg|\.png|\.css)$ {
+        if ($http_referer !~ ^(http://mydomain.com) ) {
+            return 403;
+        }
+    }
+
+    # Not found this on disk? 
+    # Feed to CakePHP for further processing!
+    if (!-e $request_filename) {
+        rewrite ^/(.+)$ /index.php?url=$1 last;
+        break;
+    }
+
+    # Pass the PHP scripts to FastCGI server
+    # listening on 127.0.0.1:9000
+    location ~ \.php$ {
+        # fastcgi_pass   unix:/tmp/php-fastcgi.sock;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_index  index.php;
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+        include        fastcgi_params;
+    }
+    
+    # Static files.
+    # Set expire headers, Turn off access log
+    location ~* \favicon.ico$ {
+        access_log off;
+        expires 1d;
+    }
+    # Set the expiry date to an insane amount
+    # if you can add a filestamp to the url:
+    # '/css/style.css?t='.filemtime('/css/style.css')
+    # Or let an Asset Manager do it for you
+    location ~ ^/(img|cjs|ccss)/ {
+        add_header Cache-Control public;
+        access_log off;
+        expires 90d;
+    }
+
+    # Deny access to .htaccess files,
+    # git & svn repositories, etc
+    location ~ /(\.ht|\.git|\.svn) {
+        deny  all;
+    }
+}
