@@ -18,7 +18,7 @@ server {
     # listening on 127.0.0.1:9000
     location ~ \.php$ {
         # fastcgi_pass   unix:/tmp/php-fastcgi.sock;
-        fastcgi_pass   localhost:9000;
+        fastcgi_pass   127.0.0.1:9000;
         fastcgi_index  index.php;
         fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
         include        fastcgi_params;
@@ -28,18 +28,21 @@ server {
     # Set expire headers, Turn off access log
     location ~* \favicon.ico$ {
         access_log off;
-        expires 6m;
+        expires 1d;
     }
+    # Set the expiry date to an insane amount
+    # if you can add a filestamp to the url:
+    # '/css/style.css?t='.filemtime('/css/style.css')
+    # Or let an Asset Manager do it for you
     location ~ ^/(img|cjs|ccss)/ {
+        add_header Cache-Control public;
         access_log off;
-        expires 7d;
+        expires 90d;
     }
-
 
     # Deny access to .htaccess files,
     # git & svn repositories, etc
     location ~ /(\.ht|\.git|\.svn) {
         deny  all;
     }
-
 }
