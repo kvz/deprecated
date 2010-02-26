@@ -20,7 +20,7 @@ server {
         # fastcgi_pass   unix:/tmp/php-fastcgi.sock;
         fastcgi_pass   127.0.0.1:9000;
         fastcgi_index  index.php;
-        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include        fastcgi_params;
     }
     
@@ -29,15 +29,12 @@ server {
     location ~* \favicon.ico$ {
         access_log off;
         expires 1d;
-    }
-    # Set the expiry date to an insane amount
-    # if you can add a filestamp to the url:
-    # '/css/style.css?t='.filemtime('/css/style.css')
-    # Or let an Asset Manager do it for you
-    location ~ ^/(img|cjs|ccss)/ {
         add_header Cache-Control public;
+    }
+    location ~ ^/(img|cjs|ccss)/ {
         access_log off;
-        expires 90d;
+        expires 7d;
+        add_header Cache-Control public;
     }
 
     # Deny access to .htaccess files,

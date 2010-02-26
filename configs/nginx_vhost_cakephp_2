@@ -12,9 +12,9 @@ server {
     gzip_types text/plain text/css;
     gzip_vary  on;
 
-    # Redirect from www to non-www
-    # One thing to know: 'permanent' forwards the browser
-    # 'last' rewrites under the hood
+    # Forward from www. to non-www.
+    # Notice 'permanent' forwards the browser,
+    #        'last'      rewrites under the hood
     if ($host = 'www.example.com') {
         rewrite ^/(.*)$ http://example.com/$1 permanent;
         break;
@@ -40,7 +40,7 @@ server {
         # fastcgi_pass   unix:/tmp/php-fastcgi.sock;
         fastcgi_pass   127.0.0.1:9000;
         fastcgi_index  index.php;
-        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include        fastcgi_params;
     }
     
