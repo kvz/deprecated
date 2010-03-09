@@ -111,9 +111,7 @@ class PdfitHelper extends Helper {
             'wrap' => 200,
         );
 
-
         $options = array_merge($default_options, $options);
-
 
         // Tidy
         $tidy = tidy_parse_string($html, $options, 'utf8');
@@ -263,12 +261,8 @@ aptitude install pdftk
 
         if (!isset($this->_options['title'])) $this->_options['title'] = '';
         if (!isset($this->_options['subtitle'])) $this->_options['subtitle'] = '';
-        
+
         $opts = array(
-            '--toc',
-            '--toc-font-name Helvetica',
-            '--toc-depth 2',
-            '--toc-no-dots',
             '--outline',
 
             '--margin-top 15mm',
@@ -281,6 +275,13 @@ aptitude install pdftk
 
             '--disable-javascript',
         );
+
+        if (!empty($this->_options['toc'])) {
+            $opts[] = '--toc';
+            $opts[] = '--toc-font-name Helvetica';
+            $opts[] = '--toc-depth 2';
+            $opts[] = '--toc-no-dots';
+        }
         
 //      @todo: Header text is breaking hard because of escaping issues
 //        $headertxt = '';

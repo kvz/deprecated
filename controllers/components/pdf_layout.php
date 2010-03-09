@@ -11,6 +11,7 @@ Class PdfLayoutComponent extends Object{
         'debug' => '0',
 
         // Passed as Helper options
+        'toc' => true,
         'title' => null,
         'subtitle' => null,
         'dumphtml' => null,
