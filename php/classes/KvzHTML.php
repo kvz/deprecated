@@ -208,6 +208,9 @@ qui officia deserunt mollit anim id est laborum';
     }
 
     protected function _tag($tag, $body = true, $tagOptions = array()) {
+        if (is_string($tagOptions)) {
+            $tagOptions = array('class' => $tagOptions);
+        }
         if (!is_array($tagOptions)) $tagOptions = array();
         if (is_array($body)) {
             $body = implode("\n", $body);
