@@ -124,6 +124,25 @@ class Base {
 	public function underscore($camelCasedWord) {
 		return strtolower(preg_replace('/(?<=\\w)([A-Z])/', '_\\1', $camelCasedWord));
 	}
+    
+    /**
+     * Recursive wrapper for underscore
+     *
+     * @param array $data
+     * 
+     * @return array
+     */
+    public function underscorer($data) {
+        if (is_array($data)) {
+            $newFields = array();
+            foreach ($data as $key => $val) {
+                $key = $this->underscore($key);
+                $newFields[$key] = $this->underscorer($val);
+            }
+            return $newFields;
+        }
+        return $data;
+    }
 
     /**
      * Returns the given lower_case_and_underscored_word as a CamelCased word.
@@ -138,6 +157,25 @@ class Base {
 	public function camelize($lowerCaseAndUnderscoredWord) {
 		return str_replace(" ", "", ucwords(str_replace("_", " ", $lowerCaseAndUnderscoredWord)));
 	}
+
+    /**
+     * Recursive wrapper for underscore
+     *
+     * @param array $data
+     *
+     * @return array
+     */
+    public function camelizer($data) {
+        if (is_array($data)) {
+            $newFields = array();
+            foreach ($data as $key => $val) {
+                $key = $this->camelize($key);
+                $newFields[$key] = $this->camelizer($val);
+            }
+            return $newFields;
+        }
+        return $data;
+    }
 
     /**
      * Indent an entire block of lines
