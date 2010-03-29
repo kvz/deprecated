@@ -38,7 +38,7 @@
 
 function abbreviate($str, $cutAt = 30, $suffix = '...')
 {
-    if (strlen($str) <= 30) {
+    if (strlen($str) <= $cutAt) {
         return $str;
     }
     
