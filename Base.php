@@ -102,7 +102,7 @@ class Base {
      * @return string
      */
     public function abbr($str, $cutAt = 30, $suffix = '...') {
-        if (strlen($str) <= 30) {
+        if (strlen($str) <= $cutAt) {
             return $str;
         }
 
@@ -110,6 +110,23 @@ class Base {
 
         return substr($str, 0, $canBe). $suffix;
     }
+
+    /**
+     * Returns camelBacked version of an underscored string.
+     * Taken from CakePHP's Inflector
+     *
+     * @param string $string
+     * @return string in variable form
+     * @access public
+     * @static
+     * @link http://book.cakephp.org/view/572/Class-methods
+     */
+	public function variable($string) {
+		$string  = $this->camelize($this->underscore($string));
+		$replace = strtolower(substr($string, 0, 1));
+		return $replace . substr($string, 1);
+	}
+
 
     /**
      * Returns the given camelCasedWord as an underscored_word.
@@ -124,7 +141,9 @@ class Base {
 	public function underscore($camelCasedWord) {
 		return strtolower(preg_replace('/(?<=\\w)([A-Z])/', '_\\1', $camelCasedWord));
 	}
-    
+
+
+
     /**
      * Recursive wrapper for underscore
      *
