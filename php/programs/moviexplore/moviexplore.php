@@ -19,6 +19,22 @@
  */
 
 error_reporting(E_ALL);
+if (!function_exists('pr')) {
+    function pr($arr) {
+        if (is_array($arr) && count($arr)) {
+            print_r($arr);
+        } else {
+            var_dump($arr);
+        }
+        echo "\n";
+    }
+}
+if (!function_exists('prd')) {
+    function prd($arr) {
+        pr($arr);
+        die();
+    }
+}
 
 if (!defined('DIR_ROOT')) {
     define('DIR_ROOT', dirname(__FILE__));
@@ -55,7 +71,7 @@ require_once DIR_ROOT.'/libs/movie.php';
 require_once DIR_ROOT.'/libs/store.php';
 require_once 'imdb.class.php';
 
-$outDir = '/home/kevin/Dropbox/Public/cinema';
+$outDir  = '/home/kevin/Dropbox/Public/cinema';
 $outFile = 'kijken.html';
 
 $crawlerOptions = array(
@@ -65,7 +81,7 @@ $crawlerOptions = array(
     'photodir' => $outDir.'/images',
 );
 $Crawler = new Crawler($crawlerOptions);
-$movies = $Crawler->crawl();
+$movies  = $Crawler->crawl();
 
 $Store = new Store($movies, 'html', array(
     'photovirt' => 'images',
@@ -75,4 +91,3 @@ $Store = new Store($movies, 'html', array(
 ));
 $Store->save();
 #$Store->output();
-?>
