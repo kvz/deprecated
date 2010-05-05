@@ -102,7 +102,7 @@ class Base {
      * @return string
      */
     public function abbr($str, $cutAt = 30, $suffix = '...') {
-        if (strlen($str) <= 30) {
+        if (strlen($str) <= $cutAt) {
             return $str;
         }
 
@@ -110,6 +110,23 @@ class Base {
 
         return substr($str, 0, $canBe). $suffix;
     }
+
+    /**
+     * Returns camelBacked version of an underscored string.
+     * Taken from CakePHP's Inflector
+     *
+     * @param string $string
+     * @return string in variable form
+     * @access public
+     * @static
+     * @link http://book.cakephp.org/view/572/Class-methods
+     */
+	public function variable($string) {
+		$string  = $this->camelize($this->underscore($string));
+		$replace = strtolower(substr($string, 0, 1));
+		return $replace . substr($string, 1);
+	}
+
 
     /**
      * Returns the given camelCasedWord as an underscored_word.
@@ -125,6 +142,27 @@ class Base {
 		return strtolower(preg_replace('/(?<=\\w)([A-Z])/', '_\\1', $camelCasedWord));
 	}
 
+
+
+    /**
+     * Recursive wrapper for underscore
+     *
+     * @param array $data
+     * 
+     * @return array
+     */
+    public function underscorer($data) {
+        if (is_array($data)) {
+            $newFields = array();
+            foreach ($data as $key => $val) {
+                $key = $this->underscore($key);
+                $newFields[$key] = $this->underscorer($val);
+            }
+            return $newFields;
+        }
+        return $data;
+    }
+
     /**
      * Returns the given lower_case_and_underscored_word as a CamelCased word.
      * Taken from CakePHP's Inflector
@@ -138,6 +176,25 @@ class Base {
 	public function camelize($lowerCaseAndUnderscoredWord) {
 		return str_replace(" ", "", ucwords(str_replace("_", " ", $lowerCaseAndUnderscoredWord)));
 	}
+
+    /**
+     * Recursive wrapper for underscore
+     *
+     * @param array $data
+     *
+     * @return array
+     */
+    public function camelizer($data) {
+        if (is_array($data)) {
+            $newFields = array();
+            foreach ($data as $key => $val) {
+                $key = $this->camelize($key);
+                $newFields[$key] = $this->camelizer($val);
+            }
+            return $newFields;
+        }
+        return $data;
+    }
 
     /**
      * Indent an entire block of lines
