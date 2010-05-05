@@ -766,7 +766,7 @@ class EggShell extends Base {
      * @return <type>
      */
     function userPasswd($username, $password, $options = array()) {
-        if (array_key_exists('samba', $options)) $options['samba'] = false;
+        if (!array_key_exists('samba', $options)) $options['samba'] = false;
 
         if (false === $this->exe('echo "%s:%s" | /usr/sbin/chpasswd',
             escapeshellcmd($username),
