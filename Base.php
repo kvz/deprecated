@@ -12,6 +12,7 @@ class Base {
         'log-break-level' => 'err',
         'log-mark-trace' => false,
         'log-file' => '/var/log/egg.log',
+        'log-date-format' => 'H:i:s',
         'log-section-open' => array('section_open'),
         'log-section-close' => array('section_close'),
         'log-trail-level' => 'trail',
@@ -41,7 +42,7 @@ class Base {
      * 
      * @return <type>
      */
-    public function ownMethods($filename, $search = null) {
+    public function ownMethods ($filename, $search = null) {
         if (!file_exists($filename)) {
             return $this->err('Class source: %s not found', $filename);
         }
@@ -66,7 +67,7 @@ class Base {
      * 
      * @return string
      */
-    public function conclude($res) {
+    public function conclude ($res) {
         if (false === $res) {
             return 'Fail';
         } else if (null === $res) {
@@ -82,7 +83,7 @@ class Base {
      *
      * @param <type> $str
      */
-    public function out($str) {
+    public function out ($str) {
         $args = func_get_args();
         $str  = array_shift($args);
         if (count($args)) {
@@ -101,7 +102,7 @@ class Base {
      *
      * @return string
      */
-    public function abbr($str, $cutAt = 30, $suffix = '...') {
+    public function abbr ($str, $cutAt = 30, $suffix = '...') {
         if (strlen($str) <= $cutAt) {
             return $str;
         }
@@ -121,7 +122,7 @@ class Base {
      * @static
      * @link http://book.cakephp.org/view/572/Class-methods
      */
-	public function variable($string) {
+	public function variable ($string) {
 		$string  = $this->camelize($this->underscore($string));
 		$replace = strtolower(substr($string, 0, 1));
 		return $replace . substr($string, 1);
@@ -138,7 +139,7 @@ class Base {
      * @static
      * @link http://book.cakephp.org/view/572/Class-methods
      */
-	public function underscore($camelCasedWord) {
+	public function underscore ($camelCasedWord) {
 		return strtolower(preg_replace('/(?<=\\w)([A-Z])/', '_\\1', $camelCasedWord));
 	}
 
@@ -151,7 +152,7 @@ class Base {
      * 
      * @return array
      */
-    public function underscorer($data) {
+    public function underscorer ($data) {
         if (is_array($data)) {
             $newFields = array();
             foreach ($data as $key => $val) {
@@ -173,7 +174,7 @@ class Base {
      * @static
      * @link http://book.cakephp.org/view/572/Class-methods
      */
-	public function camelize($lowerCaseAndUnderscoredWord) {
+	public function camelize ($lowerCaseAndUnderscoredWord) {
 		return str_replace(" ", "", ucwords(str_replace("_", " ", $lowerCaseAndUnderscoredWord)));
 	}
 
@@ -184,7 +185,7 @@ class Base {
      *
      * @return array
      */
-    public function camelizer($data) {
+    public function camelizer ($data) {
         if (is_array($data)) {
             $newFields = array();
             foreach ($data as $key => $val) {
@@ -205,7 +206,7 @@ class Base {
      *
      * @return string
      */
-    public function indent($lines, $indentation = 4, $newlines = "\n") {
+    public function indent ($lines, $indentation = 4, $newlines = "\n") {
         // Setup Input
         if (is_string($lines)) {
             $lines = explode("\n", $lines);
@@ -238,7 +239,7 @@ class Base {
         return join($newlines, $lines);
     }
 
-    public function sensible($arguments) {
+    public function sensible ($arguments) {
         if (is_object($arguments)) {
             return get_class($arguments);
         }
@@ -272,7 +273,7 @@ class Base {
      *
      * @return <type>
      */
-    public function merge($arr1, $arr2 = null) {
+    public function merge ($arr1, $arr2 = null) {
         $args = func_get_args();
         $r = (array)current($args);
         while (($arg = next($args)) !== false) {
@@ -298,7 +299,7 @@ class Base {
      * 
      * @return <type>
      */
-    public function trace($strip = 2, $dump = false, $array=false) {
+    public function trace ($strip = 2, $dump = false, $array=false) {
         $want = array(
             'file',
             'line',
@@ -348,7 +349,7 @@ class Base {
      * @param <type> $level
      * @return <type>
      */
-    public function mark($level = 'debug') {
+    public function mark ($level = 'debug') {
         if (empty($this->_options['log-mark-trace'])) {
             return null;
         }
@@ -370,7 +371,7 @@ class Base {
      *
      * @return string
      */
-    public function inPath($filename) {
+    public function inPath ($filename) {
         if (is_string($filename)) {
             $filename = str_replace($this->_options['app-root'], '', $filename);
         }
@@ -386,68 +387,68 @@ class Base {
      *
      * @return false so you can easily break out of a function
      */
-    public function log($name, $arguments) {
+    public function log ($name, $arguments) {
         $arguments = func_get_args(); 
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function emerg() {
+    public function emerg () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function crit() {
+    public function crit () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function err() {
+    public function err () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function error() {
+    public function error () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function warning() {
+    public function warning () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function notice() {
+    public function notice () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function info() {
+    public function info () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function debug() {
+    public function debug () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function debugv() {
+    public function debugv () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function section_open() {
+    public function section_open () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function section_close() {
+    public function section_close () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function trail() {
+    public function trail () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function stdout() {
+    public function stdout () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
-    public function stderr() {
+    public function stderr () {
         $arguments = func_get_args(); array_unshift($arguments, __FUNCTION__);
         return call_user_func_array(array($this, '_log'), $arguments);
     }
 
-    public function  __construct($options = array()) {
+    public function  __construct ($options = array()) {
         // Get parent defined options
         $parentVars    = @get_class_vars(@get_parent_class($this));
         // Override with own defined options
@@ -483,7 +484,7 @@ class Base {
      *
      * @return mixed
      */
-    public function opt($key, $val = null, $forceWrite = false) {
+    public function opt ($key, $val = null, $forceWrite = false) {
         if (is_array($key)) {
             foreach($key as $k => $v) {
                 $this->opt($k, $v);
@@ -505,7 +506,7 @@ class Base {
      *
      * @return false so you can easily break out of a function
      */
-    protected function _log($level, $format, $arg1 = null, $arg2 = null, $arg3 = null) {
+    protected function _log ($level, $format, $arg1 = null, $arg2 = null, $arg3 = null) {
         $arguments = func_get_args();
         $level     = $arguments[0];
         $format    = $arguments[1];
@@ -553,7 +554,8 @@ class Base {
         $section   = false;
         $showLevel = $level;
         $useLevel  = $level;
-        $date      = date('H:i:s');
+        $date      = date($this->_options['log-date-format']);
+
         $indent    = '    ';
         $prefix    = "";
         if (in_array($level, $this->_options['log-section-open'])) {
@@ -627,4 +629,3 @@ class Base {
         return false;
     }
 }
-?>
