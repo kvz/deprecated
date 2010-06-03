@@ -264,7 +264,7 @@ qui officia deserunt mollit anim id est laborum';
             $tagOptions['__newlineAfterOpeningTag'] = false;
         }
 
-        if (true === @$tagOptions['id']) {
+        if (isset($tagOptions['id']) && $tagOptions['id'] === true) {
             // auto id
             $tagOptions['id'] = $this->_createId($tag);
         }
