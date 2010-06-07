@@ -886,12 +886,19 @@ class EggShell extends Base {
      *
      * @return <type>
      */
-    public function chmodr($pathname, $mode) {
+    public function chmodr ($pathname, $mode) {
         $this->mark();
 
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($pathname), RecursiveIteratorIterator::SELF_FIRST);
+		if (!is_file($pathname) && !is_dir($pathname)) {
+			return $this->err('Path not found while doing recursive chmod: %s', $pathname);
+		}
 
-        foreach($iterator as $filename) {
+        $iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator($pathname),
+			RecursiveIteratorIterator::SELF_FIRST
+		);
+
+        foreach ($iterator as $filename) {
             if (false === $this->chmod($filename, $mode)) {
                 return false;
             }
@@ -912,9 +919,16 @@ class EggShell extends Base {
     public function chownr($pathname, $user, $group = null) {
         $this->mark();
 
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($pathname), RecursiveIteratorIterator::SELF_FIRST);
+		if (!is_file($pathname) && !is_dir($pathname)) {
+			return $this->err('Path not found while doing recursive chown: %s', $pathname);
+		}
 
-        foreach($iterator as $filename) {
+        $iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator($pathname),
+			RecursiveIteratorIterator::SELF_FIRST
+		);
+
+        foreach ($iterator as $filename) {
             if (false === $this->chown($filename, $user, $group)) {
                 return false;
             }
