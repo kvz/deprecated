@@ -475,6 +475,7 @@ class EggShell extends Base {
 
         $options = $this->merge($this->_options, $options);
         if (!array_key_exists('ubuntu-distr', $options)) $options['ubuntu-distr'] = null;
+        if (!array_key_exists('ubuntu-sources', $options)) $options['ubuntu-sources'] = true;
         if (!array_key_exists('ubuntu-medibuntu', $options)) $options['ubuntu-medibuntu'] = true;
         if (!array_key_exists('apt-mirror', $options)) $options['apt-mirror'] = 'us';
         if (!array_key_exists('apt-refresh', $options)) $options['apt-refresh'] = true;
@@ -493,12 +494,21 @@ class EggShell extends Base {
         $lines[] = 'deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-updates main restricted universe multiverse';
         $lines[] = 'deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-backports main restricted universe multiverse';
         $lines[] = 'deb http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-security main restricted universe multiverse';
+		if ($options['ubuntu-sources']) {
+			$lines[] = 'deb-src http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR} main restricted universe multiverse';
+			$lines[] = 'deb-src http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-updates main restricted universe multiverse';
+			$lines[] = 'deb-src http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-backports main restricted universe multiverse';
+			$lines[] = 'deb-src http://${MIRROR}.archive.ubuntu.com/ubuntu/ ${UBUNTU_DISTR}-security main restricted universe multiverse';
+		}
         $lines[] = '';
 
         // Medibuntu
         if ($options['ubuntu-medibuntu']) {
             $lines[] = '# Medibuntu';
             $lines[] = 'deb http://packages.medibuntu.org/ ${UBUNTU_DISTR} free non-free';
+			if ($options['ubuntu-sources']) {
+				$lines[] = 'deb-src http://packages.medibuntu.org/ ${UBUNTU_DISTR} free non-free';
+			}
             $lines[] = '';
         }
 
