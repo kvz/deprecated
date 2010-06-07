@@ -61,6 +61,11 @@
  * @return boolean
  */
 function keyExistsTree($needle, $haystack) {
+    if (!is_array($haystack)) {
+        return false;
+    }
+
+
     $result = array_key_exists($needle, $haystack);
     if ($result) {
         return $result;

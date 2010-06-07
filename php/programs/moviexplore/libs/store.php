@@ -45,7 +45,7 @@ Class Store{
 
                 foreach ($this->_movies as $file=>$movie) {
                     if (empty($movie)) {
-                        trigger_error('Skipping '.$file.'. Invalid movie information', E_USER_NOTICE);
+                        echo('Skipping '.$file.'. Invalid movie information'. "\n");
                         continue;
                     }
 

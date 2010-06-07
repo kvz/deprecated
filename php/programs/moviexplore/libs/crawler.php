@@ -1,5 +1,5 @@
 <?php
-Class Crawler extends KvzShell{
+Class Crawler extends KvzShell {
 
     public $_options = array(
         'dir' => false,
@@ -49,7 +49,8 @@ Class Crawler extends KvzShell{
                 $Movie = new Movie($file);
                 $details = $Movie->getDetails();
                 if (false === $details) {
-                    trigger_error('No movie info found for: '.$Movie->cleanedName.', '. $file, E_USER_NOTICE);
+
+                    echo('No movie info found for: '.$Movie->cleanedName.', '. $file . "\n");
                 } else {
                     // Use this
                     $movies[$relativeFile] = $details;
@@ -79,4 +80,3 @@ Class Crawler extends KvzShell{
 Class Crawler_Exception extends Exception {
 
 }
-?>
