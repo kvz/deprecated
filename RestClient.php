@@ -112,10 +112,10 @@ class RestClient {
         return $this->url;
     }
 
-    public function curlGet($url, $vars) {
+    public function curlGet($url, $vars = array()) {
          return $this->Curl->get($url, $vars);
     }
-    public function curlPost($url, $vars) {
+    public function curlPost($url, $vars = array()) {
          return $this->Curl->post($url, $vars);
     }
 
