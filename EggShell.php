@@ -652,7 +652,7 @@ class EggShell extends Base {
         } else {
             // Just copy
             if (!copy($source, $dest)) {
-                return $this->err('Could not copy %s to %s', $source, $dest);
+                return $this->warning('Could not copy %s to %s', $source, $dest);
             }
         }
 
