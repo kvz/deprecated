@@ -892,12 +892,12 @@ class EggShell extends Base {
 			return $this->err('Path not found while doing recursive chmod: %s', $pathname);
 		}
 
-        $iterator = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator($pathname),
-			RecursiveIteratorIterator::SELF_FIRST
-		);
+		$files = $this->find($pathname);
+		if (!is_array($files)) {
+			return $files;
+		}
 
-        foreach ($iterator as $filename) {
+        foreach ($files as $filename) {
             if (false === $this->chmod($filename, $mode)) {
                 return false;
             }
@@ -921,13 +921,13 @@ class EggShell extends Base {
 		if (!is_file($pathname) && !is_dir($pathname)) {
 			return $this->err('Path not found while doing recursive chown: %s', $pathname);
 		}
+		
+		$files = $this->find($pathname);
+		if (!is_array($files)) {
+			return $files;
+		}
 
-        $iterator = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator($pathname),
-			RecursiveIteratorIterator::SELF_FIRST
-		);
-
-        foreach ($iterator as $filename) {
+        foreach ($files as $filename) {
             if (false === $this->chown($filename, $user, $group)) {
                 return false;
             }
@@ -935,6 +935,16 @@ class EggShell extends Base {
 
         return true;
     }
+
+	public function find ($path, $options = array()) {
+		if (false === ($o = $this->exe('find %s', $path))) {
+			return false;
+		} elseif (!$o) {
+			return array();
+		}
+		
+		return explode("\n", $o);
+	}
 
     /**
      * Add a crontab command
@@ -947,7 +957,7 @@ class EggShell extends Base {
     public function crontabAdd ($command, $timeschedule) {
         $this->mark();
         // Get
-        if (!($list =$this->exeContinue('crontab -l | grep -v "'.addslashes($command).'"'))) {
+        if (!($list = $this->exeContinue('crontab -l | grep -v "'.addslashes($command).'"'))) {
             $list = '';
         }
         
