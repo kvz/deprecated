@@ -439,7 +439,7 @@ class EggShell extends Base {
 				$dist
 			);
 			
-			if (false === $this->appendOnce($f, lines)) {
+			if (false === $this->appendOnce($f, $lines)) {
 				return false;
 			}
 		}
