@@ -372,7 +372,6 @@ class EggShell extends Base {
      */
     public function aptInstallOtherDist ($package, $dist, $options = array()) {
         $this->mark();
-
         $options = $this->merge($this->_options, $options);
 
         // Already in this dist??
@@ -413,6 +412,40 @@ class EggShell extends Base {
             return false;
         }
     }
+
+    public function aptPin ($packages, $dist, $options = array()) {
+        $this->mark();
+        $options = $this->merge($this->_options, $options);
+		
+		$dFile = sprintf('/etc/apt/sources.list.d/%s.list', $dist);
+		if (!$this->fileExists($dFile)) {
+			$this->exe(
+				'sed s/%s/%s/g /etc/apt/sources.list | sudo tee /etc/apt/sources.list.d/%s.list',
+				$options['ubuntu-distr'],
+				$dist,
+				$dist
+			);
+			$this->exe('apt-get -fy update');			
+		}
+		
+		if (is_string($packages)) {
+			$packages = array($packages);
+		}	
+			
+		$f = '/etc/apt/preferences';
+		foreach ($packages as $package) {
+			$lines = sprintf(
+				"Package: $package\nPin: release a=%s\nPin-Priority: 991\n\n",
+				$dist
+			);
+			
+			if (false === $this->appendOnce($f, lines)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 
     public function aptInstall ($package, $options = array()) {
         $this->mark();
