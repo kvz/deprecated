@@ -9,7 +9,6 @@ require_once dirname(__FILE__).'/Base.php';
 require_once dirname(__FILE__).'/Cmd.php';
 
 class EggShell extends Base {
-
     protected $_options = array(
         'dryrun' => false,
         'write-replace' => false,
@@ -23,7 +22,7 @@ class EggShell extends Base {
      *
      * @param array $options
      */
-    public function  __construct($options = array()) {
+    public function  __construct ($options = array()) {
         $this->className = get_class($this);
         
         // Take care of recursion when there are ++++ levels of inheritance
@@ -41,7 +40,7 @@ class EggShell extends Base {
      *
      * @return mixed string or boolean on failure
      */
-    public function exe() {
+    public function exe () {
         $args = func_get_args();
         if (false === ($res = call_user_func_array(array($this, '_exe'), $args))) {
             // Errors will halt everthing
@@ -54,7 +53,7 @@ class EggShell extends Base {
      *
      * @return mixed string or boolean on failure
      */
-    public function exeContinue() {
+    public function exeContinue () {
         $args = func_get_args();
 
         if (false === ($res = call_user_func_array(array($this, '_exe'), $args))) {
@@ -64,7 +63,7 @@ class EggShell extends Base {
         return $res;
     }
 
-    public function gitGet($repository, $directory, $options = array()) {
+    public function gitGet ($repository, $directory, $options = array()) {
         $options = $this->merge($this->_options, $options);
 
         if (!array_key_exists('git-checkout', $options)) $options['git-checkout'] = 'master';
@@ -101,7 +100,7 @@ class EggShell extends Base {
      *
      * @return mixed string or boolean on failure
      */
-    protected function _exe($cmd, $args = array()) {
+    protected function _exe ($cmd, $args = array()) {
         if ($args !== 'plain') {
             $args = func_get_args();
             $cmd  = array_shift($args);
@@ -138,7 +137,7 @@ class EggShell extends Base {
      *
      * @return mixed boolean or null when skipped
      */
-    public function appendOnce($filename, $data, $options = array()) {
+    public function appendOnce ($filename, $data, $options = array()) {
         $options['write-once'] = true;
         return $this->append($filename, $data, $options);
     }
@@ -153,7 +152,7 @@ class EggShell extends Base {
      *
      * @return mixed boolean or null when skipped
      */
-    public function append($filename, $data, $options = array()) {
+    public function append ($filename, $data, $options = array()) {
         $options['write-flags'] = FILE_APPEND;
         return $this->write($filename, $data, $options);
     }
@@ -168,7 +167,7 @@ class EggShell extends Base {
      *
      * @return mixed boolean or null when skipped
      */
-    public function write($filename, $data, $options = array()) {
+    public function write ($filename, $data, $options = array()) {
         $options = $this->merge($this->_options, $options);
 
         if (is_array($data)) {
@@ -211,11 +210,11 @@ class EggShell extends Base {
         return true;
     }
 
-    public function fileExists($filename) {
+    public function fileExists ($filename) {
         return file_exists($filename);
     }
 
-    public function mountpoint($device) {
+    public function mountpoint ($device) {
         $this->mark();
         $mountline = $this->exeContinue('/bin/mount |grep "%s "', $device);
         if (!$mountline) {
@@ -226,7 +225,7 @@ class EggShell extends Base {
         return $words[2];
     }
 
-    public function hasDevice($device){
+    public function hasDevice ($device){
         $this->mark();
         $res = $this->exeContinue('/usr/bin/stat %s', $device);
         if (false === $res) {
@@ -245,7 +244,7 @@ class EggShell extends Base {
      *
      * @return mixed string or array (if 'read-array' is set) or boolean on failure
      */
-    public function read($filename, $options = array()) {
+    public function read ($filename, $options = array()) {
         $options = $this->merge($this->_options, $options);
 
         if (!array_key_exists('read-array', $options)) $options['read-array'] = false;
@@ -272,7 +271,7 @@ class EggShell extends Base {
      *
      * @return boolean
      */
-    public function setHostname($hostname) {
+    public function setHostname ($hostname) {
         $this->mark();
 
         $this->info('Setting hostname to: %s', $hostname);
@@ -310,7 +309,7 @@ class EggShell extends Base {
      *
      * @return <type>
      */
-    public function mkdirOnce($pathname, $mode = 0777, $recursive = false) {
+    public function mkdirOnce ($pathname, $mode = 0777, $recursive = false) {
         $this->mark();
 
         if (!is_dir($pathname)) {
@@ -328,7 +327,7 @@ class EggShell extends Base {
      *
      * @return array
      */
-    public function symlinkOnce($target, $link, $options = array()) {
+    public function symlinkOnce ($target, $link, $options = array()) {
         $this->mark();
 
         if (!is_link($link)) {
@@ -350,7 +349,7 @@ class EggShell extends Base {
      *
      * @return boolean
      */
-    public function aptInstalled($package, $options = array()) {
+    public function aptInstalled ($package, $options = array()) {
         $this->mark();
 
         $res = $this->exeContinue("dpkg -s %s |grep 'Status:'", $package);
@@ -371,7 +370,7 @@ class EggShell extends Base {
      *
      * @return boolean
      */
-    public function aptInstallOtherDist($package, $dist, $options = array()) {
+    public function aptInstallOtherDist ($package, $dist, $options = array()) {
         $this->mark();
 
         $options = $this->merge($this->_options, $options);
@@ -415,7 +414,7 @@ class EggShell extends Base {
         }
     }
 
-    public function aptInstall($package, $options = array()) {
+    public function aptInstall ($package, $options = array()) {
         $this->mark();
 
         $options = $this->merge($this->_options, $options);
@@ -470,7 +469,7 @@ class EggShell extends Base {
      *
      * @return <type>
      */
-    public function aptSources($options = array()) {
+    public function aptSources ($options = array()) {
         $this->mark();
 
         $options = $this->merge($this->_options, $options);
@@ -576,7 +575,7 @@ class EggShell extends Base {
         return true;
     }
 
-    public function portping($host, $port, $timeout = 2, $retry = 3) {
+    public function portping ($host, $port, $timeout = 2, $retry = 3) {
         while ($retry >= 0) {
             $errno  = '';
             $errstr = '';
@@ -594,7 +593,7 @@ class EggShell extends Base {
         }
     }
 
-    public function aptSourcesUpdate() {
+    public function aptSourcesUpdate () {
         if (false === $this->exe('aptitude -o Aptitude::Cmdline::ignore-trust-violations=true -y update')) {
             return false;
         }
@@ -604,7 +603,7 @@ class EggShell extends Base {
         return true;
     }
 
-    public function aptDistUpgrade() {
+    public function aptDistUpgrade () {
         return $this->exe('aptitude -y dist-upgrade');
     }
 
@@ -619,7 +618,7 @@ class EggShell extends Base {
      *
      * @return <type>
      */
-    public function permCopy($source, $dest, $mode=0600, $user='root', $group='root', $options = array()) {
+    public function permCopy ($source, $dest, $mode=0600, $user='root', $group='root', $options = array()) {
         $this->mark();
 
         // Support for arrays
@@ -666,7 +665,7 @@ class EggShell extends Base {
         return true;
     }
 
-    public function chmod($filename, $mode = 0600) {
+    public function chmod ($filename, $mode = 0600) {
         $this->mark();
 
         if (!chmod($filename, $mode)) {
@@ -685,7 +684,7 @@ class EggShell extends Base {
      *
      * @return <type>
      */
-    function groupAdd($group, $gid = null) {
+    function groupAdd ($group, $gid = null) {
         $cmd  = '/usr/sbin/groupadd';
         $cmd .= ' '. $group;
 
@@ -706,7 +705,7 @@ class EggShell extends Base {
      *
      * @return <type>
      */
-    function userAdd($username, $groupname = null, $uid = null, $fullname = null, $home = null, $shell = '/bin/bash') {
+    function userAdd ($username, $groupname = null, $uid = null, $fullname = null, $home = null, $shell = '/bin/bash') {
         $cmd  = '/usr/sbin/useradd';
         $cmd .= ' '. $username;
 
@@ -738,7 +737,7 @@ class EggShell extends Base {
      *
      * @return mixed array or boolean on failure
      */
-    function userExists($filter, $field = 'username') {
+    function userExists ($filter, $field = 'username') {
         $lines = file('/etc/passwd', FILE_IGNORE_NEW_LINES ^ FILE_SKIP_EMPTY_LINES);
 
         foreach ($lines as $line) {
@@ -765,7 +764,7 @@ class EggShell extends Base {
      *
      * @return <type>
      */
-    function userPasswd($username, $password, $options = array()) {
+    function userPasswd ($username, $password, $options = array()) {
         if (!array_key_exists('samba', $options)) $options['samba'] = false;
 
         if (false === $this->exe('echo "%s:%s" | /usr/sbin/chpasswd',
@@ -794,7 +793,7 @@ class EggShell extends Base {
      *
      * @return <type>
      */
-    function getArgs($argv) {
+    function getArgs ($argv) {
         $arguments = array();
         for($i = 1; $i < count($argv); $i++) {
             if (substr($argv[$i], 0, 2) === '--') {
@@ -824,7 +823,7 @@ class EggShell extends Base {
      *
      * @return <type>
      */
-    function groupExists($filter, $field = 'group') {
+    function groupExists ($filter, $field = 'group') {
         $lines = file('/etc/group', FILE_IGNORE_NEW_LINES ^ FILE_SKIP_EMPTY_LINES);
         foreach ($lines as $line) {
             $parts = explode(':', $line);
@@ -838,7 +837,7 @@ class EggShell extends Base {
         return false;
     }
 
-    public function mv($oldname, $newname) {
+    public function mv ($oldname, $newname) {
         $this->mark();
 
         if (!rename($oldname, $newname)) {
@@ -848,7 +847,7 @@ class EggShell extends Base {
         return true;
     }
 
-    public function del($filename, $mayFail = false) {
+    public function del ($filename, $mayFail = false) {
         $this->mark();
         if (!@unlink($filename)) {
             if ($mayFail) {
@@ -860,7 +859,7 @@ class EggShell extends Base {
     }
 
 
-    public function chown($filename, $user = null, $group = null) {
+    public function chown ($filename, $user = null, $group = null) {
         $this->mark();
         
         if ($user !== null) {
@@ -916,7 +915,7 @@ class EggShell extends Base {
      *
      * @return boolean
      */
-    public function chownr($pathname, $user, $group = null) {
+    public function chownr ($pathname, $user, $group = null) {
         $this->mark();
 
 		if (!is_file($pathname) && !is_dir($pathname)) {
@@ -945,7 +944,7 @@ class EggShell extends Base {
      *
      * @return <type>
      */
-    public function crontabAdd($command, $timeschedule) {
+    public function crontabAdd ($command, $timeschedule) {
         $this->mark();
         // Get
         if (!($list =$this->exeContinue('crontab -l | grep -v "'.addslashes($command).'"'))) {
@@ -966,7 +965,7 @@ class EggShell extends Base {
      *
      * @param <type> $str
      */
-    public function replace(&$str, $vars = array()) {
+    public function replace (&$str, $vars = array()) {
         $this->mark();
         if (empty($vars) || $vars === true) {
             if (!empty($this->vars)) {
@@ -984,4 +983,3 @@ class EggShell extends Base {
         }
     }
 }
-?>
