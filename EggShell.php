@@ -989,18 +989,22 @@ class EggShell extends Base {
      */
     public function crontabAdd ($command, $timeschedule) {
         $this->mark();
-        // Get
+        // Get with command excluded
         if (!($list = $this->exeContinue('crontab -l | grep -v "'.addslashes($command).'"'))) {
             $list = '';
         }
         
-        // Change
+        // Append command
         $list .= sprintf('%s %s', $timeschedule, $command). "\n";
 
-        // Set
-        $this->exe('echo "'.addslashes($list).'" | crontab -');
+        // Write to temp
+        $temp = tempnam('/tmp', 'egg-cronadd');
+        $this->write($temp, $list);
 
-        return true;
+        // Set to cron
+        $res = $this->exe('cat %s | crontab - ', $temp);
+
+        return $res;
     }
 
     /**
