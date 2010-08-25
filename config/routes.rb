@@ -1,9 +1,7 @@
 ActionController::Routing::Routes.draw do |map|
+  map.resources :types
+
   map.resources :posts
-
-  map.resources :orms
-
-  map.resources :orms
 
   map.resources :orms
 

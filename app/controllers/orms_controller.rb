@@ -1,5 +1,16 @@
 class OrmsController < ApplicationController
-  # GET /orms/1
+  # GET /posts
+  # GET /posts.xml
+  def index
+    @orms = Orm.all
+
+    respond_to do |format|
+      format.html # index.html.erb
+      format.xml  { render :xml => @orms }
+    end
+  end
+
+# GET /orms/1
   # GET /orms/1.xml
   def show
     @orm = Orm.find(params[:id])
@@ -8,7 +19,18 @@ class OrmsController < ApplicationController
       format.html # show.html.erb
       format.xml  { render :xml => @orm }
       format.svg  { render :svg => @orm }
-      format.png  { render :png => @orm }
+      # format.png  { render :png => @orm }
+    end
+  end
+
+  # GET /posts/new
+  # GET /posts/new.xml
+  def new
+    @orm = Orm.new
+
+    respond_to do |format|
+      format.html # new.html.erb
+      format.xml  { render :xml => @orm }
     end
   end
   

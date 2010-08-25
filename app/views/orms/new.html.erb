@@ -4,8 +4,13 @@
   <%= f.error_messages %>
 
   <p>
+    <%= f.label :type_id %><br />
+    <%= select("orm", "type_id", Type.all.collect {|t| [ t.name, t.id ] }, { :include_blank => true }) %>
+  </p>
+
+  <p>
     <%= f.label :source %><br />
-    <%= f.text :source %>
+    <%= f.text_area :source %>
   </p>
 
   <p>

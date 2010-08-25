@@ -3,6 +3,8 @@
 tmp/
 
 #Ruby
+public/graphs/
+
 config/database.yml
 config/*.sphinx.conf
 config/s3_credentials.yml

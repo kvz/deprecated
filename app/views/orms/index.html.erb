@@ -6,6 +6,7 @@
 
 <% @orms.each do |orm| %>
   <tr>
+    <td><%= link_to  orm.uuid, orm %></td>
     <td><%= link_to 'Show', orm %></td>
     <td><%= link_to 'Edit', edit_orm_path(orm) %></td>
     <td><%= link_to 'Destroy', orm, :confirm => 'Are you sure?', :method => :delete %></td>

@@ -9,10 +9,9 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100825121549) do
+ActiveRecord::Schema.define(:version => 20100825143202) do
 
-  create_table "orms", :id => false, :force => true do |t|
-    t.string   "uuid",       :limit => 36
+  create_table "orms", :primary_key => "uuid", :force => true do |t|
     t.string   "ip"
     t.text     "source"
     t.boolean  "payed"
@@ -20,12 +19,19 @@ ActiveRecord::Schema.define(:version => 20100825121549) do
     t.string   "url"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "type_id"
   end
 
   create_table "posts", :force => true do |t|
     t.string   "title"
     t.text     "body"
     t.boolean  "published"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "types", :force => true do |t|
+    t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
