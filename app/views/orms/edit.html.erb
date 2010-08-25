@@ -1,0 +1,27 @@
+<h1>Editing orm</h1>
+
+<% form_for(@orm) do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+    <%= f.label :uuid  %><br />
+    <%= @orm.uuid  %>
+  </p>
+
+   <p>
+    <%= f.label :payed  %><br />
+    <%= @orm.payed  %>
+  </p>
+
+  <p>
+    <%= f.label :created_at  %><br />
+    <%= @orm.created_at  %>
+  </p>
+
+  <p>
+    <%= f.submit 'Update' %>
+  </p>
+<% end %>
+
+<%= link_to 'Show', @orm %> |
+<%= link_to 'Back', orms_path %>

@@ -2,7 +2,7 @@
 address: 127.0.0.1
 log_file: log/mongrel.log
 port: "3000"
-cwd: /var/www/ruby.ormify.com
-environment: production
+cwd: /var/www/ormify.com
+environment: development
 pid_file: tmp/pids/mongrel.pid
 servers: 3
