@@ -16,7 +16,7 @@ class OrmsController < ApplicationController
   # GET /orms/1.xml
   def show
     @orm = Orm.find(params[:id])
-
+    @orm.build_graph
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @orm }
@@ -52,14 +52,14 @@ class OrmsController < ApplicationController
       params[:orm][:source] = data
       curled = true
     end
-
+    params[:orm][:ip] = request.env["HTTP_X_FORWARDED_FOR"]
     @orm = Orm.new(params[:orm])
     respond_to do |format|
-      if @orm.save
+      if @orm.build_graph()
         flash[:notice] = 'Orm was successfully created.'
         format.html { redirect_to(@orm) }
         format.xml  { render :xml => @orm, :status => :created, :location => @orm }
-        format.text 
+        format.text
       else
         format.html { render :action => "new" }
         format.xml  { render :xml => @orm.errors, :status => :unprocessable_entity }
