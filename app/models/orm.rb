@@ -7,19 +7,42 @@ class Orm < ActiveRecord::Base
   def parse_source
     typePatterns = {
       :cakephp => {
-        :models => /^\s*[Cc]lass[ \t]+(A-Z[A-Za-z0-9_]+)[ \t]+[Ee][Xx][Tt][Ee][Nn][Dd][Ss][ \t]+(A-Z[A-Za-z0-9_]+Model)/sm,
-        :proper => /(RELATION)\s+=\s+(array\s*\([^;]+)/,
-        :parent => 'belongsTo',
-        :child  => 'hasMany|hasOne|hasAndBelongsToMany'
+        :defin => /^\s*[Cc]lass\s+([A-Z][A-Za-z0-9_]+)\s+[Ee][Xx][Tt][Ee][Nn][Dd][Ss]\s+[A-Z][A-Za-z0-9_]+Model\s*\{(.+)\}/sm,
+        :model => /['"]([A-Z][A-Za-z0-9_]+)['"]/,
+        :child => /(belongsTo)\s+=\s+(array\s*\([^;]+)/,
+        :paren => /(hasMany|hasOne|hasAndBelongsToMany)\s+=\s+(array\s*\(?<body>[^;]+)/,
       }
     }
+    
+    parsed = {}
 
-    models = {}
+    # Split source into models per type
+    typeModels = {}
     typePatterns.each do |type, patterns|
-       models[:type] = self.source.scan(patterns[:models])
+      result = source.scan(patterns[:defin])
+      if result.size then
+        typeModels[type] = result
+      end
+    end
+    # Order languages by modelcount
+    typeModels.sort_by {|models| models.size}
+
+    # Process hasbtm properties
+    typeModels.each do |type, models|
+      patterns = typePatterns[type]
+      models.each do |modelcol|
+        modelName, modelSource = modelcol
+        parsed[modelName] = {}
+        ['child','paren'].each do |relation|
+          if source = modelSource.match(patterns[:child])
+            parsed[modelName][:child] = source[2].scan(patterns[:model])
+          end
+        end
+      end
     end
 
-   return models.inspect
+
+   return parsed.inspect
 
   end
 
@@ -27,6 +50,8 @@ class Orm < ActiveRecord::Base
     if (!self.uuid)
       before_create
     end
+    # http://github.com/glejeune/Ruby-Graphviz/blob/master/examples/sample01.rb
+    # http://www.omninerd.com/articles/Automating_Data_Visualization_with_Ruby_and_Graphviz
     ext = 'png'
     url = '/graphs/' + self.uuid + '.' + ext
     file = File.join(RAILS_ROOT, 'public') + url
