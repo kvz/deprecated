@@ -4,9 +4,28 @@ class Orm < ActiveRecord::Base
   validates_presence_of :source
   include UUIDHelper
 
+  def parse_source
+    typePatterns = {
+      :cakephp => {
+        :models => /^\s*[Cc]lass[ \t]+(A-Z[A-Za-z0-9_]+)[ \t]+[Ee][Xx][Tt][Ee][Nn][Dd][Ss][ \t]+(A-Z[A-Za-z0-9_]+Model)/sm,
+        :proper => /(RELATION)\s+=\s+(array\s*\([^;]+)/,
+        :parent => 'belongsTo',
+        :child  => 'hasMany|hasOne|hasAndBelongsToMany'
+      }
+    }
+
+    models = {}
+    typePatterns.each do |type, patterns|
+       models[:type] = self.source.scan(patterns[:models])
+    end
+
+   return models.inspect
+
+  end
+
   def build_graph()
-    if (!self.uuid) 
-      before_create 
+    if (!self.uuid)
+      before_create
     end
     ext = 'png'
     url = '/graphs/' + self.uuid + '.' + ext

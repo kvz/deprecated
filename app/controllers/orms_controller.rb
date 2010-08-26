@@ -16,6 +16,7 @@ class OrmsController < ApplicationController
   # GET /orms/1.xml
   def show
     @orm = Orm.find(params[:id])
+    @parsed = @orm.parse_source
     @orm.build_graph
     respond_to do |format|
       format.html # show.html.erb
