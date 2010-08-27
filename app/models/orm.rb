@@ -7,14 +7,15 @@ class Orm < ActiveRecord::Base
   def parse_source
     typePatterns = {
       :cakephp => {
-        :defin => /^\s*[Cc]lass\s+([A-Z][A-Za-z0-9_]+)\s+[Ee][Xx][Tt][Ee][Nn][Dd][Ss]\s+[A-Z][A-Za-z0-9_]+Model\s*\{(.+)\}/sm,
-        :model => /['"]([A-Z][A-Za-z0-9_]+)['"]/,
+        :defin => /^\s*([Cc]lass\s+([A-Z][A-Za-z0-9_]+)\s+[Ee][Xx][Tt][Ee][Nn][Dd][Ss]\s+[A-Z][A-Za-z0-9_]+Model)\s*\{(.+)\}/sm,
         :child => /(belongsTo)\s+=\s+(array\s*\([^;]+)/,
-        :paren => /(hasMany|hasOne|hasAndBelongsToMany)\s+=\s+(array\s*\(?<body>[^;]+)/,
+        :paren => /(hasMany|hasOne|hasAndBelongsToMany)\s+=\s+(array\s*\(>[^;]+)/,
       }
     }
     
     parsed = {}
+    connections = {}
+    connected = {}
 
     # Split source into models per type
     typeModels = {}
@@ -27,16 +28,28 @@ class Orm < ActiveRecord::Base
     # Order languages by modelcount
     typeModels.sort_by {|models| models.size}
 
-    # Process hasbtm properties
+    # Process each model's hasbtm properties
     typeModels.each do |type, models|
-      patterns = typePatterns[type]
       models.each do |modelcol|
-        modelName, modelSource = modelcol
-        parsed[modelName] = {}
-        ['child','paren'].each do |relation|
-          if source = modelSource.match(patterns[:child])
-            parsed[modelName][:child] = source[2].scan(patterns[:model])
-          end
+        modelDef, modelName, modelSource = modelcol
+        parsed[modelName] = {:child => {}, :paren => {}}
+        # child to
+        if source = modelSource.match(typePatterns[type][:child])
+          parsed[modelName][:child] = array_to_ruby type, source[2]
+        end
+        # parent of
+        if source = modelSource.match(typePatterns[type][:paren])
+          parsed[modelName][:paren] = array_to_ruby type, source[2]
+        end
+      end
+    end
+    
+    # Make connections
+    parsed.each do |modelName, modelRelations|
+      connections = connected = {:modelName => {}}
+      modelRelations.each do |relationType, relations|
+        relations.each do |relationName, relationData|
+          
         end
       end
     end
@@ -44,6 +57,32 @@ class Orm < ActiveRecord::Base
 
    return parsed.inspect
 
+  end
+
+  def array_to_ruby(type, str)
+    case type
+    when :cakephp
+      phpCode = "<?php echo json_encode(" + str + ");"
+      phpFile = '/tmp/' + self.uuid;
+      tmpFile = File.new(phpFile, 'w')
+      tmpFile.write(phpCode)
+      tmpFile.close
+      
+      require 'open3'
+      require 'json'
+      cmd = "php " + phpFile
+      stdin, stdout, stderr = Open3.popen3(cmd)
+      
+      obj = JSON.parse(stdout.readlines.join)
+      obj.each do|name, relationData|
+        if !relationData.responds_to?(each)
+          
+        end
+        if !relationData[:relationName]
+          relationData[:relationName] = name
+        end
+      end
+    end
   end
 
   def build_graph()
