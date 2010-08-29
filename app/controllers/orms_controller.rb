@@ -1,11 +1,10 @@
 class OrmsController < ApplicationController
   include ActiveMerchant::Billing
   skip_before_filter :verify_authenticity_token
-  attr_accessor :price
-  @@price = 50
 
   def checkout
-    setup_response = gateway.setup_purchase(@@price,
+    @orm = Orm.new()
+    setup_response = gateway.setup_purchase(@orm.price,
       :ip                => remote_ip,
       :return_url        => url_for(:action => 'complete', :id => params[:id], :only_path => false),
       :cancel_return_url => url_for(:action => 'show', :id => params[:id], :only_path => false)
@@ -13,35 +12,46 @@ class OrmsController < ApplicationController
     redirect_to gateway.redirect_url_for(setup_response.token)
   end
 
-  def confirm
-    redirect_to :action => 'show', :id => params[:id] unless params[:token]
-
+  def complete
     details_response = gateway.details_for(params[:token])
-
     if !details_response.success?
-      @message = details_response.message
-      render :action => 'error'
-      return
+      flash[:error] = details_response.message
+      redirect_to :action => 'show', :id => params[:id]
     end
     @address = details_response.address
-  end
 
-  def complete
-    purchase = gateway.purchase(@@price,
-      :ip       => request.remote_ip,
+    @orm = Orm.find(params[:id])
+    purchase = gateway.purchase(@orm.price,
+      :ip       => remote_ip,
       :token    => params[:token],
       :payer_id => params[:PayerID]
       #:payer_id => params[:payer_id],
     )
 
+    @payment = Payment.new(@address)
+    @payment.orm_id = params[:id]
+    @payment.token = params[:token]
+    @payment.payer_id = params[:PayerID]
+    @payment.price = @@price
+    @payment.ip = remote_ip
+    @payment.billing_mode = ActiveMerchant::Billing::Base.mode
+
     if !purchase.success?
-      @message = purchase.message
-      render :action => 'error'
-      return
+      @payment.status = purchase.message
+      flash[:error] = purchase.message
     else
-      flash[:notice] = 'You\'ve payed for this ORM'
-      redirect_to :action => 'show', :id => params[:id]
+      @payment.status = 'ok'
+      flash[:notice] = 'Thanks ' + @address['name'] + ' for purchasing this ORM!'
     end
+
+    if !@payment.save
+      flash[:error] = 'Unable to store your payment. Be sure to contact us!'
+    end
+    if !@orm.build_graph
+      flash[:error] = 'Unable to regenerate ORM graph. Be sure to contact us!'
+    end
+
+    redirect_to :action => 'show', :id => params[:id]
   end
 
 
@@ -60,7 +70,7 @@ class OrmsController < ApplicationController
   # GET /orms/1.xml
   def show
     @orm = Orm.find(params[:id])
-    @parsed = @orm.parse_source
+    # @todo: don't build_graph on show when done testing
     @orm.build_graph
     respond_to do |format|
       format.html # show.html.erb
@@ -113,23 +123,6 @@ class OrmsController < ApplicationController
     end
   end
 
-  # PUT /orms/1
-  # PUT /orms/1.xml
-  def update
-    @orm = Orm.find(params[:id])
-
-    respond_to do |format|
-      if @orm.update_attributes(params[:orm])
-        flash[:notice] = 'Orm was successfully updated.'
-        format.html { redirect_to(@orm) }
-        format.xml  { head :ok }
-      else
-        format.html { render :action => "edit" }
-        format.xml  { render :xml => @orm.errors, :status => :unprocessable_entity }
-      end
-    end
-  end
-  
   private
   def gateway
     @gateway ||= PaypalExpressGateway.new(

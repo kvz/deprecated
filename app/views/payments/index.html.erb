@@ -1,0 +1,44 @@
+<h1>Listing payments</h1>
+
+<table>
+  <tr>
+    <th>Orm</th>
+    <th>Name</th>
+    <th>Company</th>
+    <th>Address1</th>
+    <th>Address2</th>
+    <th>City</th>
+    <th>State</th>
+    <th>Country</th>
+    <th>Zip</th>
+    <th>Ip</th>
+    <th>Payer</th>
+    <th>Token</th>
+    <th>Price</th>
+  </tr>
+
+<% @payments.each do |payment| %>
+  <tr>
+    <td><%=h payment.orm_id %></td>
+    <td><%=h payment.name %></td>
+    <td><%=h payment.company %></td>
+    <td><%=h payment.address1 %></td>
+    <td><%=h payment.address2 %></td>
+    <td><%=h payment.city %></td>
+    <td><%=h payment.state %></td>
+    <td><%=h payment.country %></td>
+    <td><%=h payment.zip %></td>
+    <td><%=h payment.ip %></td>
+    <td><%=h payment.payer_id %></td>
+    <td><%=h payment.token %></td>
+    <td><%=h payment.price %></td>
+    <td><%= link_to 'Show', payment %></td>
+    <td><%= link_to 'Edit', edit_payment_path(payment) %></td>
+    <td><%= link_to 'Destroy', payment, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New payment', new_payment_path %>

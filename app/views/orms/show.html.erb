@@ -1,19 +1,57 @@
-<pre>
-<%=h @parsed %>
+<h2><%= @orm.payed ? 'ORM of your models' : 'Preview' %></h2>
+<% if !@orm.payed %>
+  <p>
+    You are now looking at a preview graph. See if you like it.
+  </p>
+<% else %>
+  <p>
+    This graph has been payed for. You have 30 days to save this to your disk
+    before we remove it.
+  </p>
+<% end %>
 
-<%=h @orm.source.slice(0, 500) %>...
+
+<div id="sidebar" class="clearfix">
+  <% if !@orm.payed %>
+    <%
+      upgrade_url = {:action => 'checkout', :id => @orm.uuid}
+    %>
+    <p>
+      <%= link_to 'Upgrade', upgrade_url %>
+      If you do, consider donating $ <%=@orm.price/100%> and you will receive:
+      For only $ <%=@orm.price/100%> you will receive:
+      <ul>
+        <li>Scalable .svg image</li>
+        <li>No banners</li>
+      </ul>
+    </p>
+    <p>
+      <%= link_to image_tag('https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif'), upgrade_url %>
+    </p>
+    <pre>
+    kvz_1283093722_per@php.net
+    283098678
+    </pre>
+  <% else %>
+    <p>
+      
+    </p>
+  <% end %>
+</div>
+
+
+<a href="<%=@orm.url%>"><img src="<%=@orm.url%>" /></a>
+
+<pre>
+  <%=h @parsed %>
+  <%=h @orm.payed %>
+  
+
+  <%=h @orm.source.slice(0, 500) %>...
 </pre>
 
-<img src="<%=@orm.url%>" />
-
-<p>
-  <%= link_to image_tag('https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif'), :action => 'checkout', :id => @orm.uuid %>
-</p>
-<pre>
-kvz_1283093722_per@php.net
-283098678
-</pre>
 
 <%= link_to 'Graph', @orm.url %> |
 <%= link_to 'Edit', edit_orm_path(@orm) %> |
 <%= link_to 'Back', orms_path %>
+

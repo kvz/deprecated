@@ -1,8 +1,19 @@
 class Orm < ActiveRecord::Base
   set_primary_key "uuid"
   belongs_to :type
+  has_many :payments
   validates_presence_of :source
   include UUIDHelper
+  
+  def price
+    200
+  end
+
+  def payed
+    # @todo: Remove return false when done testing
+    return false
+    payments.count(:conditions => ["status = ? AND billing_mode != ?" , 'ok', ':test'])
+  end
 
   def parse_source
     typePatterns = {
@@ -92,13 +103,23 @@ class Orm < ActiveRecord::Base
     end
     # http://github.com/glejeune/Ruby-Graphviz/blob/master/examples/sample01.rb
     # http://www.omninerd.com/articles/Automating_Data_Visualization_with_Ruby_and_Graphviz
-    ext = 'png'
+    
+    if !self.payed
+      ext = 'png'
+      watermark = 'Preview. Buy full version at http://ormify.com/' + self.uuid
+    else
+      ext = 'svg' 
+    end
+
     url = '/graphs/' + self.uuid + '.' + ext
     file = File.join(RAILS_ROOT, 'public') + url
 
     require 'graphviz'
 
     # Create a new graph
+    @parsed = self.parse_source
+    
+    
     g = GraphViz.new( :G, :type => :digraph )
 
     # Create two nodes

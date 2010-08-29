@@ -1,0 +1,31 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  orm_id: MyString
+  name: MyString
+  company: MyString
+  address1: MyString
+  address2: MyString
+  city: MyString
+  state: MyString
+  country: MyString
+  zip: MyString
+  ip: MyString
+  payer_id: MyString
+  token: MyString
+  price: 1.5
+
+two:
+  orm_id: MyString
+  name: MyString
+  company: MyString
+  address1: MyString
+  address2: MyString
+  city: MyString
+  state: MyString
+  country: MyString
+  zip: MyString
+  ip: MyString
+  payer_id: MyString
+  token: MyString
+  price: 1.5
