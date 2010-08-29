@@ -53,7 +53,7 @@ class OrmsController < ApplicationController
       params[:orm][:source] = data
       curled = true
     end
-    params[:orm][:ip] = request.env["HTTP_X_FORWARDED_FOR"]
+    params[:orm][:ip] = remote_ip
     @orm = Orm.new(params[:orm])
     respond_to do |format|
       if @orm.build_graph()

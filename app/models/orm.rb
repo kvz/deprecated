@@ -74,6 +74,7 @@ class Orm < ActiveRecord::Base
       stdin, stdout, stderr = Open3.popen3(cmd)
       
       obj = JSON.parse(stdout.readlines.join)
+      return obj
       obj.each do|name, relationData|
         if !relationData.responds_to?(each)
           

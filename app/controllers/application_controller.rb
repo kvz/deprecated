@@ -7,4 +7,7 @@ class ApplicationController < ActionController::Base
 
   # Scrub sensitive parameters from your log
   # filter_parameter_logging :password
+  def remote_ip
+    request.env["HTTP_X_FORWARDED_FOR"]||request.remote_ip
+  end
 end
