@@ -18,15 +18,19 @@
     %>
     <p>
       <%= link_to 'Upgrade', upgrade_url %>
-      If you do, consider donating $ <%=@orm.price/100%> and you will receive:
-      For only $ <%=@orm.price/100%> you will receive:
+      For $ <%=@orm.price/100%> you will get a graph that
       <ul>
-        <li>Scalable .svg image</li>
-        <li>No banners</li>
+        <li>is scalable (.svg)</li>
+        <li>is banner free</li>
+        <li>can be distributed amongst as many collegues as you like</li>
       </ul>
     </p>
     <p>
       <%= link_to image_tag('https://www.paypal.com/en_US/i/btn/btn_xpressCheckout.gif'), upgrade_url %>
+    </p>
+    <p>
+      When the payment succeeds, you will be forwarded to a secret location with your updated graph.
+      We will keep it around for 30 days so you can download it. After that we purge it.
     </p>
     <pre>
     kvz_1283093722_per@php.net
@@ -44,9 +48,6 @@
 
 <pre>
   <%=h @parsed %>
-  <%=h @orm.payed %>
-  
-
   <%=h @orm.source.slice(0, 500) %>...
 </pre>
 

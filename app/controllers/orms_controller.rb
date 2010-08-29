@@ -70,6 +70,7 @@ class OrmsController < ApplicationController
   # GET /orms/1.xml
   def show
     @orm = Orm.find(params[:id])
+    @parsed = @orm.parse_source
     # @todo: don't build_graph on show when done testing
     @orm.build_graph
     respond_to do |format|

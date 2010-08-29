@@ -117,8 +117,8 @@ class Orm < ActiveRecord::Base
     require 'graphviz'
 
     # Create a new graph
-    @parsed = self.parse_source
-    
+    parsed = self.parse_source
+    puts parsed
     
     g = GraphViz.new( :G, :type => :digraph )
 
