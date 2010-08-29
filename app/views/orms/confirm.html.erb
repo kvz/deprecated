@@ -11,6 +11,6 @@
   <tr><td>Zip</td><td><%= @address['zip'] %></td></tr>
 </table>
 
-<% form_tag :action => 'complete', :token => params[:token], :payer_id => params[:PayerID] do %>
+<% form_tag :action => 'complete', :id => params[:id], :token => params[:token], :payer_id => params[:PayerID] do %>
   <%= submit_tag 'Complete Payment' %>
 <% end %>
