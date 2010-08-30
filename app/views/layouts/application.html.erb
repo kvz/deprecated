@@ -52,10 +52,10 @@
       <h1>
         Ormify.com
       </h1>
-      <p>
-        Create nice graphs of your data models in 1 command
-      </p>
       </a>
+      <p>
+        Create nice graphs of your models in 1 command
+      </p>
     </header>
     
     <div id="main">
@@ -64,6 +64,8 @@
       <p style="color: green"><%= flash[:notice] %></p>
 
       <%= yield %>
+
+
 
     </div>
     
@@ -92,6 +94,16 @@
   <script src="/javascripts/profiling/yahoo-profiling.min.js?v=1"></script>
   <script src="/javascripts/profiling/config.js?v=1"></script>
   <!-- end profiling code -->
+
+
+  <script type="text/javascript">
+    var disqus_shortname = 'ormify';
+    (function () {
+       var s = document.createElement('script'); s.async = true;
+         s.src = 'http://disqus.com/forums/ormify/count.js';
+           (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+           }());
+   </script>
 
 
   <!-- asynchronous google analytics: mathiasbynens.be/notes/async-analytics-snippet 

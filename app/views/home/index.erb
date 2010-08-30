@@ -1,28 +1,56 @@
-OrmiFy creates graphs of how your models are related.
-
-<h2>
-Example
-</h2>
-
+<h2>Step 1: Upload your code</h2>
+<p>
+If you have <a href="/pages/curl">curl</a> installed, 
+go to your framework directory and just type:
+</p>
 <pre>
-cat app/models/*.php | curl -F orm[source]=@- http://ormify.com/orms.text
+cat app/models/*.{php,rb} | curl -F orm[source]=@- http://ormify.com/orms.text
 </pre>
-Will return:
+<p>
+Or, you can <a href="/orms/new">just paste</a> model source.
+</p>
+
+<h2>Step 2: Receive unique url</h2>
+<p>
+  This will send your models to our server and return an url:
+  </p>
 <pre>
-
-Thanks!
-
-Please point your browser to this url to see your result: 
-http://ormify.com/orms/872adf6a-b153-11df-824c-5616b59c72b3
-
+  Thanks!
+  
+  Please point your browser to this url to see your result: 
+  http://ormify.com/orms/872adf6a-b153-11df-824c-5616b59c72b3
 </pre>
+
+
+<h2>Step 3: Win</h2>
+<p>
+  Browse to the url to see your own generated ORM. Optionally use paypal to remove the banner.
+</p>
+
 
 <h2>Supported frameworks</h2>
+<p>
+  For now the following frameworks are supported:
+</p>
 <ul>
-  <li>
-    CakePHP
-  </li>
-  <li>
-    Ruby on Rails
-  </li>
+  <li>CakePHP</li>
+  <li>Ruby on Rails</li>
 </ul>
+
+
+      <p>&nbsp;</p>
+      <p>&nbsp;</p>
+      <p>&nbsp;</p>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+          /**
+                * var disqus_identifier; [Optional but recommended: Define a unique identifier (e.g. post id or slug) for this thread] 
+                    */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+               dsq.src = 'http://ormify.disqus.com/embed.js';
+                  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    })();
+                  </script>
+                  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript=ormify">comments powered by Disqus.</a></noscript>
+
