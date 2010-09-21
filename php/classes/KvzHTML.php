@@ -53,8 +53,10 @@ qui officia deserunt mollit anim id est laborum';
 
     public function setOption ($key, $val) {
         if (!array_key_exists($key, $this->_options)) {
-            trigger_error(sprintf('%s is not a valid options',
-                $key), E_USER_ERROR);
+            trigger_error(sprintf(
+                '%s is not a valid options',
+                $key
+            ), E_USER_ERROR);
             return false;
         }
 
@@ -204,7 +206,8 @@ qui officia deserunt mollit anim id est laborum';
         } else {
             $argumentsT = '';
         }
-        return $argumentsT;
+
+        return str_replace('%', '%%', $argumentsT);
     }
 
     protected function _tag ($tag, $body = true, $tagOptions = array()) {
@@ -481,8 +484,9 @@ qui officia deserunt mollit anim id est laborum';
             $indent = '';
         } else {
             trigger_error(sprintf(
-                    'Indendation can be a lot of things but not "%s"',
-                    $indentation), E_USER_ERROR);
+                'Indendation can be a lot of things but not "%s"',
+                $indentation
+            ), E_USER_ERROR);
         }
 
         return ($this->_cache[$indentation] = $indent);
@@ -503,8 +507,9 @@ qui officia deserunt mollit anim id est laborum';
             $linesep = '';
         } else {
             trigger_error(sprintf(
-                    'Newlines can be a lot of things but not "%s"',
-                    $newlines), E_USER_ERROR);
+                'Newlines can be a lot of things but not "%s"',
+                $newlines
+            ), E_USER_ERROR);
         }
 
         return $linesep;
