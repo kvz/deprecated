@@ -18,9 +18,9 @@ class Orm < ActiveRecord::Base
   def parse_source
     typePatterns = {
       :cakephp => {
-        :defin => /^\s*([Cc]lass\s+([A-Z][A-Za-z0-9_]+)\s+[Ee][Xx][Tt][Ee][Nn][Dd][Ss]\s+[A-Z][A-Za-z0-9_]+Model)\s*\{(.+)\}/sm,
-        :child => /^\s*(public|var)\s+\$(belongsTo)\s+=\s+(array\s*\([^;]+)/sm,
-        :paren => /^\s*(public|var)\s+\$(hasMany|hasOne|hasAndBelongsToMany)\s+=\s+(array\s*\([^;]+)/sm,
+        :defin => /^\s*([Cc]lass\s+([A-Z][A-Za-z0-9_]+)\s+[Ee][Xx][Tt][Ee][Nn][Dd][Ss]\s+[A-Z][A-Za-z0-9_]+Model)\s*\{(.+?)\}/sm,
+        :child => /^\s*(public|var)\s+\$(belongsTo)\s+=\s+(array\s*\([^;]+);/sm,
+        :paren => /^\s*(public|var)\s+\$(hasMany|hasOne|hasAndBelongsToMany)\s+=\s+(array\s*\([^;]+);/sm,
       }
     }
 
@@ -91,7 +91,7 @@ class Orm < ActiveRecord::Base
       end
     end
 
-    return :models => parsed, :connected => connected, :connections => connections
+    return :models => parsed, :connected => connected, :connections => connections, :typeModels => typeModels
   end
 
   def array_to_ruby(type, str)
@@ -175,7 +175,7 @@ class Orm < ActiveRecord::Base
     g = GraphViz.new :G, graphOpts
 
     # Add nodes
-    definitions[:connected].each do|modelName, count|
+    definitions[:models].each do|modelName, relations|
       g.add_node modelName, nodeOpts.merge(:label => modelName)
     end
 
