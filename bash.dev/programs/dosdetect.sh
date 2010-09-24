@@ -2,19 +2,19 @@
 #/**
 # * Detects if your machine is being DDoS-attacked
 # *
-# * Shows an ordered list of IP addresses that have connections 
-# * with your server 
-# * 
-# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# * Shows an ordered list of IP addresses that have connections
+# * with your server
+# *
+# * @author	Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
 # * @version   SVN: Release: $Id$
-# * @link      http://kevin.vanzonneveld.net/
+# * @link	  http://kevin.vanzonneveld.net/
 # */
 
 # Includes
 ###############################################################
-source $(echo "$(dirname ${0})/../functions/log.sh")     # make::include
+source $(echo "$(dirname ${0})/../functions/log.sh")	 # make::include
 source $(echo "$(dirname ${0})/../functions/toUpper.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandInstall.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include

@@ -4,16 +4,16 @@
 # *
 # * Can use nullrouting or iptables as blocking mechanism
 # *
-# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# * @author	Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2009 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
 # * @version   SVN: Release: $Id$
-# * @link      http://kevin.vanzonneveld.net/
+# * @link	  http://kevin.vanzonneveld.net/
 # */
 
 # Includes
 ###############################################################
-source $(echo "$(dirname ${0})/../functions/log.sh")     # make::include
+source $(echo "$(dirname ${0})/../functions/log.sh")	 # make::include
 source $(echo "$(dirname ${0})/../functions/toUpper.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandInstall.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include
@@ -50,8 +50,8 @@ commandTestHandle "iptables" "iptablesy" "EMERG"
 ###############################################################
 
 function usage() {
-    echo "Usage: ${0} route|iptables block|unblock host"
-    exit 1
+	echo "Usage: ${0} route|iptables block|unblock host"
+	exit 1
 }
 
 
@@ -64,26 +64,26 @@ host="${3}"
 dif=""
 
 if [ "${method}" = "route" ]; then
-    if [ "${block}" = "block" ]; then
-        dif="add"
-    elif [ "${block}" = "unblock" ]; then
-        dif="del"
-    else
-        usage
-    fi
+	if [ "${block}" = "block" ]; then
+		dif="add"
+	elif [ "${block}" = "unblock" ]; then
+		dif="del"
+	else
+		usage
+	fi
 
-    ${CMD_ROUTE} ${dif} "${host}" dev lo
+	${CMD_ROUTE} ${dif} "${host}" dev lo
 elif [ "${method}" = "iptables" ]; then
-    if [ "${block}" = "block" ]; then
-        dif="-A"
-    elif [ "${block}" = "unblock" ]; then
-        dif="-D"
-    else
-        usage
-    fi
+	if [ "${block}" = "block" ]; then
+		dif="-A"
+	elif [ "${block}" = "unblock" ]; then
+		dif="-D"
+	else
+		usage
+	fi
 
-    ${CMD_IPTABLES} ${dif} INPUT -s "${host}" -j DROP
-    ${CMD_IPTABLES} ${dif} OUTPUT -d "${host}" -j DROP
+	${CMD_IPTABLES} ${dif} INPUT -s "${host}" -j DROP
+	${CMD_IPTABLES} ${dif} OUTPUT -d "${host}" -j DROP
 else
-    usage
+	usage
 fi

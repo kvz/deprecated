@@ -4,11 +4,11 @@
 # *
 # * Usefull if you you want to run ps3mediaserver.org
 # *
-# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# * @author	Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2009 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
 # * @version   SVN: Release: $Id$
-# * @link      http://kevin.vanzonneveld.net/
+# * @link	  http://kevin.vanzonneveld.net/
 # */
 
 set -x
@@ -48,25 +48,25 @@ set -x
 svn checkout svn://svn.mplayerhq.hu/mplayer/trunk /usr/src/mplayer || exit 1
 
 if [ -f "/usr/src/ffmpeg-mt/configure" ]; then
-    cd "/usr/src/ffmpeg-mt"
-    git pull || exit 1
+	cd "/usr/src/ffmpeg-mt"
+	git pull || exit 1
 else
-    git clone git://gitorious.org/ffmpeg/ffmpeg-mt.git "/usr/src/ffmpeg-mt" || exit 1
+	git clone git://gitorious.org/ffmpeg/ffmpeg-mt.git "/usr/src/ffmpeg-mt" || exit 1
 fi
 
 if [ -f "/usr/src/ffmpeg-mt/libswscale/Makefile" ]; then
-    cd "/usr/src/ffmpeg-mt/libswscale"
-    git pull || exit 1
+	cd "/usr/src/ffmpeg-mt/libswscale"
+	git pull || exit 1
 else
-    [ -d "/usr/src/ffmpeg-mt/libswscale" ] && rmdir "/usr/src/ffmpeg-mt/libswscale" || exit 1
-    git clone git://git.ffmpeg.org/libswscale/ "/usr/src/ffmpeg-mt/libswscale" || exit 1
+	[ -d "/usr/src/ffmpeg-mt/libswscale" ] && rmdir "/usr/src/ffmpeg-mt/libswscale" || exit 1
+	git clone git://git.ffmpeg.org/libswscale/ "/usr/src/ffmpeg-mt/libswscale" || exit 1
 fi
 
 if [ -f "/usr/src/x264/configure" ]; then
-    cd "/usr/src/x264"
-    git pull || exit 1
+	cd "/usr/src/x264"
+	git pull || exit 1
 else
-    git clone git://git.videolan.org/x264.git "/usr/src/x264" || exit 1
+	git clone git://git.videolan.org/x264.git "/usr/src/x264" || exit 1
 fi
 
 cd "/usr/src/x264"

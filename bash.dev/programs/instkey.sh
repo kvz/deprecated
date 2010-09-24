@@ -1,12 +1,12 @@
 #!/bin/bash
 #/**
 # * Installs SSH Keys remotely
-# * 
-# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# *
+# * @author	Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
 # * @version   SVN: Release: $Id: instkey.sh 159 2008-09-18 11:25:49Z kevin $
-# * @link      http://kevin.vanzonneveld.net/
+# * @link	  http://kevin.vanzonneveld.net/
 # *
 # * @param string REMOTE_HOST The host to install the key at
 # * @param string REMOTE_USER The user to install the key under
@@ -14,7 +14,7 @@
 
 # Includes
 ###############################################################
-source $(echo "$(dirname ${0})/../functions/log.sh")     # make::include
+source $(echo "$(dirname ${0})/../functions/log.sh")	 # make::include
 source $(echo "$(dirname ${0})/../functions/toUpper.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandInstall.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include

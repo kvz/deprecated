@@ -2,17 +2,17 @@
 #/**
 # * Template for interactive menu's
 # * Will include all nescesary code to quickly deploy menu's.
-# * 
-# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# *
+# * @author	Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
 # * @version   SVN: Release: $Id: menu.sh 199 2008-11-10 11:26:34Z kevin $
-# * @link      http://kevin.vanzonneveld.net/
+# * @link	  http://kevin.vanzonneveld.net/
 # */
 
 # Includes
 ###############################################################
-source $(echo "$(dirname ${0})/../functions/log.sh")     # make::include
+source $(echo "$(dirname ${0})/../functions/log.sh")	 # make::include
 source $(echo "$(dirname ${0})/../functions/toUpper.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandInstall.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include
@@ -55,6 +55,6 @@ commandTestHandle "dialog" "dialog" "EMERG"
 # Usage:
 # boxList "Title" "Description" "option1=One, a good choice|option2=Two, maybe even better"
 # echo ${boxReturn}
-# 
+#
 # boxYesNo "Title" "Do you want to say no?" "0"
 # echo ${boxReturn}
