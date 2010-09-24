@@ -46,11 +46,11 @@
 
 <a href="<%=@orm.url%>"><img width="700" src="<%=@orm.url%>" /></a>
 
-<pre>
-  <%=h @parsed.inspect %>
+<pre><code>
+  <%=h @parsed.to_yaml %>
   
   <%=h @orm.source %>
-</pre>
+</code></pre>
 
 
 <%= link_to 'Graph', @orm.url %> |

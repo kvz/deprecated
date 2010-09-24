@@ -4,7 +4,7 @@ class Orm < ActiveRecord::Base
   has_many :payments
   validates_presence_of :source
   include UUIDHelper
-  
+
   def price
     200
   end
@@ -23,7 +23,6 @@ class Orm < ActiveRecord::Base
         :paren => /^\s*(public|var)\s+\$(hasMany|hasOne|hasAndBelongsToMany)\s+=\s+(array\s*\([^;]+)/sm,
       }
     }
-    
 
     # Split source into models per type
     typeModels = {}
@@ -52,7 +51,7 @@ class Orm < ActiveRecord::Base
         end
       end
     end
-    
+
     # Make connections
     # which I knew how to make this compact without raising errors.
     connections = {}
@@ -92,8 +91,7 @@ class Orm < ActiveRecord::Base
       end
     end
 
-    models = parsed
-    return [models, connected, connections]
+    return :models => parsed, :connected => connected, :connections => connections
   end
 
   def array_to_ruby(type, str)
@@ -105,16 +103,16 @@ class Orm < ActiveRecord::Base
       tmpFile = File.new(phpFile, 'w')
       tmpFile.write(phpCode)
       tmpFile.close
-     
+
       # Let Ruby parse the json so we have an actual enumerable
       require 'open3'
       require 'json'
       cmd = "php " + phpFile
       stdin, stdout, stderr = Open3.popen3(cmd)
       obj = JSON.parse(stdout.readlines.join)
-      
+
       # Consistently format relationData
-      # and add relationName & className 
+      # and add relationName & className
       @prop = {}
       obj.each do|name, data|
         # Nest if string
@@ -148,14 +146,14 @@ class Orm < ActiveRecord::Base
     end
     # http://github.com/glejeune/Ruby-Graphviz/blob/master/examples/sample01.rb
     # http://www.omninerd.com/articles/Automating_Data_Visualization_with_Ruby_and_Graphviz
-    
+
     if !self.payed
       exts = ['png']
       watermark = 'Preview. Buy full version at http://ormify.com/' + self.uuid
     else
-      exts = ['svg'] 
+      exts = ['svg']
     end
-  
+
     edgeOpts = {:arrowsize => 0.6, :weight => 1, :fontsize => 11, :fontname => 'arial', :fontcolor => 'gray45', :color => 'gray77'}
     graphOpts = {:normalize => true, :ratio => 0.3, :ranksep => 0.9, :nodesep => 0.1, :rankdir => 'BT'}
     nodeOpts = {
@@ -165,24 +163,24 @@ class Orm < ActiveRecord::Base
       :shape => 'square',
       :height => 0.8
     }
-    
+
     # Initialize Data
-    models, connected, connections = self.parse_source
+    definitions = self.parse_source
     url = '/graphs/' + self.uuid + '.' + 'EXT'
     file = File.join(RAILS_ROOT, 'public') + url
-    
-    
+
+
     # Create a new graph
     require 'graphviz'
     g = GraphViz.new :G, graphOpts
 
     # Add nodes
-    connected.each do|modelName, count|
+    definitions[:connected].each do|modelName, count|
       g.add_node modelName, nodeOpts.merge(:label => modelName)
     end
 
     # Add edges
-    connections.each do|from, tos|
+    definitions[:connections].each do|from, tos|
       tos.each do|to, types|
         dirs = {:back => false, :forward => false}
         edgeOpts[:label] = ''
@@ -210,7 +208,7 @@ class Orm < ActiveRecord::Base
     exts.each do |ext|
       g.output( "output" => ext, :file => file.gsub('EXT', ext))
     end
-    
+
     self.file = file.gsub('EXT', exts.first)
     self.url = url.gsub('EXT', exts.first)
     self.save!
