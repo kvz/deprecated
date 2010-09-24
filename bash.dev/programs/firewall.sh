@@ -36,25 +36,25 @@ function missing_cmd(){
     [ -n ${PACKAGE} ] || PACKAGE=${COMMAND}
 
     if [ "${MODE}" == "install" ];then
-        dia_YesNo "Missing Package" "Do you want to try to automatically install ${PACKAGE}?"
-        if [ "${dia_ret}" == 1 ]; then
-            aptitude install -y ${PACKAGE}
-        else
-            echo "fatal: I need this package in order to function"
-            exit 1
-        fi
+	dia_YesNo "Missing Package" "Do you want to try to automatically install ${PACKAGE}?"
+	if [ "${dia_ret}" == 1 ]; then
+	    aptitude install -y ${PACKAGE}
+	else
+	    echo "fatal: I need this package in order to function"
+	    exit 1
+	fi
 
-        # second check
-        TMPCMD=$(which ${COMMAND})
-        if [ -n "${TMPCMD}" ] && [ -x ${TMPCMD} ];then
-            eval "CMD_${COMMAND_UC}=\"${TMPCMD}\""
-        else
-            echo "fatal: I still cannot find ${COMMAND}, but it is required to run this script"
-            exit 1
-        fi
+	# second check
+	TMPCMD=$(which ${COMMAND})
+	if [ -n "${TMPCMD}" ] && [ -x ${TMPCMD} ];then
+	    eval "CMD_${COMMAND_UC}=\"${TMPCMD}\""
+	else
+	    echo "fatal: I still cannot find ${COMMAND}, but it is required to run this script"
+	    exit 1
+	fi
     elif [ "${MODE}" == "run" ];then
-        echo "fatal: The command ${COMMAND} is missing! Please first install ${PACKAGE}"
-        exit 1
+	echo "fatal: The command ${COMMAND} is missing! Please first install ${PACKAGE}"
+	exit 1
     fi
 }
 
@@ -63,38 +63,38 @@ function dia_YesNo(){
     # arg2    = description
     xtra=""
     if [ "${3}" == "0" ]; then
-        xtra="--defaultno"
+	xtra="--defaultno"
     fi
 
     if [ -n "${CMD_DIALOG}" ] && [ -x ${CMD_DIALOG} ]; then
-        ${CMD_DIALOG} ${xtra} --title "${1}" --clear \
-            --yesno "${2}" 10 70
+	${CMD_DIALOG} ${xtra} --title "${1}" --clear \
+	    --yesno "${2}" 10 70
 
-        case $? in
-            0)
-                dia_ret=1;;
-            1)
-                dia_ret=0;;
-            255)
-                clear
-                echo "ESC pressed."
-                exit 0
-            ;;
-        esac
+	case $? in
+	    0)
+		dia_ret=1;;
+	    1)
+		dia_ret=0;;
+	    255)
+		clear
+		echo "ESC pressed."
+		exit 0
+	    ;;
+	esac
     else
-        while true; do
-            echo -n "${1}. ${2} (Y/n) "
-            read yn
-            case $yn in
-                "y" | "Y" | "" )
-                    dia_ret=1
-                    break ;;
-                "n" | "N" )
-                    dia_ret=0
-                    break ;;
-                * ) echo "unknown response.  Asking again" ;;
-            esac
-        done
+	while true; do
+	    echo -n "${1}. ${2} (Y/n) "
+	    read yn
+	    case $yn in
+		"y" | "Y" | "" )
+		    dia_ret=1
+		    break ;;
+		"n" | "N" )
+		    dia_ret=0
+		    break ;;
+		* ) echo "unknown response.  Asking again" ;;
+	    esac
+	done
     fi
 }
 
@@ -103,27 +103,27 @@ function dia_Input(){
     # arg2    = description
     # arg3    = default
     ${CMD_DIALOG} --title "${1}" --clear \
-        --inputbox "${2}" 16 71 "${3}" 2> $tempfile
+	--inputbox "${2}" 16 71 "${3}" 2> $tempfile
 
     retval=$?
 
     case $retval in
-        0)
-            dia_ret=$(cat $tempfile);;
-        1)
-            clear
-            echo "Cancel pressed."
-            exit 0
-        ;;
-        255)
-            if test -s $tempfile ; then
-                cat $tempfile
-            else
-                clear
-                echo "ESC pressed."
-                exit 0
-            fi
-        ;;
+	0)
+	    dia_ret=$(cat $tempfile);;
+	1)
+	    clear
+	    echo "Cancel pressed."
+	    exit 0
+	;;
+	255)
+	    if test -s $tempfile ; then
+		cat $tempfile
+	    else
+		clear
+		echo "ESC pressed."
+		exit 0
+	    fi
+	;;
     esac
 }
 
@@ -140,25 +140,25 @@ function dia_Select(){
     [ -z "${8}" ] || CHOICES="${CHOICES} ${8} <-"
 
     ${CMD_DIALOG} --clear --title "${1}" \
-        --menu "${2}" 16 51 6 \
-        ${CHOICES} 2> $tempfile
+	--menu "${2}" 16 51 6 \
+	${CHOICES} 2> $tempfile
 
     retval=$?
 
     choice=`cat $tempfile`
     case $retval in
-        0)
-            dia_ret=${choice};;
-        1)
-            clear
-            echo "Cancel pressed."
-            exit 0
-        ;;
-        255)
-            clear
-            echo "ESC pressed."
-            exit 0
-        ;;
+	0)
+	    dia_ret=${choice};;
+	1)
+	    clear
+	    echo "Cancel pressed."
+	    exit 0
+	;;
+	255)
+	    clear
+	    echo "ESC pressed."
+	    exit 0
+	;;
     esac
 }
 
@@ -170,25 +170,25 @@ function dia_Checklist(){
     CHOICES=$3
 
     ${CMD_DIALOG} --title "${1}" --clear \
-        --checklist "${2}" 26 55 17 \
-        ${CHOICES} 2> $tempfile
+	--checklist "${2}" 26 55 17 \
+	${CHOICES} 2> $tempfile
 
     retval=$?
 
     choice=`cat $tempfile`
     case $retval in
-        0)
-            dia_ret=${choice};;
-        1)
-            clear
-            echo "Cancel pressed."
-            exit 0
-        ;;
-        255)
-            #clear
-            echo "ESC pressed."
-            exit 0
-        ;;
+	0)
+	    dia_ret=${choice};;
+	1)
+	    clear
+	    echo "Cancel pressed."
+	    exit 0
+	;;
+	255)
+	    #clear
+	    echo "ESC pressed."
+	    exit 0
+	;;
     esac
 }
 
@@ -200,17 +200,17 @@ function diaS_Services(){
     dia_Checklist "${policy} services" "Select which services should be ${policy}. That means ${policy_human}" "${services}"
     udpcnt=0;tcpcnt=0;
     for openport in ${dia_ret};do
-        prot=$(echo ${openport} |sed 's#"##g' |awk -F'_' '{print $1}')
-        port=$(echo ${openport} |sed 's#"##g' |awk -F'_' '{print $2}')
+	prot=$(echo ${openport} |sed 's#"##g' |awk -F'_' '{print $1}')
+	port=$(echo ${openport} |sed 's#"##g' |awk -F'_' '{print $2}')
 
-        if [ "${prot}" == "UDP" ]; then
-            echo "PORTS_${prot}_${policy_confg}[${udpcnt}]=\"${port}\"" >> ${APP_CFGFLTMP}
-            let "udpcnt=${udpcnt}+1"
-        else
+	if [ "${prot}" == "UDP" ]; then
+	    echo "PORTS_${prot}_${policy_confg}[${udpcnt}]=\"${port}\"" >> ${APP_CFGFLTMP}
+	    let "udpcnt=${udpcnt}+1"
+	else
 
-            echo "PORTS_${prot}_${policy_confg}[${tcpcnt}]=\"${port}\"" >> ${APP_CFGFLTMP}
-            let "tcpcnt=${tcpcnt}+1"
-        fi
+	    echo "PORTS_${prot}_${policy_confg}[${tcpcnt}]=\"${port}\"" >> ${APP_CFGFLTMP}
+	    let "tcpcnt=${tcpcnt}+1"
+	fi
     done
 
 
@@ -221,38 +221,38 @@ function running_Services(){
     policy="${1}"
 
     netstat -tupln |egrep '[0-9]' | sed 's#tcp6#tcp#g' | sed 's#udp6#udp#g' |sed 's#LISTEN##g' | sed 's#tcp#TCP#g' | sed 's#udp#UDP#g' |sed 's#::#0.0.0.0#g' |sed 's#\(/\|:\)# #g' |awk "{
-        type=\"${policy}\";valu=\"off\";
-        prot=\$1;
-        port=\$5;
-        srvc=\$9;
-        if(srvc && srvc!=\"-\" && srvc!=\"*\"){
-            if(type==\"open\" && ( \
-                srvc==\"svnserve\" || \
-                srvc==\"named\" || \
-                srvc==\"named\" || \
-                port==\"80\" || \
-                port==\"443\" || \
-                port==\"21\" || \
-                port==\"25\" || \
-                port==\"110\" || \
-                port==\"143\" || \
-                port==\"123\" ) \
-            ){
-                valu=\"on\";
-            }
-            if(type==\"private\" && ( \
-                port==\"22\" || \
-                port==\"81\" || \
-                port==\"161\" || \
-                port==\"4949\" || \
-                port==\"541\" || \
-                port==\"873\" || \
-                port==\"2049\" ) \
-            ){
-                valu=\"on\";
-            }
-            print prot\"_\"port\" \"srvc\" \"valu;
-        }
+	type=\"${policy}\";valu=\"off\";
+	prot=\$1;
+	port=\$5;
+	srvc=\$9;
+	if(srvc && srvc!=\"-\" && srvc!=\"*\"){
+	    if(type==\"open\" && ( \
+		srvc==\"svnserve\" || \
+		srvc==\"named\" || \
+		srvc==\"named\" || \
+		port==\"80\" || \
+		port==\"443\" || \
+		port==\"21\" || \
+		port==\"25\" || \
+		port==\"110\" || \
+		port==\"143\" || \
+		port==\"123\" ) \
+	    ){
+		valu=\"on\";
+	    }
+	    if(type==\"private\" && ( \
+		port==\"22\" || \
+		port==\"81\" || \
+		port==\"161\" || \
+		port==\"4949\" || \
+		port==\"541\" || \
+		port==\"873\" || \
+		port==\"2049\" ) \
+	    ){
+		valu=\"on\";
+	    }
+	    print prot\"_\"port\" \"srvc\" \"valu;
+	}
     }" |  sort -nt_ -k2 |uniq
 }
 
@@ -264,23 +264,23 @@ function diaS_Ipaddresses(){
     dia_Checklist "${policy} machines" "Select which ip addresses should be ${policy}. That means ${policy_human}" "${services}"
     ipcnt=0;
     for ip in ${dia_ret};do
-        ip=$(echo ${ip} |sed 's#"##g')
-        echo "IPDRS_${policy_confg}[${ipcnt}]=\"${ip}\"" >> ${APP_CFGFLTMP}
-        let "ipcnt=${ipcnt}+1"
+	ip=$(echo ${ip} |sed 's#"##g')
+	echo "IPDRS_${policy_confg}[${ipcnt}]=\"${ip}\"" >> ${APP_CFGFLTMP}
+	let "ipcnt=${ipcnt}+1"
     done
 
     while true; do
-        dia_YesNo "${policy} machines" "Add another custom ${policy} machine?" "0"
-        if [ "${dia_ret}" == 1 ]; then
-            dia_Input "${policy} machines" "Please specify ip address" ""
-            ip=$(echo ${dia_ret} |sed 's#[^][0-9.]##g')
-            if [ -n "${ip}" ]; then
-                echo "IPDRS_${policy_confg}[${ipcnt}]=\"${ip}\"" >> ${APP_CFGFLTMP}
-                let "ipcnt=${ipcnt}+1"
-            fi
-        else
-            break;
-        fi
+	dia_YesNo "${policy} machines" "Add another custom ${policy} machine?" "0"
+	if [ "${dia_ret}" == 1 ]; then
+	    dia_Input "${policy} machines" "Please specify ip address" ""
+	    ip=$(echo ${dia_ret} |sed 's#[^][0-9.]##g')
+	    if [ -n "${ip}" ]; then
+		echo "IPDRS_${policy_confg}[${ipcnt}]=\"${ip}\"" >> ${APP_CFGFLTMP}
+		let "ipcnt=${ipcnt}+1"
+	    fi
+	else
+	    break;
+	fi
     done
 
 
@@ -291,60 +291,60 @@ function loggedin_Ipaddresses(){
     ips=""
 
     if [ "${policy}" == "open" ]; then
-        # try to get the local network range
-        if [ -f /etc/network/interfaces ] && [ -n "${CMD_IPCALC}" ]; then
-            for (( i = 0 ; i < ${#NET_ETH[@]} ; i++ ));do
-                if [ "${NET_IP[$i]}" != "" ]; then
-                    ips="${ips} ${NET_RANGE[$i]}"
-                fi
-            done
-        fi
+	# try to get the local network range
+	if [ -f /etc/network/interfaces ] && [ -n "${CMD_IPCALC}" ]; then
+	    for (( i = 0 ; i < ${#NET_ETH[@]} ; i++ ));do
+		if [ "${NET_IP[$i]}" != "" ]; then
+		    ips="${ips} ${NET_RANGE[$i]}"
+		fi
+	    done
+	fi
 
-        # get list of ips from the 'last' command
-        # sorted on occurance.
-        ips="${ips} $(last -ai |awk '{if($10 && $10!="0.0.0.0")print $10}' |sort | uniq -c | sort -nr |awk '{print $2}'|sed 's#[^][0-9.]##g' |head -n5)"
+	# get list of ips from the 'last' command
+	# sorted on occurance.
+	ips="${ips} $(last -ai |awk '{if($10 && $10!="0.0.0.0")print $10}' |sort | uniq -c | sort -nr |awk '{print $2}'|sed 's#[^][0-9.]##g' |head -n5)"
     else
-        if [ -f /etc/munin/munin-node.conf ]; then
-            # try to get private ips from munin
-            ips="${ips} $(cat /etc/munin/munin-node.conf |grep allow |grep '\^' |sed 's#[^][0-9.]##g' |grep -v '127.0.0.1' |head -n5)"
-        fi
+	if [ -f /etc/munin/munin-node.conf ]; then
+	    # try to get private ips from munin
+	    ips="${ips} $(cat /etc/munin/munin-node.conf |grep allow |grep '\^' |sed 's#[^][0-9.]##g' |grep -v '127.0.0.1' |head -n5)"
+	fi
 
-        if [ -f /etc/apache2/apache2.conf ]; then
-            # try to get private ips from munin
-            ips="${ips} $(cat /etc/apache2/apache2.conf |grep -i 'allow from' | egrep -v "^#.*" |egrep -v "^$" |grep -iv 'from all' |awk '{print $3}' |sed 's#[^][0-9.\/]##g' |grep -v '127.0.0.1' |head -n5)"
-        fi
+	if [ -f /etc/apache2/apache2.conf ]; then
+	    # try to get private ips from munin
+	    ips="${ips} $(cat /etc/apache2/apache2.conf |grep -i 'allow from' | egrep -v "^#.*" |egrep -v "^$" |grep -iv 'from all' |awk '{print $3}' |sed 's#[^][0-9.\/]##g' |grep -v '127.0.0.1' |head -n5)"
+	fi
 
-        if [ -f /var/log/vsftpd.log ]; then
-            # try to get private ips from vsftpd
-            if [ `tail -n30 /var/log/vsftpd.log |grep 'Client "' |wc -l` -gt 2 ];then
-                ips="${ips} $(cat /var/log/vsftpd.log |awk '{print $12}' |sed 's#[^][0-9.]##g' |sort | uniq -c | sort -nr |awk '{print $2}' |head -n5)"
-            else
-                ips="${ips} $(cat /var/log/vsftpd.log |awk '{print $7}' |sed 's#[^][0-9.]##g' |sort | uniq -c | sort -nr |awk '{print $2}' |head -n5)"
-            fi
-        fi
+	if [ -f /var/log/vsftpd.log ]; then
+	    # try to get private ips from vsftpd
+	    if [ `tail -n30 /var/log/vsftpd.log |grep 'Client "' |wc -l` -gt 2 ];then
+		ips="${ips} $(cat /var/log/vsftpd.log |awk '{print $12}' |sed 's#[^][0-9.]##g' |sort | uniq -c | sort -nr |awk '{print $2}' |head -n5)"
+	    else
+		ips="${ips} $(cat /var/log/vsftpd.log |awk '{print $7}' |sed 's#[^][0-9.]##g' |sort | uniq -c | sort -nr |awk '{print $2}' |head -n5)"
+	    fi
+	fi
 
-        if [ -z "${ips}" ]; then
-            # fallback to 'last' command
-            ips="${ips} $(last -ai |awk '{if($10 && $10!="0.0.0.0")print $10}' |sort | uniq -c | sort -nr |awk '{print $2}'|sed 's#[^][0-9.]##g' |head -n5)"
-        fi
-        if [ -z "${ips}" ] || [ "${ips}" == " " ] || [ "${ips}" == "  " ]; then
-            # fallback to localhost
-            ips="127.0.0.1"
-        fi
+	if [ -z "${ips}" ]; then
+	    # fallback to 'last' command
+	    ips="${ips} $(last -ai |awk '{if($10 && $10!="0.0.0.0")print $10}' |sort | uniq -c | sort -nr |awk '{print $2}'|sed 's#[^][0-9.]##g' |head -n5)"
+	fi
+	if [ -z "${ips}" ] || [ "${ips}" == " " ] || [ "${ips}" == "  " ]; then
+	    # fallback to localhost
+	    ips="127.0.0.1"
+	fi
     fi
 
     cnt=0;
     for ip in ${ips};do
-        nam=$(getHostByAddr ${ip})
-        echo -n "${ip} ${nam} "
+	nam=$(getHostByAddr ${ip})
+	echo -n "${ip} ${nam} "
 
-        if [ ${cnt} -lt 2 ];then
-            echo  "on"
-        else
-            echo  "off"
-        fi
+	if [ ${cnt} -lt 2 ];then
+	    echo  "on"
+	else
+	    echo  "off"
+	fi
 
-        let "cnt=${cnt}+1"
+	let "cnt=${cnt}+1"
     done
 }
 
@@ -352,12 +352,12 @@ function loggedin_Ipaddresses(){
 # Function to set the file to one or zero.
 function proc_enable () {
     for file in $@; do
-        echo 1 2>/dev/null > $file;
+	echo 1 2>/dev/null > $file;
     done
 }
 function proc_disable () {
     for file in $@; do
-        echo 0 2>/dev/null > $file;
+	echo 0 2>/dev/null > $file;
     done
 }
 
@@ -433,42 +433,42 @@ function ipt_flush(){
 
 function ipt_allow_port_udp_out(){
     for port in $@; do
-        ${CMD_IPTABLES} -A OUTPUT -p udp --dport ${port} -j ACCEPT
+	${CMD_IPTABLES} -A OUTPUT -p udp --dport ${port} -j ACCEPT
     done
 }
 function ipt_allow_port_tcp_out(){
     for port in $@; do
-        ${CMD_IPTABLES} -A OUTPUT -p tcp --dport ${port} -m state --state NEW -j ACCEPT
+	${CMD_IPTABLES} -A OUTPUT -p tcp --dport ${port} -m state --state NEW -j ACCEPT
     done
 }
 
 function ipt_allow_port_tcp_in(){
     for port in $@; do
-        ${CMD_IPTABLES} -A INPUT -p tcp -m tcp --dport ${port}  -m state --state NEW -j ACCEPT
+	${CMD_IPTABLES} -A INPUT -p tcp -m tcp --dport ${port}  -m state --state NEW -j ACCEPT
     done
 }
 function ipt_allow_port_udp_in(){
     for port in $@; do
-        ${CMD_IPTABLES} -A INPUT -p udp --dport ${port} -j ACCEPT
+	${CMD_IPTABLES} -A INPUT -p udp --dport ${port} -j ACCEPT
     done
 }
 
 function indexInterfaces() {
     I=0
     if [ -f /etc/network/interfaces ]; then
-        for x in $(grep iface /etc/network/interfaces | egrep -v "^#.*" |egrep -v "^$" | awk '{print $2}');do
-            if [ "$x" != "lo" ]; then
-                NET_ETH[$I]=$x;
-                NET_IP[$I]=`/sbin/ifconfig ${NET_ETH[$I]} | grep 'Bcast' | awk '{print $2}' | cut -d : -f 2`;
-                NET_BDC[$I]=`/sbin/ifconfig ${NET_ETH[$I]} | grep 'Bcast' | awk '{print $3}' | cut -d : -f 2`;
-                NET_MASK[$I]=`/sbin/ifconfig ${NET_ETH[$I]} | grep 'Bcast' | awk '{print $4}' | cut -d : -f 2`;
-                NET_NET[$I]=`/sbin/route -n | grep "${NET_MASK[$I]}" | awk '{print $1}'`;
-                NET_LAN[$I]="${NET_NET[$I]}/24";
-                NET_RANGE[$I]=`${CMD_IPCALC} ${NET_IP[$I]} ${NET_MASK[$I]} |grep 'Network: ' |awk '{print $2}'`
-                NET_IP_PREF[$I]=`echo "${NET_IP[$I]}" |awk -F'.' '{print $1"."$2}'`
-                let I++;
-            fi
-        done
+	for x in $(grep iface /etc/network/interfaces | egrep -v "^#.*" |egrep -v "^$" | awk '{print $2}');do
+	    if [ "$x" != "lo" ]; then
+		NET_ETH[$I]=$x;
+		NET_IP[$I]=`/sbin/ifconfig ${NET_ETH[$I]} | grep 'Bcast' | awk '{print $2}' | cut -d : -f 2`;
+		NET_BDC[$I]=`/sbin/ifconfig ${NET_ETH[$I]} | grep 'Bcast' | awk '{print $3}' | cut -d : -f 2`;
+		NET_MASK[$I]=`/sbin/ifconfig ${NET_ETH[$I]} | grep 'Bcast' | awk '{print $4}' | cut -d : -f 2`;
+		NET_NET[$I]=`/sbin/route -n | grep "${NET_MASK[$I]}" | awk '{print $1}'`;
+		NET_LAN[$I]="${NET_NET[$I]}/24";
+		NET_RANGE[$I]=`${CMD_IPCALC} ${NET_IP[$I]} ${NET_MASK[$I]} |grep 'Network: ' |awk '{print $2}'`
+		NET_IP_PREF[$I]=`echo "${NET_IP[$I]}" |awk -F'.' '{print $1"."$2}'`
+		let I++;
+	    fi
+	done
     fi
 }
 
@@ -476,15 +476,15 @@ function getHostByAddr(){
     inp=${1}
 
     if [ `expr index "${inp}" "/"` -gt 3 ];then
-        # this is a range
-        for (( i = 0 ; i < ${#NET_ETH[@]} ; i++ ));do
-            if [ "${NET_RANGE[$i]}" == "${inp}" ]; then
-                res=${NET_ETH[$i]}
-            fi
-        done
+	# this is a range
+	for (( i = 0 ; i < ${#NET_ETH[@]} ; i++ ));do
+	    if [ "${NET_RANGE[$i]}" == "${inp}" ]; then
+		res=${NET_ETH[$i]}
+	    fi
+	done
     else
-        # this is an ip
-        res=$(host -Qqo ${inp} 2>/dev/null |grep 'Name: ' |sed 's#Name: ##g')
+	# this is an ip
+	res=$(host -Qqo ${inp} 2>/dev/null |grep 'Name: ' |sed 's#Name: ##g')
     fi
 
     [ -n "${res}" ] || res="${inp}"
@@ -545,7 +545,7 @@ CMD_IPTABLES=$(which "iptables")
 # we need the host package and not the bind9-host package
 if [ -f /etc/debian_version ];then
     if [ "$(dpkg -l host |grep host |awk '{print $3}' |sed 's#[<>]##g')" == "none" ];then
-        missing_cmd "host" "host" "install"
+	missing_cmd "host" "host" "install"
     fi
 fi
 
@@ -572,22 +572,22 @@ elif [ ! -f ${APP_CFGFFILE} ] || [ "${1}" == "config" ] ; then
     diaS_Ipaddresses "open" "they can access all services unlimited, they're Master"
 
     if [ -d /etc/network/if-up.d ]; then
-        dia_YesNo "Startup" "Do you want to create a startup file in /etc/network/if-up.d so the rules will take effect everytime this server goes online?" 0
-        startupfile="/etc/network/if-up.d/${APP_BASENAME}"
-        if [ "${dia_ret}" == 1 ];then
-            echo "#!/bin/sh" > ${startupfile}
-            echo "${APP_FULLPATH}" >> ${startupfile}
-            chmod 744 ${startupfile}
-        elif [ -f ${startupfile} ]; then
-            rm ${startupfile}
-        fi
+	dia_YesNo "Startup" "Do you want to create a startup file in /etc/network/if-up.d so the rules will take effect everytime this server goes online?" 0
+	startupfile="/etc/network/if-up.d/${APP_BASENAME}"
+	if [ "${dia_ret}" == 1 ];then
+	    echo "#!/bin/sh" > ${startupfile}
+	    echo "${APP_FULLPATH}" >> ${startupfile}
+	    chmod 744 ${startupfile}
+	elif [ -f ${startupfile} ]; then
+	    rm ${startupfile}
+	fi
     fi
 
     dia_YesNo "Crontab" "Do you want to add iptables -F every 10 minutes to de crontab for debugging purposes?" 0
     if [ "${dia_ret}" == 1 ];then
-        crontab -l | grep -v "${APP_BASENAME}" > /tmp/${APP_BASENAME}_fichier.tmp
-        echo "*/10 * * * * /sbin/iptables -F" >> /tmp/${APP_BASENAME}_fichier.tmp
-        crontab /tmp/${APP_BASENAME}_fichier.tmp
+	crontab -l | grep -v "${APP_BASENAME}" > /tmp/${APP_BASENAME}_fichier.tmp
+	echo "*/10 * * * * /sbin/iptables -F" >> /tmp/${APP_BASENAME}_fichier.tmp
+	crontab /tmp/${APP_BASENAME}_fichier.tmp
     fi
 
     echo "ENABLE_LOGGING=\"0\"" >> ${APP_CFGFLTMP}
@@ -600,7 +600,7 @@ elif [ ! -f ${APP_CFGFFILE} ] || [ "${1}" == "config" ] ; then
 
     dia_YesNo "Configuration file" "Do you want to review the config file to make some final adjustments? This will also allow you to add some custom rules." 0
     if [ "${dia_ret}" == 1 ];then
-        ${CMD_NANO} ${APP_CFGFLTMP}
+	${CMD_NANO} ${APP_CFGFLTMP}
     fi
 
     clear
@@ -638,68 +638,68 @@ ipt_basics
 # allow all traffic between MASTER IPs en this server on all ports
 if [ ${#IPDRS_OPEN} ]; then
     for (( i = 0 ; i < ${#IPDRS_OPEN[@]} ; i++ )); do
-        for host in ${IPDRS_OPEN[$i]}; do
-            ${CMD_IPTABLES} -A INPUT  -s ${host} ${ACTION_ACCEPT}
-            ${CMD_IPTABLES} -A OUTPUT -d ${host} ${ACTION_ACCEPT}
-        done
+	for host in ${IPDRS_OPEN[$i]}; do
+	    ${CMD_IPTABLES} -A INPUT  -s ${host} ${ACTION_ACCEPT}
+	    ${CMD_IPTABLES} -A OUTPUT -d ${host} ${ACTION_ACCEPT}
+	done
     done
 fi
 # allow incomming traffic from PRIVATE IPs, for private ports
 if [ ${#IPDRS_PRIVATE} ]; then
     for (( i = 0 ; i < ${#IPDRS_PRIVATE[@]} ; i++ ));do
-        for host in ${IPDRS_PRIVATE[$i]}; do
-            if [ ${#PORTS_TCP_PRIVATE} ]; then
-                for (( j = 0 ; j < ${#PORTS_TCP_PRIVATE[@]} ; j++ ));do
-                    for port in ${PORTS_TCP_PRIVATE[${j}]}; do
-                        ${CMD_IPTABLES} -A INPUT  -p tcp -s ${host} --dport ${port} ${ACTION_ACCEPT_ALL_STATES}
-                    done
-                done
-            fi
-            if [ ${#PORTS_UDP_PRIVATE} ]; then
-                for (( j = 0 ; j < ${#PORTS_UDP_PRIVATE[@]} ; j++ ));do
-                    for port in ${PORTS_UDP_PRIVATE[${j}]}; do
-                        ${CMD_IPTABLES} -A INPUT  -p udp -s ${host} --dport ${port} ${ACTION_ACCEPT_ALL_STATES}
-                    done;
-                done
-            fi
-        done
+	for host in ${IPDRS_PRIVATE[$i]}; do
+	    if [ ${#PORTS_TCP_PRIVATE} ]; then
+		for (( j = 0 ; j < ${#PORTS_TCP_PRIVATE[@]} ; j++ ));do
+		    for port in ${PORTS_TCP_PRIVATE[${j}]}; do
+			${CMD_IPTABLES} -A INPUT  -p tcp -s ${host} --dport ${port} ${ACTION_ACCEPT_ALL_STATES}
+		    done
+		done
+	    fi
+	    if [ ${#PORTS_UDP_PRIVATE} ]; then
+		for (( j = 0 ; j < ${#PORTS_UDP_PRIVATE[@]} ; j++ ));do
+		    for port in ${PORTS_UDP_PRIVATE[${j}]}; do
+			${CMD_IPTABLES} -A INPUT  -p udp -s ${host} --dport ${port} ${ACTION_ACCEPT_ALL_STATES}
+		    done;
+		done
+	    fi
+	done
     done
 fi
 # allow incomming traffic from EVERY IP for public ports
 if [ ${#PORTS_TCP_OPEN} ]; then
     for (( i = 0 ; i < ${#PORTS_TCP_OPEN[@]} ; i++ ));do
-        for port in ${PORTS_TCP_OPEN[${i}]}; do
-            echo "${port}"
-            ipt_allow_port_tcp_in ${port}
-        done
+	for port in ${PORTS_TCP_OPEN[${i}]}; do
+	    echo "${port}"
+	    ipt_allow_port_tcp_in ${port}
+	done
     done
 fi
 if [ ${#PORTS_UDP_OPEN} ]; then
     for (( i = 0 ; i < ${#PORTS_UDP_OPEN[@]} ; i++ ));do
-        for port in ${PORTS_UDP_OPEN[${i}]]}; do
-            ipt_allow_port_udp_in ${port}
-        done
+	for port in ${PORTS_UDP_OPEN[${i}]]}; do
+	    ipt_allow_port_udp_in ${port}
+	done
     done
 fi
 # deny all traffic from+to CLOSED IPs to this server on all ports
 if [ ${#IPDRS_CLOSED} ]; then
     for (( i = 0 ; i < ${#IPDRS_CLOSED[@]} ; i++ ));do
-        for host in ${IPDRS_CLOSED[${i}]]}; do
-            if [ "${ENABLE_LOGGING}" == 1 ]; then
-                ${CMD_IPTABLES} -A INPUT  -s ${host} ${ACTION_LOG}
-                ${CMD_IPTABLES} -A OUTPUT -d ${host} ${ACTION_LOG}
-            fi
-            ${CMD_IPTABLES} -A INPUT  -s ${host} ${ACTION_DENY}
-            ${CMD_IPTABLES} -D OUTPUT -d ${host} ${ACTION_DENY}
-        done
+	for host in ${IPDRS_CLOSED[${i}]]}; do
+	    if [ "${ENABLE_LOGGING}" == 1 ]; then
+		${CMD_IPTABLES} -A INPUT  -s ${host} ${ACTION_LOG}
+		${CMD_IPTABLES} -A OUTPUT -d ${host} ${ACTION_LOG}
+	    fi
+	    ${CMD_IPTABLES} -A INPUT  -s ${host} ${ACTION_DENY}
+	    ${CMD_IPTABLES} -D OUTPUT -d ${host} ${ACTION_DENY}
+	done
     done
 fi
 
 if [ "${#CUSTOM_RULES}" ]; then
     for (( i = 0 ; i < ${#CUSTOM_RULES[@]} ; i++ ));do
-        if [ -n "${CUSTOM_RULES[$i]}" ];then
-            ${CUSTOM_RULES[$i]}
-        fi
+	if [ -n "${CUSTOM_RULES[$i]}" ];then
+	    ${CUSTOM_RULES[$i]}
+	fi
     done
 fi
 

@@ -24,12 +24,12 @@
 #*** Info:
 #*  @author      Kevin van Zonneveld <kevin@vanzonneveld.net>
 #*  @version     0.826
-#*  @link        http://kevin.vanzonneveld.net
+#*  @link    http://kevin.vanzonneveld.net
 #*/
 
 
 ##########################################################################
-# intialize                                                              #
+# intialize                                  #
 ##########################################################################
 
 PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/bin/X11:/root/bin"
@@ -37,7 +37,7 @@ RUN_WARNINGS=0
 
 
 ##########################################################################
-# functions                                                              #
+# functions                                  #
 ##########################################################################
 
 missing_var(){
@@ -81,38 +81,38 @@ function dia_YesNo(){
     # arg2    = description
     xtra=""
     if [ "${3}" == "0" ]; then
-        xtra="--defaultno"
+    xtra="--defaultno"
     fi
 
     if [ -n "${CMD_DIALOG}" ] && [ -x ${CMD_DIALOG} ]; then
-        ${CMD_DIALOG} ${xtra} --title "${1}" --clear \
-            --yesno "${2}" 10 70
+    ${CMD_DIALOG} ${xtra} --title "${1}" --clear \
+	--yesno "${2}" 10 70
 
-        case $? in
-            0)
-                dia_ret=1;;
-            1)
-                dia_ret=0;;
-            255)
-                clear
-                echo "ESC pressed."
-                exit 0
-            ;;
-        esac
+    case $? in
+	0)
+	dia_ret=1;;
+	1)
+	dia_ret=0;;
+	255)
+	clear
+	echo "ESC pressed."
+	exit 0
+	;;
+    esac
     else
-        while true; do
-            echo -n "${1}. ${2} (Y/n) "
-            read yn
-            case $yn in
-                "y" | "Y" | "" )
-                    dia_ret=1
-                    break ;;
-                "n" | "N" )
-                    dia_ret=0
-                    break ;;
-                * ) echo "unknown response.  Asking again" ;;
-            esac
-        done
+    while true; do
+	echo -n "${1}. ${2} (Y/n) "
+	read yn
+	case $yn in
+	"y" | "Y" | "" )
+	    dia_ret=1
+	    break ;;
+	"n" | "N" )
+	    dia_ret=0
+	    break ;;
+	* ) echo "unknown response.  Asking again" ;;
+	esac
+    done
     fi
 }
 
@@ -221,10 +221,10 @@ is_running() {
     processes=$(${CMD_PGREP} ${baseproc})
     running_pid=0
     for proc in ${processes};do
-        # exclude our own process id!
-        if [ ${proc} -ne ${myproc} ];then
-            running_pid=${proc}
-        fi
+    # exclude our own process id!
+    if [ ${proc} -ne ${myproc} ];then
+	running_pid=${proc}
+    fi
     done
 }
 
@@ -370,8 +370,8 @@ commands_exist(){
 		# check if dpkg is available
 		CMD_DPKG=$(which "dpkg")
 		[ -n "${CMD_DPKG}" ] && [ -x ${CMD_DPKG} ] || missing_cmd "dpkg" "dpkg" "${MODE}"
-        # NOT NECESSARY:::only check if pear is available
-        CMD_PEAR=$(which "pear")
+    # NOT NECESSARY:::only check if pear is available
+    CMD_PEAR=$(which "pear")
 	fi
 
 	# DB CHECKS
@@ -438,7 +438,7 @@ config_setup(){
 		[ -n "${DB_PASS}" ] || DB_PASS=$(${CMD_CAT} /etc/mysql/debian.cnf |${CMD_GREP} 'password' |${CMD_HEAD} -n1 |${CMD_GAWK} '{print $3}')
 		[ -n "${DB_HOST}" ] || DB_HOST="localhost"
     else
-        DB_ENABLED=0 
+    DB_ENABLED=0 
 	fi
 
 	[ -n "${SY_ENABLED}" ] || SY_ENABLED=1
@@ -629,12 +629,12 @@ usage(){
 	echo "   backup - Run backup procedure"
 	echo "   help - This page"
 	echo ""
-	echo "                       This ${APP_HUMNNAME} has Super-God Masterforce Powers."
+	echo "               This ${APP_HUMNNAME} has Super-God Masterforce Powers."
 }
 
 
 ##########################################################################
-# application defaults and init                                          #
+# application defaults and init                      #
 ##########################################################################
 
 # PRE-INITIALIZE THE COMMANDS WE CAN FIND, WITHOUR REPORTING ANY ERRORS
@@ -673,7 +673,7 @@ tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/test$$
 trap "rm -f $tempfile" 0 1 2 5 15
 
 ##########################################################################
-# different runmodes                                                     #
+# different runmodes                             #
 ##########################################################################
 
 if [ "${1}" == "install" ];then
@@ -788,12 +788,12 @@ fi
 
 
 ##########################################################################
-# Proceed with normal backup runmode                                     #
+# Proceed with normal backup runmode                     #
 ##########################################################################
 
 
 ##########################################################################
-# reconfigure some settings                                              #
+# reconfigure some settings                          #
 ##########################################################################
 
 # TAR DEFAULTS
@@ -823,7 +823,7 @@ fi
 
 
 ##########################################################################
-# error handling                                                         #
+# error handling                             #
 ##########################################################################
 
 # APP CHECKS
@@ -886,7 +886,7 @@ fi
 
 
 ##########################################################################
-# start backup                                                           #
+# start backup                               #
 ##########################################################################
 
 is_running ${APP_BASENAME} $$
@@ -909,12 +909,12 @@ for FS_SOUREDIR in ${FS_SOUREDIRS}; do
 		if [ "${ENCRYPTION_ENABLED}" == 1 ]; then
 			# encrypt. do not use incremental in case of encryption
 			logit "info: backing up and encrypting directory ${FS_SOUREDIR} (${FS_SOURCESIZE}) to ${ENCR}"
-                 ${CMD_TAR} ${TAR_EXCLUDE_X_TAR} -pc${GZIP_ENABLED_X_TAR} ${FS_SOUREDIR} 2>>${LOG_FILE} | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
-            CMD="${CMD_TAR} ${TAR_EXCLUDE_X_TAR} -pc${GZIP_ENABLED_X_TAR} ${FS_SOUREDIR} 2>>${LOG_FILE} | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
-        else
+	 ${CMD_TAR} ${TAR_EXCLUDE_X_TAR} -pc${GZIP_ENABLED_X_TAR} ${FS_SOUREDIR} 2>>${LOG_FILE} | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
+	CMD="${CMD_TAR} ${TAR_EXCLUDE_X_TAR} -pc${GZIP_ENABLED_X_TAR} ${FS_SOUREDIR} 2>>${LOG_FILE} | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
+    else
 			#normal tar+gzip
 			logit "info: backing up directory ${FS_SOUREDIR} (${FS_SOURCESIZE}) to ${DEST}"
-                 ${CMD_TAR} ${TAR_EXCLUDE_X_TAR} -pc${GZIP_ENABLED_X_TAR}f ${DEST} --listed-incremental=${SNAR} ${FS_SOUREDIR} 1>/dev/null 2>>${LOG_FILE}
+	 ${CMD_TAR} ${TAR_EXCLUDE_X_TAR} -pc${GZIP_ENABLED_X_TAR}f ${DEST} --listed-incremental=${SNAR} ${FS_SOUREDIR} 1>/dev/null 2>>${LOG_FILE}
 			CMD="${CMD_TAR} ${TAR_EXCLUDE_X_TAR} -pc${GZIP_ENABLED_X_TAR}f ${DEST} --listed-incremental=${SNAR} ${FS_SOUREDIR} 1>/dev/null 2>>${LOG_FILE}"
 		fi
 
@@ -937,20 +937,20 @@ if [ "${SY_ENABLED}" == 1 ]; then
 		if [ "${ENCRYPTION_ENABLED}" == 1 ]; then
 			# encrypt.
 			logit "info: backing up and encrypting dpkg-selection to ${ENCR}"
-                 ${CMD_DPKG} --get-selections | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
+	 ${CMD_DPKG} --get-selections | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
 			CMD="${CMD_DPKG} --get-selections | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
 		else
 			#normal bzip2
 			logit "info: backing up dpkg-selection to ${DEST}"
-                 ${CMD_DPKG} --get-selections | ${CMD_BZIP2} -qzc1 >${DEST}
+	 ${CMD_DPKG} --get-selections | ${CMD_BZIP2} -qzc1 >${DEST}
 			CMD="${CMD_DPKG} --get-selections | ${CMD_BZIP2} -qzc1 >${DEST}"
 		fi
 
 		if [ $? -ne 0 ]; then
 			logit "critical: SY dpkg backup failed (${CMD}), more details in ${LOG_FILE}"
-        else
-            logit "debug: (${CMD}) finished without errors"
-        fi
+    else
+	logit "debug: (${CMD}) finished without errors"
+    fi
 	fi
 
 	# installed pear packages
@@ -960,43 +960,43 @@ if [ "${SY_ENABLED}" == 1 ]; then
 		if [ "${ENCRYPTION_ENABLED}" == 1 ]; then
 			# encrypt.
 			logit "info: backing up and encrypting pear-list to ${ENCR}"
-                 ${CMD_PEAR} list | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
+	 ${CMD_PEAR} list | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
 			CMD="${CMD_PEAR} list | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
 		else
 			#normal bzip2
 			logit "info: backing up pear-list to ${DEST}"
-                 ${CMD_PEAR} list | ${CMD_BZIP2} -qzc1 >${DEST}
+	 ${CMD_PEAR} list | ${CMD_BZIP2} -qzc1 >${DEST}
 			CMD="${CMD_PEAR} list | ${CMD_BZIP2} -qzc1 >${DEST}"
 		fi
 
 		if [ $? -ne 0 ]; then
 			logit "warning: SY pear backup failed (${CMD}), more details in ${LOG_FILE}"
-        else
-            logit "debug: (${CMD}) finished without errors"
-        fi
+    else
+	logit "debug: (${CMD}) finished without errors"
+    fi
 	fi
 
     # installed crontab packages
     if [ -n "${CMD_CRONTAB}" ]; then
-        DEST="${FS_DESTINDIR}/${DATESTR}-SY-crontab-list.txt.bz2"
-        ENCR="${FS_DESTINDIR}/${DATESTR}-SY-crontab-list.txt.bz2.enc"
-        if [ "${ENCRYPTION_ENABLED}" == 1 ]; then
-            # encrypt.
-            logit "info: backing up and encrypting crontab-list to ${ENCR}"
-                 ${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
-            CMD="${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
-        else
-            #normal bzip2
-            logit "info: backing up crontab-list to ${DEST}"
-                 ${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 >${DEST}
-            CMD="${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 >${DEST}"
-        fi
+    DEST="${FS_DESTINDIR}/${DATESTR}-SY-crontab-list.txt.bz2"
+    ENCR="${FS_DESTINDIR}/${DATESTR}-SY-crontab-list.txt.bz2.enc"
+    if [ "${ENCRYPTION_ENABLED}" == 1 ]; then
+	# encrypt.
+	logit "info: backing up and encrypting crontab-list to ${ENCR}"
+	 ${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
+	CMD="${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
+    else
+	#normal bzip2
+	logit "info: backing up crontab-list to ${DEST}"
+	 ${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 >${DEST}
+	CMD="${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 >${DEST}"
+    fi
 
-        if [ $? -ne 0 ]; then
-            logit "warning: SY crontab backup failed (${CMD}), more details in ${LOG_FILE}"
-        else
-            logit "debug: (${CMD}) finished without errors"
-        fi
+    if [ $? -ne 0 ]; then
+	logit "warning: SY crontab backup failed (${CMD}), more details in ${LOG_FILE}"
+    else
+	logit "debug: (${CMD}) finished without errors"
+    fi
     fi
 fi
 
@@ -1013,20 +1013,20 @@ if [ "${DB_ENABLED}" == 1 ]; then
 				if [ "${ENCRYPTION_ENABLED}" == 1 ]; then
 					# encrypt.
 					logit "info: backing up (${CMD_MYSQL}) and encrypting database ${DATABASE} to ${DEST}"
-                         ${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
+	     ${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
 					CMD="${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
 				else
 					# normal bzip2
 					logit "info: backing up (${CMD_MYSQL}) database ${DATABASE} to ${DEST}"
-                         ${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 >${DEST}
+	     ${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 >${DEST}
 					CMD="${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 >${DEST}"
 				fi
 
 				if [ $? -ne 0 ]; then
 					logit "critical: DB backup of ${DATABASE} returned errors, more details in ${LOG_FILE}"
-                else
-                    logit "debug: (${CMD}) finished without errors"
-                fi
+	else
+	    logit "debug: (${CMD}) finished without errors"
+	fi
 			fi
 		done
 	else
@@ -1041,19 +1041,19 @@ if [ "${FTP_ENABLED}" == 1 ]; then
 	if [ -n "${CMD_FTPUPLOAD}" ] && [ -f "${CMD_FTPUPLOAD}" ] && [ -x "${CMD_FTPUPLOAD}" ];then
 		logit "info: uploading ${FS_DESTINDIR}/* to ftp://${FTP_HOST}:${FTP_CDIR}/"
 
-        is_running "ftp-upload" $$
-        if [ ${running_pid} -gt 0 ]; then
-            logit "critical: another ftp-upload with pid ${running_pid} is already running"
-        else
-                 ${CMD_FTPUPLOAD} -h ${FTP_HOST} -u ${FTP_USER} --password ${FTP_PASS} -b -d ${FTP_CDIR} ${FS_DESTINDIR}/* 1>/dev/null 2>>${LOG_FILE}
-            CMD="${CMD_FTPUPLOAD} -h ${FTP_HOST} -u ${FTP_USER} --password ${FTP_PASS} -b -d ${FTP_CDIR} ${FS_DESTINDIR}/* 1>/dev/null 2>>${LOG_FILE}"
+    is_running "ftp-upload" $$
+    if [ ${running_pid} -gt 0 ]; then
+	logit "critical: another ftp-upload with pid ${running_pid} is already running"
+    else
+	 ${CMD_FTPUPLOAD} -h ${FTP_HOST} -u ${FTP_USER} --password ${FTP_PASS} -b -d ${FTP_CDIR} ${FS_DESTINDIR}/* 1>/dev/null 2>>${LOG_FILE}
+	CMD="${CMD_FTPUPLOAD} -h ${FTP_HOST} -u ${FTP_USER} --password ${FTP_PASS} -b -d ${FTP_CDIR} ${FS_DESTINDIR}/* 1>/dev/null 2>>${LOG_FILE}"
 
-            if [ $? -ne 0 ]; then
-                logit "critical: FTP upload returned errors, more details in ${LOG_FILE}"
-            else
-                logit "debug: (${CMD}) finished without errors"
-            fi
-        fi
+	if [ $? -ne 0 ]; then
+	logit "critical: FTP upload returned errors, more details in ${LOG_FILE}"
+	else
+	logit "debug: (${CMD}) finished without errors"
+	fi
+    fi
 
 		# cleanup after upload
 		if [ "${FTP_CLEANUPAFTERUPLOAD}" == 1 ]; then
@@ -1074,19 +1074,19 @@ if [ "${RSYNC_ENABLED}" == 1 ]; then
 	if [ -n "${CMD_RSYNC}" ] && [ -f "${CMD_RSYNC}" ] && [ -x "${CMD_RSYNC}" ];then
 		logit "info: rsyncing ${FS_DESTINDIR}/* to ${RSYNC_USER}@${RSYNC_HOST}:${RSYNC_CDIR}/"
 
-        is_running "rsync" $$
-        if [ ${running_pid} -gt 0 ]; then
-            logit "critical: another rsync with pid ${running_pid} is already running"
-        else
-                 ${CMD_RSYNC} -raz ${FS_DESTINDIR}/* ${RSYNC_USER}@${RSYNC_HOST}:${RSYNC_CDIR}/  1>/dev/null 2>>${LOG_FILE}
-            CMD="${CMD_RSYNC} -raz ${FS_DESTINDIR}/* ${RSYNC_USER}@${RSYNC_HOST}:${RSYNC_CDIR}/  1>/dev/null 2>>${LOG_FILE}"
+    is_running "rsync" $$
+    if [ ${running_pid} -gt 0 ]; then
+	logit "critical: another rsync with pid ${running_pid} is already running"
+    else
+	 ${CMD_RSYNC} -raz ${FS_DESTINDIR}/* ${RSYNC_USER}@${RSYNC_HOST}:${RSYNC_CDIR}/  1>/dev/null 2>>${LOG_FILE}
+	CMD="${CMD_RSYNC} -raz ${FS_DESTINDIR}/* ${RSYNC_USER}@${RSYNC_HOST}:${RSYNC_CDIR}/  1>/dev/null 2>>${LOG_FILE}"
 
-            if [ $? -ne 0 ]; then
-                logit "critical: RSYNC upload returned errors, more details in ${LOG_FILE}"
-            else
-                logit "debug: (${CMD}) finished without errors"
-            fi
-        fi
+	if [ $? -ne 0 ]; then
+	logit "critical: RSYNC upload returned errors, more details in ${LOG_FILE}"
+	else
+	logit "debug: (${CMD}) finished without errors"
+	fi
+    fi
 	else
 		logit "critical: RSYNC command(${CMD_RSYNC}) is not available"
 	fi
