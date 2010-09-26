@@ -38,7 +38,7 @@
     </pre>
   <% else %>
     <p>
-      
+
     </p>
   <% end %>
 </div>
@@ -47,8 +47,9 @@
 <a href="<%=@orm.url%>"><img width="700" src="<%=@orm.url%>" /></a>
 
 <pre><code>
+  <%=h @parsed[:models].size %>
   <%=h @parsed.to_yaml %>
-  
+
   <%=h @orm.source %>
 </code></pre>
 

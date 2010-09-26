@@ -28,7 +28,7 @@ class Orm < ActiveRecord::Base
     typeModels = {}
     typePatterns.each do |type, patterns|
       result = source.scan(patterns[:defin])
-      if result.size then
+      if result then
         typeModels[type] = result
       end
     end
@@ -50,6 +50,10 @@ class Orm < ActiveRecord::Base
           parsed[modelName][:paren] = array_to_ruby type, source[3]
         end
       end
+    end
+
+    if parsed.size == 0 then
+      raise "No models recognized in source"
     end
 
     # Make connections
@@ -166,6 +170,10 @@ class Orm < ActiveRecord::Base
 
     # Initialize Data
     definitions = self.parse_source
+    if definitions.is_a?(String) then
+      return definitions
+    end
+
     url = '/graphs/' + self.uuid + '.' + 'EXT'
     file = File.join(RAILS_ROOT, 'public') + url
 
