@@ -19,8 +19,8 @@ class Orm < ActiveRecord::Base
     frameworkPatterns = {
       :rails => {
         :defin => /^\s*(class\s+([A-Z][A-Za-z0-9_]+)\s+<\s+ActiveRecord::Base)\s+(.+?)end/sm,
-        :child => /^(\s*)(belongs_to)\s+(.*)/sm,
-        :paren => /^\s*(public|var)\s+\$(hasMany|hasOne|hasAndBelongsToMany)\s+=\s+(array\s*\([^;]+);/sm,
+        :child => /^(\s*)(belongs_to)\s+?(\{(.+?)\}|(.+?))\n/sm,
+        :paren => /^(\s*)(has_many|has_one|has_and_belongs_to_many)\s+?(\{(.+?)\}|(.+?)\n)/sm,
       },
       :cakephp => {
         :defin => /^\s*([Cc]lass\s+([A-Z][A-Za-z0-9_]+)\s+[Ee][Xx][Tt][Ee][Nn][Dd][Ss]\s+[A-Z][A-Za-z0-9_]+Model)\s*\{(.+?)\}/sm,
@@ -47,12 +47,12 @@ class Orm < ActiveRecord::Base
         modelDef, modelName, modelSource = modelcol
         parsed[modelName] = {:child => {}, :paren => {}}
         # child to
-        if source = modelSource.match(frameworkPatterns[framework][:child])
-          parsed[modelName][:child] = array_to_ruby framework, source[3]
+        if match = modelSource.match(frameworkPatterns[framework][:child])
+          parsed[modelName][:child] = array_to_ruby framework, match
         end
         # parent of
-        if source = modelSource.match(frameworkPatterns[framework][:paren])
-          parsed[modelName][:paren] = array_to_ruby framework, source[3]
+        if match = modelSource.match(frameworkPatterns[framework][:paren])
+          parsed[modelName][:paren] = array_to_ruby framework, match
         end
       end
     end
@@ -103,11 +103,14 @@ class Orm < ActiveRecord::Base
     return :models => parsed, :connected => connected, :connections => connections, :frameworkModels => frameworkModels
   end
 
-  def array_to_ruby(framework, str)
+  def array_to_ruby(framework, match)
     case framework
+    when :rails
+      eval ("@object = " + match[3])
+      raise match.to_yaml
     when :cakephp
       # Let PHP Save the array code as json
-      phpCode = "<?php echo json_encode(" + str + ");"
+      phpCode = "<?php echo json_encode(" + match[3] + ");"
       phpFile = '/tmp/' + self.uuid;
       tmpFile = File.new(phpFile, 'w')
       tmpFile.write(phpCode)
@@ -132,7 +135,7 @@ class Orm < ActiveRecord::Base
           data = {}
         end
         if !name.kind_of?(String)
-          raise str + ' results in non-string name: ' + name.inspect
+          raise match[3] + ' results in non-string name: ' + name.inspect
         end
 
         @prop[name] = data
@@ -146,7 +149,7 @@ class Orm < ActiveRecord::Base
 
       return @prop
     end
-    raise "Unsupported framework: " + framework
+    raise "Unsupported framework: " + framework.to_s
   end
 
   def build_graph()
