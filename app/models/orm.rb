@@ -106,15 +106,21 @@ class Orm < ActiveRecord::Base
   def array_to_ruby(framework, match)
     case framework
     when :rails
-      objs = eval(match[3])
-      if obj.is_a(Symbol)
-        objs = {objs}
+      obj = eval(match[3])
+      objs = {}
+      if obj.is_a?(Symbol)
+        objs[obj] = {}
+      elsif obj.is_a?(Hash)
+        objs = obj
       end
+
       @prop = {}
       objs.each do |name, data|
-        @prop[:name.to_s] = data
+        @prop[name.to_s] = data
       end
-      raise @prop.inspect
+
+      @prop = relation_nest @prop, match
+      return @prop
     when :cakephp
       # Let PHP Save the array code as json
       phpCode = "<?php echo json_encode(" + match[3] + ");"
@@ -128,12 +134,19 @@ class Orm < ActiveRecord::Base
       require 'json'
       cmd = "php " + phpFile
       stdin, stdout, stderr = Open3.popen3(cmd)
-      obj = JSON.parse(stdout.readlines.join)
+      objs = JSON.parse(stdout.readlines.join)
 
+      @prop = relation_nest objs, match
+      return @prop
+    end
+    raise "Unsupported framework: " + framework.to_s
+  end
+
+  def relation_nest(objs, match)
       # Consistently format relationData
       # and add relationName & className
       @prop = {}
-      obj.each do|name, data|
+      objs.each do|name, data|
         # Nest if string
         if data.kind_of?(String)
           name = data
@@ -153,10 +166,7 @@ class Orm < ActiveRecord::Base
           @prop[name][:className] = name
         end
       end
-
       return @prop
-    end
-    raise "Unsupported framework: " + framework.to_s
   end
 
   def build_graph()
