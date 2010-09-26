@@ -106,8 +106,15 @@ class Orm < ActiveRecord::Base
   def array_to_ruby(framework, match)
     case framework
     when :rails
-      eval ("@object = " + match[3])
-      raise match.to_yaml
+      objs = eval(match[3])
+      if obj.is_a(Symbol)
+        objs = {objs}
+      end
+      @prop = {}
+      objs.each do |name, data|
+        @prop[:name.to_s] = data
+      end
+      raise @prop.inspect
     when :cakephp
       # Let PHP Save the array code as json
       phpCode = "<?php echo json_encode(" + match[3] + ");"
