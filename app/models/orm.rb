@@ -1,6 +1,6 @@
 class Orm < ActiveRecord::Base
   set_primary_key "uuid"
-  belongs_to :type
+  belongs_to :framework
   has_many :payments
   validates_presence_of :source
   include UUIDHelper
@@ -16,7 +16,12 @@ class Orm < ActiveRecord::Base
   end
 
   def parse_source
-    typePatterns = {
+    frameworkPatterns = {
+      :rails => {
+        :defin => /^\s*(class\s+([A-Z][A-Za-z0-9_]+)\s+<\s+ActiveRecord::Base)\s+(.+?)end/sm,
+        :child => /^(\s*)(belongs_to)\s+(.*)/sm,
+        :paren => /^\s*(public|var)\s+\$(hasMany|hasOne|hasAndBelongsToMany)\s+=\s+(array\s*\([^;]+);/sm,
+      },
       :cakephp => {
         :defin => /^\s*([Cc]lass\s+([A-Z][A-Za-z0-9_]+)\s+[Ee][Xx][Tt][Ee][Nn][Dd][Ss]\s+[A-Z][A-Za-z0-9_]+Model)\s*\{(.+?)\}/sm,
         :child => /^\s*(public|var)\s+\$(belongsTo)\s+=\s+(array\s*\([^;]+);/sm,
@@ -24,30 +29,30 @@ class Orm < ActiveRecord::Base
       }
     }
 
-    # Split source into models per type
-    typeModels = {}
-    typePatterns.each do |type, patterns|
+    # Split source into models per framework
+    frameworkModels = {}
+    frameworkPatterns.each do |framework, patterns|
       result = source.scan(patterns[:defin])
       if result then
-        typeModels[type] = result
+        frameworkModels[framework] = result
       end
     end
     # Order languages by modelcount
-    typeModels.sort_by {|models| models.size}
+    frameworkModels.sort_by {|models| models.size}
 
     # Process each model's hasbtm properties
     parsed = {}
-    typeModels.each do |type, models|
+    frameworkModels.each do |framework, models|
       models.each do |modelcol|
         modelDef, modelName, modelSource = modelcol
         parsed[modelName] = {:child => {}, :paren => {}}
         # child to
-        if source = modelSource.match(typePatterns[type][:child])
-          parsed[modelName][:child] = array_to_ruby type, source[3]
+        if source = modelSource.match(frameworkPatterns[framework][:child])
+          parsed[modelName][:child] = array_to_ruby framework, source[3]
         end
         # parent of
-        if source = modelSource.match(typePatterns[type][:paren])
-          parsed[modelName][:paren] = array_to_ruby type, source[3]
+        if source = modelSource.match(frameworkPatterns[framework][:paren])
+          parsed[modelName][:paren] = array_to_ruby framework, source[3]
         end
       end
     end
@@ -95,11 +100,11 @@ class Orm < ActiveRecord::Base
       end
     end
 
-    return :models => parsed, :connected => connected, :connections => connections, :typeModels => typeModels
+    return :models => parsed, :connected => connected, :connections => connections, :frameworkModels => frameworkModels
   end
 
-  def array_to_ruby(type, str)
-    case type
+  def array_to_ruby(framework, str)
+    case framework
     when :cakephp
       # Let PHP Save the array code as json
       phpCode = "<?php echo json_encode(" + str + ");"
@@ -141,7 +146,7 @@ class Orm < ActiveRecord::Base
 
       return @prop
     end
-    raise "Unsupported type: " + type
+    raise "Unsupported framework: " + framework
   end
 
   def build_graph()
@@ -189,19 +194,19 @@ class Orm < ActiveRecord::Base
 
     # Add edges
     definitions[:connections].each do|from, tos|
-      tos.each do|to, types|
+      tos.each do|to, frameworks|
         dirs = {:back => false, :forward => false}
         edgeOpts[:label] = ''
 
-        if types.count == 2 then
+        if frameworks.count == 2 then
           edgeOpts[:dir] = 'both'
         end
 
-        types.each do|type, name|
-          if type == :child && to != name
+        frameworks.each do|framework, name|
+          if framework == :child && to != name
               edgeOpts[:label] = name
           end
-          if type == :paren && from != name
+          if framework == :paren && from != name
               edgeOpts[:label] = name
           end
         end
