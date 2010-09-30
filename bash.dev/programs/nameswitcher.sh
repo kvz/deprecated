@@ -11,11 +11,11 @@
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2010 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
-# * @version   0.1
+# * @version   0.2
 # * @link      http://kevin.vanzonneveld.net/
 # */
 
-set -x
+#set -x
 
 APP="nameswitcher"
 CURRENT=$(grep \^nameserver /etc/resolv.conf |head -n1 |awk '{print $2}')
@@ -39,9 +39,9 @@ elif [ $(test_nameserver "${FALLBACK}") ]; then
 		# Set fallback
 		sed -i.bak${DATE} "s/${CURRENT}/${FALLBACK}/" /etc/resolv.conf
 		logger -p user.crit "${APP}: Resolving nameserver ${PRIMARY} failed. Replaced ${CURRENT} with ${FALLBACK} in resolv.conf!"
-    else
-        # Stay on fallback
-        logger -p user.notice "${APP}: Resolving nameserver ${PRIMARY} still down. Staying on ${FALLBACK} for now"
+	else
+		# Stay on fallback
+		logger -p user.notice "${APP}: Resolving nameserver ${PRIMARY} still down. Staying on ${FALLBACK} for now"
 	fi
 else
 	# Could reach none
