@@ -227,7 +227,7 @@ commandTestHandle "iptables" "iptablesy" "EMERG"
 ###############################################################
 
 function usage() {
-    echo "Usage: ${0} route|ipables block|unblock host"
+    echo "Usage: ${0} route|iptables block|unblock host"
     exit 1
 }
 
