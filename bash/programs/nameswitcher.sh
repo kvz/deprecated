@@ -27,11 +27,11 @@
 #set -x
 
 APP="nameswitcher"
-CURRENT=$(/bin/grep \^nameserver /etc/resolv.conf |/usr/bin/head -n1 |/usr/bin/awk '{print $2}')
-PRIMARY="213.193.210.250"
 TESTDOMAIN="true.nl"
+PRIMARY="213.193.210.250"
 FALLBACK="8.8.8.8"
 DATE=$(/bin/date '+%Y%m%d-%k%M%S')
+CURRENT=$(/bin/grep \^nameserver /etc/resolv.conf |/usr/bin/head -n1 |/usr/bin/awk '{print $2}')
 
 test_nameserver () {
 	/usr/bin/dig +short ${TESTDOMAIN} @${1} && return 0
@@ -55,5 +55,5 @@ elif [ $(test_nameserver "${FALLBACK}") ]; then
 	fi
 else
 	# Could reach none
-	/usr/bin/logger -p user.crit "${APP}: Resolving nameservers ${PRIMARY} and ${FALLBACK} both. Probably network outage on my side so doing nothing."
+	/usr/bin/logger -p user.crit "${APP}: Resolving nameservers ${PRIMARY} and ${FALLBACK} both failed. Probably network outage on my side so doing nothing."
 fi
