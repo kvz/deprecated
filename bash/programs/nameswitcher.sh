@@ -19,7 +19,7 @@
 
 APP="nameswitcher"
 CURRENT=$(grep \^nameserver /etc/resolv.conf |head -n1 |awk '{print $2}')
-PRIMARY="213.193.210.251"
+PRIMARY="213.193.210.250"
 FALLBACK="8.8.8.8"
 DATE=$(date '+%Y%m%d-%k%M%S')
 
