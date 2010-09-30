@@ -29,11 +29,12 @@
 APP="nameswitcher"
 CURRENT=$(/bin/grep \^nameserver /etc/resolv.conf |/usr/bin/head -n1 |/usr/bin/awk '{print $2}')
 PRIMARY="213.193.210.250"
+TESTDOMAIN="true.nl"
 FALLBACK="8.8.8.8"
 DATE=$(/bin/date '+%Y%m%d-%k%M%S')
 
 test_nameserver () {
-	/usr/bin/dig +short true.nl @${1} && return 0
+	/usr/bin/dig +short ${TESTDOMAIN} @${1} && return 0
 	return 1
 }
 
