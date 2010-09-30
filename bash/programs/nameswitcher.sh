@@ -15,6 +15,8 @@
 # *
 # * Tested as cronjob on Ubuntu servers
 # *
+# * Change the PRIMARY config variable to your own resolving nameserver
+# *
 # * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2010 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
