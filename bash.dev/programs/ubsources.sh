@@ -4,17 +4,17 @@
 # *
 # * And enables all the standard types: main restricted universe multiverse
 # * Makes a backup to /etc/apt/sources.list.{date}
-# * 
-# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# *
+# * @author	Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2008 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
 # * @version   SVN: Release: $Id: ubsources.sh 285 2009-04-22 13:19:56Z kevin $
-# * @link      http://kevin.vanzonneveld.net/
+# * @link	  http://kevin.vanzonneveld.net/
 # */
 
 # Includes
 ###############################################################
-source $(echo "$(dirname ${0})/../functions/log.sh")     # make::include
+source $(echo "$(dirname ${0})/../functions/log.sh")	 # make::include
 source $(echo "$(dirname ${0})/../functions/toUpper.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandInstall.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include
@@ -61,27 +61,27 @@ UBUNTU_DISTR=$(${CMD_SUDO} ${CMD_CAT} /etc/lsb-release| ${CMD_SUDO} ${CMD_AWK} -
 
 # For added safety, only perform on known versions
 UBUNTU_FOUND=0
-[ "warty"    = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
-[ "hoary"    = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
+[ "warty"	= "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
+[ "hoary"	= "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
 [ "breezy"   = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
 [ "dapper"   = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
-[ "edgy"     = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
+[ "edgy"	 = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
 [ "feisty"   = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
-[ "gutsy"    = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
-[ "hardy"    = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
+[ "gutsy"	= "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
+[ "hardy"	= "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
 [ "intrepid" = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
 [ "jaunty"   = "${UBUNTU_DISTR}" ] && UBUNTU_FOUND=1
- 
+
 if [ "${UBUNTU_FOUND}" = 0 ]; then
-    ${CMD_SUDO} echo "Version: '${UBUNTU_DISTR}' is not supported (yet)" >&2
-    exit 1
+	${CMD_SUDO} echo "Version: '${UBUNTU_DISTR}' is not supported (yet)" >&2
+	exit 1
 fi
-	
-# Backup sources.list	
+
+# Backup sources.list
 if [ ! -f /etc/apt/sources.list ]; then
 	${CMD_SUDO} echo "File /etc/apt/sources.list not found. Cannot backup file."
 else
-    CURDATE=$(${CMD_DATE} '+%Y%m%d%H%M%S')
+	CURDATE=$(${CMD_DATE} '+%Y%m%d%H%M%S')
 	${CMD_SUDO} echo "Backing up /etc/apt/sources.list to /etc/apt/sources.list.${CURDATE}"
 	${CMD_SUDO} ${CMD_CP} -af /etc/apt/sources.list{,.${CURDATE}}
 fi

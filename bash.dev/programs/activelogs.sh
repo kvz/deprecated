@@ -1,17 +1,17 @@
 #!/bin/bash
 #/**
 # * Shows all active logs
-# * 
-# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# *
+# * @author	Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2007 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
 # * @version   SVN: Release: $Id: activelogs.sh 210 2008-11-19 11:54:52Z kevin $
-# * @link      http://kevin.vanzonneveld.net/
+# * @link	  http://kevin.vanzonneveld.net/
 # */
 
 # Includes
 ###############################################################
-source $(echo "$(dirname ${0})/../functions/log.sh")     # make::include
+source $(echo "$(dirname ${0})/../functions/log.sh")	 # make::include
 source $(echo "$(dirname ${0})/../functions/toUpper.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandInstall.sh") # make::include
 source $(echo "$(dirname ${0})/../functions/commandTest.sh") # make::include
@@ -50,7 +50,7 @@ FILE_RAN="${DIR_ROOT}/${PROGRAM}.ran" # Not using basename cause that will frust
 if [ ! -f "${FILE_RAN}" ]; then
 	echo "First time running ${PROGRAM}. Indexing all logs, may take a long time... "
 	FIRST_RUN=1
-fi 
+fi
 
 # Run
 ###############################################################
@@ -60,11 +60,11 @@ fi
 # Error
 if [ "${?}" = 1 ]; then
 	echo "Error while showing active logs" >&2
-    exit 1
+	exit 1
 fi
 
 # Success
 if [ "${FIRST_RUN}" = 1 ]; then
 	echo "Indexing done. Run again to show recent log activity."
-	${CMD_TOUCH} ${FILE_RAN}  
+	${CMD_TOUCH} ${FILE_RAN}
 fi

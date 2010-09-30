@@ -35,7 +35,7 @@ reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
 pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa
 qui officia deserunt mollit anim id est laborum';
 
-    public function  __construct($options = array()) {
+    public function  __construct ($options = array()) {
         $this->_options = $options;
 
         if (!isset($this->_options['xhtml'])) $this->_options['xhtml'] = true;
@@ -51,17 +51,19 @@ qui officia deserunt mollit anim id est laborum';
         if (!isset($this->_options['echo'])) $this->_options['echo'] = false;
     }
 
-    public function setOption($key, $val) {
+    public function setOption ($key, $val) {
         if (!array_key_exists($key, $this->_options)) {
-            trigger_error(sprintf('%s is not a valid options',
-                $key), E_USER_ERROR);
+            trigger_error(sprintf(
+                '%s is not a valid options',
+                $key
+            ), E_USER_ERROR);
             return false;
         }
 
         $this->_options[$key] = $val;
     }
 
-    protected function _trackToc($tag, $body) {
+    protected function _trackToc ($tag, $body) {
         if (preg_match('/h(\d)/i', $tag, $m)) {
             $tocId     = count($this->_toc);
             $tocLevel  = $m[1];
@@ -125,7 +127,7 @@ qui officia deserunt mollit anim id est laborum';
         }
     }
 
-    public function __call($tag, $arguments) {
+    public function __call ($tag, $arguments) {
         if (!array_key_exists(0, $arguments)) {
             return $this->_tag($tag);
         }
@@ -135,7 +137,7 @@ qui officia deserunt mollit anim id est laborum';
         return $this->_tag($tag, $body, $args);
     }
 
-    public function pr() {
+    public function pr () {
         $args = func_get_args();
         echo '<pre>'."\n";
         foreach($args as $arg) {
@@ -143,13 +145,13 @@ qui officia deserunt mollit anim id est laborum';
         }
         echo '</pre>'."\n";
     }
-    public function prd() {
+    public function prd () {
         $args = func_get_args();
         call_user_func_array(array($this, 'pr'), $args);
         die();
     }
 
-    public function reset() {
+    public function reset () {
         $this->_idCnt = array();
         $this->_ids = array();
         $this->_buffer = array();
@@ -158,7 +160,7 @@ qui officia deserunt mollit anim id est laborum';
         $this->_tocIdPrev = false;
     }
 
-    protected function _createId($tag) {
+    protected function _createId ($tag) {
         if (!isset($this->_idCnt[$tag])) {
             $this->_idCnt[$tag] = 0;
         }
@@ -169,11 +171,11 @@ qui officia deserunt mollit anim id est laborum';
 
         return $id;
     }
-    public function getLastId() {
+    public function getLastId () {
         return end($this->_ids);
     }
 
-    protected function _args($args = array()) {
+    protected function _args ($args = array()) {
         $argumentsT = '';
         if (is_array($args) && count($args)) {
             foreach ($args as $k => $v) {
@@ -184,7 +186,7 @@ qui officia deserunt mollit anim id est laborum';
                 if (is_array($v)) {
                     if ($k === 'style') {
                         $v2 = '';
-                        foreach($v as $stylek => $stylev) {
+                        foreach ($v as $stylek => $stylev) {
                             $v2 .= sprintf(' %s: %s;', $stylek, $stylev);
                         }
                         $v = trim($v2);
@@ -204,10 +206,11 @@ qui officia deserunt mollit anim id est laborum';
         } else {
             $argumentsT = '';
         }
-        return $argumentsT;
+
+        return str_replace('%', '%%', $argumentsT);
     }
 
-    protected function _tag($tag, $body = true, $tagOptions = array()) {
+    protected function _tag ($tag, $body = true, $tagOptions = array()) {
         if (is_string($tagOptions)) {
             $tagOptions = array('class' => $tagOptions);
         }
@@ -340,7 +343,7 @@ qui officia deserunt mollit anim id est laborum';
      * @param <type> $arr2
      * @return <type>
      */
-    protected function _merge($arr1, $arr2 = null) {
+    protected function _merge ($arr1, $arr2 = null) {
 		$args = func_get_args();
 		$r = (array)current($args);
 		while (($arg = next($args)) !== false) {
@@ -361,29 +364,29 @@ qui officia deserunt mollit anim id est laborum';
     /*
      * Overrides - Non-standard tag implementations
      */
-    public function img($link, $args = array()) {
+    public function img ($link, $args = array()) {
         $args = $this->_merge(array('src' => $link), $args);
         return $this->_tag('img', null, $args);
     }
-    public function a($url, $title = '', $args = array()) {
+    public function a ($url, $title = '', $args = array()) {
         return $this->_tag('a', $title, $this->_merge(array(
             'href'=> $url,
         ), $args));
     }
-    public function css($url, $args = array()) {
+    public function css ($url, $args = array()) {
         return $this->_tag('link', null, $this->_merge(array(
             'type' => 'text/css',
             'rel' => 'stylesheet',
             'href'=> $url,
         ), $args));
     }
-    public function js($url, $args = array()) {
+    public function js ($url, $args = array()) {
         return $this->_tag('script', '', $this->_merge(array(
             'type' => 'text/javascript',
             'src'=> $url,
         ), $args));
     }
-    public function xml($body = true, $args = array()) {
+    public function xml ($body = true, $args = array()) {
         return $this->_tag('?xml', $body, $this->_merge(array(
             'version' => '1.0',
             'encoding' => 'UTF-8',
@@ -397,21 +400,21 @@ qui officia deserunt mollit anim id est laborum';
     /*
      * Shortcuts
      */
-    public function clear($body = '', $args = array()) {
+    public function clear ($body = '', $args = array()) {
         return $this->_tag('div', $body, $this->_merge(array(
             'style' => array(
                 'clear' => 'both',
             ),
         ), $args));
     }
-    public function page($body = true, $args = array()) {
+    public function page ($body = true, $args = array()) {
         return $this->_tag('div', $body, $this->_merge(array(
             'class' => array(
                 'page'
             ),
         ), $args));
     }
-    public function float($body = true, $args = array()) {
+    public function float ($body = true, $args = array()) {
         return $this->_tag('div', $body, $this->_merge(array(
             'style' => array(
                 'float' => 'left',
@@ -420,7 +423,7 @@ qui officia deserunt mollit anim id est laborum';
     }
 
 
-    public function getToc() {
+    public function getToc () {
         $toc = $this->_toc;
 
         $t = &$toc[];
@@ -433,7 +436,7 @@ qui officia deserunt mollit anim id est laborum';
         return join('', $toc);
     }
 
-    public function out($html, $options = array()) {
+    public function out ($html, $options = array()) {
         if (@$options['echo']) {
             if (@$options['buffer']) {
                 $this->_buffer[] = $html;
@@ -446,7 +449,7 @@ qui officia deserunt mollit anim id est laborum';
         }
     }
 
-    public function getBuffer($clear = true) {
+    public function getBuffer ($clear = true) {
         $r = join('', $this->_buffer);
 
         if ($this->_options['tidy']) {
@@ -460,7 +463,7 @@ qui officia deserunt mollit anim id est laborum';
     }
 
 
-    protected function _indent($indentation = null) {
+    protected function _indent ($indentation = null) {
         if ($indentation === null && isset($this->_options['indentation'])) {
             $indentation = $this->_options['indentation'];
         }
@@ -481,13 +484,14 @@ qui officia deserunt mollit anim id est laborum';
             $indent = '';
         } else {
             trigger_error(sprintf(
-                    'Indendation can be a lot of things but not "%s"',
-                    $indentation), E_USER_ERROR);
+                'Indendation can be a lot of things but not "%s"',
+                $indentation
+            ), E_USER_ERROR);
         }
 
         return ($this->_cache[$indentation] = $indent);
     }
-    protected function _linesep($newlines = null) {
+    protected function _linesep ($newlines = null) {
         if ($newlines === null && isset($this->_options['newlines'])) {
             $newlines = $this->_options['newlines'];
         }
@@ -503,13 +507,14 @@ qui officia deserunt mollit anim id est laborum';
             $linesep = '';
         } else {
             trigger_error(sprintf(
-                    'Newlines can be a lot of things but not "%s"',
-                    $newlines), E_USER_ERROR);
+                'Newlines can be a lot of things but not "%s"',
+                $newlines
+            ), E_USER_ERROR);
         }
 
         return $linesep;
     }
-    public function indent($lines, $indentation = null, $newlines = null) {
+    public function indent ($lines, $indentation = null, $newlines = null) {
         // Setup Input
         if (is_string($lines)) {
             $lines = explode("\n", $lines);
@@ -530,7 +535,7 @@ qui officia deserunt mollit anim id est laborum';
     }
 
 
-    public function tidy($html, $options = array()) {
+    public function tidy ($html, $options = array()) {
         // Prereqs
         if (!function_exists('tidy_parse_string')) {
             trigger_error('You need to: aptitude install php5-tidy', E_USER_ERROR);
@@ -557,4 +562,3 @@ qui officia deserunt mollit anim id est laborum';
         return (string)$tidy;
     }
 }
-?>
