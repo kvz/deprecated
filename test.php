@@ -6,27 +6,27 @@ if (!defined('DIR_EGG_ROOT')) {
 }
 
 if (!function_exists('pr')) {
-    function pr($arr) {
+	function pr($arr) {
 		if (php_sapi_name() !=='cli') {
 			echo '<pre>'."\n";
 		}
-        if (is_array($arr) && count($arr)) {
-            print_r($arr);
-        } else {
-            var_dump($arr);
-        }
+		if (is_array($arr) && count($arr)) {
+			print_r($arr);
+		} else {
+			var_dump($arr);
+		}
 		if (php_sapi_name() !=='cli') {
 			echo '</pre>';
 		}
-		
-        echo "\n";
-    }
+
+		echo "\n";
+	}
 }
 if (!function_exists('prd')) {
-    function prd($arr) {
-        pr($arr);
-        die();
-    }
+	function prd($arr) {
+		pr($arr);
+		die();
+	}
 }
 
 require_once DIR_EGG_ROOT.'/Base.php';
