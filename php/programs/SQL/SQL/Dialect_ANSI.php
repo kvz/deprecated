@@ -1,23 +1,23 @@
 <?php
 /* vim: set expandtab tabstop=4 shiftwidth=4: */
 // +----------------------------------------------------------------------+
-// | Copyright (c) 2002-2004 Brent Cook                                        |
+// | Copyright (c) 2002-2004 Brent Cook										|
 // +----------------------------------------------------------------------+
-// | This library is free software; you can redistribute it and/or        |
-// | modify it under the terms of the GNU Lesser General Public           |
-// | License as published by the Free Software Foundation; either         |
+// | This library is free software; you can redistribute it and/or		|
+// | modify it under the terms of the GNU Lesser General Public		   |
+// | License as published by the Free Software Foundation; either		 |
 // | version 2.1 of the License, or (at your option) any later version.   |
-// |                                                                      |
-// | This library is distributed in the hope that it will be useful,      |
-// | but WITHOUT ANY WARRANTY; without even the implied warranty of       |
-// | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    |
-// | Lesser General Public License for more details.                      |
-// |                                                                      |
-// | You should have received a copy of the GNU Lesser General Public     |
+// |																	  |
+// | This library is distributed in the hope that it will be useful,	  |
+// | but WITHOUT ANY WARRANTY; without even the implied warranty of	   |
+// | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU	|
+// | Lesser General Public License for more details.					  |
+// |																	  |
+// | You should have received a copy of the GNU Lesser General Public	 |
 // | License along with this library; if not, write to the Free Software  |
 // | Foundation, Inc., 59 Temple Place, Suite 330,Boston,MA 02111-1307 USA|
 // +----------------------------------------------------------------------+
-// | Authors: Brent Cook <busterbcook@yahoo.com>                          |
+// | Authors: Brent Cook <busterbcook@yahoo.com>						  |
 // +----------------------------------------------------------------------+
 //
 // $Id: Dialect_ANSI.php,v 1.5 2004/05/07 12:33:35 busterb Exp $
@@ -40,4 +40,3 @@ $dialect = array(
 
 'synonyms'=>array('decimal'=>'numeric','dec'=>'numeric','numeric'=>'numeric','float'=>'float','real'=>'real','double'=>'real','int'=>'int','integer'=>'int','interval'=>'interval','smallint'=>'smallint','timestamp'=>'timestamp','bool'=>'bool','boolean'=>'bool','set'=>'set','enum'=>'enum','text'=>'text','char'=>'char','character'=>'char','varchar'=>'varchar','ascending'=>'asc','asc'=>'asc','descending'=>'desc','desc'=>'desc','date'=>'date','time'=>'time')
 );
-?>

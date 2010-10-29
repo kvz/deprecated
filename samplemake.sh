@@ -5,8 +5,8 @@ set -x
 rootdir="$(realpath $(dirname $0))"
 phpdir="${rootdir}/php/samples"
 for htmlfile in `find ${phpdir} -type f -iname "*.${output_ext}"`; do
-    htmlfileinroot=$(echo "${htmlfile}" | sed "s#${rootdir}/##g")
-    git rm -f ${htmlfileinroot}
+	htmlfileinroot=$(echo "${htmlfile}" | sed "s#${rootdir}/##g")
+	git rm -f ${htmlfileinroot}
 done
 
 commitfiles=""
@@ -26,4 +26,3 @@ read -p "Clean working dir? Continue. Otherwise CTRL+C!" COMMENT
 git add ${commitfiles}
 git commit -m 'Built samplefiles'
 git push origin master
-

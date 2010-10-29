@@ -9,27 +9,26 @@
  *
  * @param array $arr1 Array to be merged
  * @param array $arr2 Array to merge with
- * 
+ *
  * @return array Merged array
  */
 function arrayMerge($arr1, $arr2 = null) {
-    $args = func_get_args();
+	$args = func_get_args();
 
-    if (!isset($r)) {
-        $r = (array)current($args);
-    }
+	if (!isset($r)) {
+		$r = (array)current($args);
+	}
 
-    while (($arg = next($args)) !== false) {
-        foreach ((array)$arg as $key => $val)	 {
-            if (is_array($val) && isset($r[$key]) && is_array($r[$key])) {
-                $r[$key] = arrayMerge($r[$key], $val);
-            } elseif (is_int($key)) {
-                $r[] = $val;
-            } else {
-                $r[$key] = $val;
-            }
-        }
-    }
-    return $r;
+	while (($arg = next($args)) !== false) {
+		foreach ((array)$arg as $key => $val)	 {
+			if (is_array($val) && isset($r[$key]) && is_array($r[$key])) {
+				$r[$key] = arrayMerge($r[$key], $val);
+			} elseif (is_int($key)) {
+				$r[] = $val;
+			} else {
+				$r[$key] = $val;
+			}
+		}
+	}
+	return $r;
 }
-?>

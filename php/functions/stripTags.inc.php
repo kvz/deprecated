@@ -8,27 +8,26 @@
  * <code>
  * // Input //
  * $input = "Kevin and <b>Max</b> go for walk in the <i>park</i>.";
- * 
+ *
  * // Execute //
  * $output   = array();
  * $output[] = stripTags($input);
- * 
+ *
  * // Show //
  * print_r($output);
- * 
+ *
  * // expects:
  * // Array
  * // (
- * //     [0] => Kevin and Max go for walk in the park.
+ * //	 [0] => Kevin and Max go for walk in the park.
  * // )
  * </code>
- * 
+ *
  * @param string $str
- * 
+ *
  * @return string
  */
 function stripTags($str)
 {
-    return preg_replace('@<\/?([^>]+)\/?>@s', '', $str);
+	return preg_replace('@<\/?([^>]+)\/?>@s', '', $str);
 }
-?>

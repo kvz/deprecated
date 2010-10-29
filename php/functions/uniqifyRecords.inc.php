@@ -25,34 +25,33 @@
  * @return array
  */
 function uniqifyRecords($data, $byFields, $overwrite=true) {
-    if (empty($data)) {
-        return $data;
-    }
+	if (empty($data)) {
+		return $data;
+	}
 
-    $byFields = (array)$byFields;
+	$byFields = (array)$byFields;
 
-    $del = '---';
-    $log = array();
-    foreach($data as $i=>$fields) {
-        $gotRecord = false;
-        $uniquestr = '';
-        foreach($byFields as $ukey) {
-            $uniquestr .= $del . $fields[$ukey];
-        }
+	$del = '---';
+	$log = array();
+	foreach($data as $i=>$fields) {
+		$gotRecord = false;
+		$uniquestr = '';
+		foreach($byFields as $ukey) {
+			$uniquestr .= $del . $fields[$ukey];
+		}
 
-        if (isset($log[$uniquestr])) {
-            // Overwrite the original with latest
-            if ($overwrite) {
-                $data[$log[$uniquestr]] = $fields;
-            }
-            // And then in any case skip the new & identical one
-            unset($data[$i]);
-        } else {
-            // Record a new identical record!
-            $log[$uniquestr] = $i;
-        }
-    }
+		if (isset($log[$uniquestr])) {
+			// Overwrite the original with latest
+			if ($overwrite) {
+				$data[$log[$uniquestr]] = $fields;
+			}
+			// And then in any case skip the new & identical one
+			unset($data[$i]);
+		} else {
+			// Record a new identical record!
+			$log[$uniquestr] = $i;
+		}
+	}
 
-    return $data;
+	return $data;
 }
-?>

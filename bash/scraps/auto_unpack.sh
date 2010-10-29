@@ -42,4 +42,3 @@ rename -v 'y/A-Z/a-z/' /data/downloads/*
 
 # clear logs
 /usr/bin/find /var/log -regextype posix-egrep -type f -mmin +300 -iregex '(.*/samba.*|.*/mail.*|*./vsftp.*)' -print0 |/usr/bin/xargs -0r /bin/rm
-

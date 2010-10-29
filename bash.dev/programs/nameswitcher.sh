@@ -2,7 +2,7 @@
 #/**
 # * Switches resolving nameservers in case of trouble
 # *
-# * You can define multiple nameservers in /etc/resolv.conf, but in reality 
+# * You can define multiple nameservers in /etc/resolv.conf, but in reality
 # * this works like crap because the timeout before your system switches to a
 # * secondary nameserver is way to long for any serious networked application.
 # *
@@ -17,11 +17,11 @@
 # *
 # * Change the PRIMARY config variable to your own resolving nameserver
 # *
-# * @author    Kevin van Zonneveld <kevin@vanzonneveld.net>
+# * @author	Kevin van Zonneveld <kevin@vanzonneveld.net>
 # * @copyright 2010 Kevin van Zonneveld (http://kevin.vanzonneveld.net)
 # * @license   http://www.opensource.org/licenses/bsd-license.php New BSD Licence
 # * @version   0.3
-# * @link      http://kevin.vanzonneveld.net/
+# * @link	  http://kevin.vanzonneveld.net/
 # */
 
 #set -x

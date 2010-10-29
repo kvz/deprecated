@@ -22,14 +22,14 @@
 #* [in /var/log/ksecure_backup.log, mail, or stdout]
 #*
 #*** Info:
-#*  @author      Kevin van Zonneveld <kevin@vanzonneveld.net>
-#*  @version     0.826
-#*  @link    http://kevin.vanzonneveld.net
+#*  @author	  Kevin van Zonneveld <kevin@vanzonneveld.net>
+#*  @version	 0.826
+#*  @link	http://kevin.vanzonneveld.net
 #*/
 
 
 ##########################################################################
-# intialize                                  #
+# intialize								  #
 ##########################################################################
 
 PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/bin/X11:/root/bin"
@@ -37,7 +37,7 @@ RUN_WARNINGS=0
 
 
 ##########################################################################
-# functions                                  #
+# functions								  #
 ##########################################################################
 
 missing_var(){
@@ -77,18 +77,18 @@ missing_cmd(){
 
 
 function dia_YesNo(){
-    # arg1    = title
-    # arg2    = description
-    xtra=""
-    if [ "${3}" == "0" ]; then
-    xtra="--defaultno"
-    fi
+	# arg1	= title
+	# arg2	= description
+	xtra=""
+	if [ "${3}" == "0" ]; then
+	xtra="--defaultno"
+	fi
 
-    if [ -n "${CMD_DIALOG}" ] && [ -x ${CMD_DIALOG} ]; then
-    ${CMD_DIALOG} ${xtra} --title "${1}" --clear \
+	if [ -n "${CMD_DIALOG}" ] && [ -x ${CMD_DIALOG} ]; then
+	${CMD_DIALOG} ${xtra} --title "${1}" --clear \
 	--yesno "${2}" 10 70
 
-    case $? in
+	case $? in
 	0)
 	dia_ret=1;;
 	1)
@@ -98,28 +98,28 @@ function dia_YesNo(){
 	echo "ESC pressed."
 	exit 0
 	;;
-    esac
-    else
-    while true; do
+	esac
+	else
+	while true; do
 	echo -n "${1}. ${2} (Y/n) "
 	read yn
 	case $yn in
 	"y" | "Y" | "" )
-	    dia_ret=1
-	    break ;;
+		dia_ret=1
+		break ;;
 	"n" | "N" )
-	    dia_ret=0
-	    break ;;
+		dia_ret=0
+		break ;;
 	* ) echo "unknown response.  Asking again" ;;
 	esac
-    done
-    fi
+	done
+	fi
 }
 
 dia_Input(){
-	# arg1    = title
-	# arg2    = description
-	# arg3    = default
+	# arg1	= title
+	# arg2	= description
+	# arg3	= default
 	${CMD_DIALOG} --title "${1}" --clear \
 		--inputbox "${2}" 16 71 "${3}" 2> $tempfile
 
@@ -146,8 +146,8 @@ dia_Input(){
 }
 
 dia_Select(){
-	# arg1    = title
-	# arg2    = description
+	# arg1	= title
+	# arg2	= description
 	# arg3-8  = menu
 	CHOICES=""
 	[ -z "${3}" ] || CHOICES="${CHOICES}${3} <-"
@@ -185,9 +185,9 @@ logit(){
 	LOG_DATE="${MONTHNAME:0:3} $(${CMD_DATE} '+%d %H:%M:%S')"
 	LOG_LASTLINE="${LOG_DATE} $1"
 
-    [ -z "${DB_PASS}" ] || LOG_LASTLINE=$(echo ${LOG_LASTLINE} |${CMD_SED} "s/${DB_PASS}/xxxxxx/g")
-    [ -z "${FTP_PASS}" ] || LOG_LASTLINE=$(echo ${LOG_LASTLINE} |${CMD_SED} "s/${FTP_PASS}/xxxxxx/g")
-    [ -z "${RSYNC_PASS}" ] || LOG_LASTLINE=$(echo ${LOG_LASTLINE} |${CMD_SED} "s/${RSYNC_PASS}/xxxxxx/g")
+	[ -z "${DB_PASS}" ] || LOG_LASTLINE=$(echo ${LOG_LASTLINE} |${CMD_SED} "s/${DB_PASS}/xxxxxx/g")
+	[ -z "${FTP_PASS}" ] || LOG_LASTLINE=$(echo ${LOG_LASTLINE} |${CMD_SED} "s/${FTP_PASS}/xxxxxx/g")
+	[ -z "${RSYNC_PASS}" ] || LOG_LASTLINE=$(echo ${LOG_LASTLINE} |${CMD_SED} "s/${RSYNC_PASS}/xxxxxx/g")
 
 
 	if [ "${OUTPUT_ENABLED}" == 1 ] ;then
@@ -216,16 +216,16 @@ logit(){
 }
 
 is_running() {
-    baseproc=$(basename ${1})
-    myproc=${2}
-    processes=$(${CMD_PGREP} ${baseproc})
-    running_pid=0
-    for proc in ${processes};do
-    # exclude our own process id!
-    if [ ${proc} -ne ${myproc} ];then
+	baseproc=$(basename ${1})
+	myproc=${2}
+	processes=$(${CMD_PGREP} ${baseproc})
+	running_pid=0
+	for proc in ${processes};do
+	# exclude our own process id!
+	if [ ${proc} -ne ${myproc} ];then
 	running_pid=${proc}
-    fi
-    done
+	fi
+	done
 }
 
 quit(){
@@ -286,12 +286,12 @@ commands_exist(){
 	# check if nano is available
 	CMD_NANO=$(which "nano")
 	[ -n "${CMD_NANO}" ] && [ -x ${CMD_NANO} ] || missing_cmd "nano" "nano" "${MODE}"
-    # check if clear is available
-    CMD_CLEAR=$(which "clear")
-    [ -n "${CMD_CLEAR}" ] && [ -x ${CMD_CLEAR} ] || missing_cmd "clear" "ncurses-bin" "${MODE}"
-    # check if pgrep is available
-    CMD_PGREP=$(which "pgrep")
-    [ -n "${CMD_PGREP}" ] && [ -x ${CMD_PGREP} ] || missing_cmd "pgrep" "procps" "${MODE}"
+	# check if clear is available
+	CMD_CLEAR=$(which "clear")
+	[ -n "${CMD_CLEAR}" ] && [ -x ${CMD_CLEAR} ] || missing_cmd "clear" "ncurses-bin" "${MODE}"
+	# check if pgrep is available
+	CMD_PGREP=$(which "pgrep")
+	[ -n "${CMD_PGREP}" ] && [ -x ${CMD_PGREP} ] || missing_cmd "pgrep" "procps" "${MODE}"
 	# check if mkdir is available
 	CMD_MKDIR=$(which "mkdir")
 	[ -n "${CMD_MKDIR}" ] && [ -x ${CMD_MKDIR} ] || missing_cmd "mkdir" "coreutils" "${MODE}"
@@ -316,12 +316,12 @@ commands_exist(){
 	# check if expr is available
 	CMD_EXPR=$(which "expr")
 	[ -n "${CMD_EXPR}" ] && [ -x ${CMD_EXPR} ] || missing_cmd "expr" "coreutils" "${MODE}"
-    # check if du is available
-    CMD_DU=$(which "du")
-    [ -n "${CMD_DU}" ] && [ -x ${CMD_DU} ] || missing_cmd "du" "coreutils" "${MODE}"
-    # check if df is available
-    CMD_DF=$(which "df")
-    [ -n "${CMD_DF}" ] && [ -x ${CMD_DF} ] || missing_cmd "df" "coreutils" "${MODE}"
+	# check if du is available
+	CMD_DU=$(which "du")
+	[ -n "${CMD_DU}" ] && [ -x ${CMD_DU} ] || missing_cmd "du" "coreutils" "${MODE}"
+	# check if df is available
+	CMD_DF=$(which "df")
+	[ -n "${CMD_DF}" ] && [ -x ${CMD_DF} ] || missing_cmd "df" "coreutils" "${MODE}"
 	# check if cut is available
 	CMD_CUT=$(which "cut")
 	[ -n "${CMD_CUT}" ] && [ -x ${CMD_CUT} ] || missing_cmd "cut" "coreutils" "${MODE}"
@@ -370,8 +370,8 @@ commands_exist(){
 		# check if dpkg is available
 		CMD_DPKG=$(which "dpkg")
 		[ -n "${CMD_DPKG}" ] && [ -x ${CMD_DPKG} ] || missing_cmd "dpkg" "dpkg" "${MODE}"
-    # NOT NECESSARY:::only check if pear is available
-    CMD_PEAR=$(which "pear")
+	# NOT NECESSARY:::only check if pear is available
+	CMD_PEAR=$(which "pear")
 	fi
 
 	# DB CHECKS
@@ -437,12 +437,12 @@ config_setup(){
 		[ -n "${DB_USER}" ] || DB_USER=$(${CMD_CAT} /etc/mysql/debian.cnf |${CMD_GREP} 'user' |${CMD_HEAD} -n1 |${CMD_GAWK} '{print $3}')
 		[ -n "${DB_PASS}" ] || DB_PASS=$(${CMD_CAT} /etc/mysql/debian.cnf |${CMD_GREP} 'password' |${CMD_HEAD} -n1 |${CMD_GAWK} '{print $3}')
 		[ -n "${DB_HOST}" ] || DB_HOST="localhost"
-    else
-    DB_ENABLED=0 
+	else
+	DB_ENABLED=0
 	fi
 
 	[ -n "${SY_ENABLED}" ] || SY_ENABLED=1
-	
+
 	[ -n "${TAR_EXCLUDE}" ] || TAR_EXCLUDE=""
 
 	[ -n "${GZIP_ENABLED}" ] || GZIP_ENABLED=1
@@ -629,12 +629,12 @@ usage(){
 	echo "   backup - Run backup procedure"
 	echo "   help - This page"
 	echo ""
-	echo "               This ${APP_HUMNNAME} has Super-God Masterforce Powers."
+	echo "			   This ${APP_HUMNNAME} has Super-God Masterforce Powers."
 }
 
 
 ##########################################################################
-# application defaults and init                      #
+# application defaults and init					  #
 ##########################################################################
 
 # PRE-INITIALIZE THE COMMANDS WE CAN FIND, WITHOUR REPORTING ANY ERRORS
@@ -673,7 +673,7 @@ tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/test$$
 trap "rm -f $tempfile" 0 1 2 5 15
 
 ##########################################################################
-# different runmodes                             #
+# different runmodes							 #
 ##########################################################################
 
 if [ "${1}" == "install" ];then
@@ -788,19 +788,19 @@ fi
 
 
 ##########################################################################
-# Proceed with normal backup runmode                     #
+# Proceed with normal backup runmode					 #
 ##########################################################################
 
 
 ##########################################################################
-# reconfigure some settings                          #
+# reconfigure some settings						  #
 ##########################################################################
 
 # TAR DEFAULTS
 if [ -n "${TAR_EXCLUDE}" ]; then
-    TAR_EXCLUDE_X_TAR="--exclude=${TAR_EXCLUDE}"
+	TAR_EXCLUDE_X_TAR="--exclude=${TAR_EXCLUDE}"
 else
-    TAR_EXCLUDE_X_TAR=""
+	TAR_EXCLUDE_X_TAR=""
 fi
 
 # GZIP DEFAULTS
@@ -823,7 +823,7 @@ fi
 
 
 ##########################################################################
-# error handling                             #
+# error handling							 #
 ##########################################################################
 
 # APP CHECKS
@@ -853,8 +853,8 @@ if [ ! -d "${FS_DESTINDIR}" ]; then
 fi
 
 if [ $(${CMD_DF} -kP ${FS_DESTINDIR} | ${CMD_GAWK} '{print $4}' | $CMD_GREP '[0-9]') -lt 3000000 ]; then
-    # backup storage directory does not contain enough free space
-    logit "fatal: ${FS_DESTINDIR} does not contain enough free space, I need at least 3GB to store temporary files"
+	# backup storage directory does not contain enough free space
+	logit "fatal: ${FS_DESTINDIR} does not contain enough free space, I need at least 3GB to store temporary files"
 fi
 
 # DB CHECKS
@@ -886,12 +886,12 @@ fi
 
 
 ##########################################################################
-# start backup                               #
+# start backup							   #
 ##########################################################################
 
 is_running ${APP_BASENAME} $$
 if [ ${running_pid} -gt 0 ]; then
-    logit "fatal: another ${APP_BASENAME} with pid ${running_pid} is already running"
+	logit "fatal: another ${APP_BASENAME} with pid ${running_pid} is already running"
 fi
 
 # FS BACKUP
@@ -911,7 +911,7 @@ for FS_SOUREDIR in ${FS_SOUREDIRS}; do
 			logit "info: backing up and encrypting directory ${FS_SOUREDIR} (${FS_SOURCESIZE}) to ${ENCR}"
 	 ${CMD_TAR} ${TAR_EXCLUDE_X_TAR} -pc${GZIP_ENABLED_X_TAR} ${FS_SOUREDIR} 2>>${LOG_FILE} | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
 	CMD="${CMD_TAR} ${TAR_EXCLUDE_X_TAR} -pc${GZIP_ENABLED_X_TAR} ${FS_SOUREDIR} 2>>${LOG_FILE} | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
-    else
+	else
 			#normal tar+gzip
 			logit "info: backing up directory ${FS_SOUREDIR} (${FS_SOURCESIZE}) to ${DEST}"
 	 ${CMD_TAR} ${TAR_EXCLUDE_X_TAR} -pc${GZIP_ENABLED_X_TAR}f ${DEST} --listed-incremental=${SNAR} ${FS_SOUREDIR} 1>/dev/null 2>>${LOG_FILE}
@@ -948,9 +948,9 @@ if [ "${SY_ENABLED}" == 1 ]; then
 
 		if [ $? -ne 0 ]; then
 			logit "critical: SY dpkg backup failed (${CMD}), more details in ${LOG_FILE}"
-    else
+	else
 	logit "debug: (${CMD}) finished without errors"
-    fi
+	fi
 	fi
 
 	# installed pear packages
@@ -971,33 +971,33 @@ if [ "${SY_ENABLED}" == 1 ]; then
 
 		if [ $? -ne 0 ]; then
 			logit "warning: SY pear backup failed (${CMD}), more details in ${LOG_FILE}"
-    else
+	else
 	logit "debug: (${CMD}) finished without errors"
-    fi
+	fi
 	fi
 
-    # installed crontab packages
-    if [ -n "${CMD_CRONTAB}" ]; then
-    DEST="${FS_DESTINDIR}/${DATESTR}-SY-crontab-list.txt.bz2"
-    ENCR="${FS_DESTINDIR}/${DATESTR}-SY-crontab-list.txt.bz2.enc"
-    if [ "${ENCRYPTION_ENABLED}" == 1 ]; then
+	# installed crontab packages
+	if [ -n "${CMD_CRONTAB}" ]; then
+	DEST="${FS_DESTINDIR}/${DATESTR}-SY-crontab-list.txt.bz2"
+	ENCR="${FS_DESTINDIR}/${DATESTR}-SY-crontab-list.txt.bz2.enc"
+	if [ "${ENCRYPTION_ENABLED}" == 1 ]; then
 	# encrypt.
 	logit "info: backing up and encrypting crontab-list to ${ENCR}"
 	 ${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
 	CMD="${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
-    else
+	else
 	#normal bzip2
 	logit "info: backing up crontab-list to ${DEST}"
 	 ${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 >${DEST}
 	CMD="${CMD_CRONTAB} -l | ${CMD_BZIP2} -qzc1 >${DEST}"
-    fi
+	fi
 
-    if [ $? -ne 0 ]; then
+	if [ $? -ne 0 ]; then
 	logit "warning: SY crontab backup failed (${CMD}), more details in ${LOG_FILE}"
-    else
+	else
 	logit "debug: (${CMD}) finished without errors"
-    fi
-    fi
+	fi
+	fi
 fi
 
 # DB BACKUP
@@ -1013,19 +1013,19 @@ if [ "${DB_ENABLED}" == 1 ]; then
 				if [ "${ENCRYPTION_ENABLED}" == 1 ]; then
 					# encrypt.
 					logit "info: backing up (${CMD_MYSQL}) and encrypting database ${DATABASE} to ${DEST}"
-	     ${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
+		 ${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
 					CMD="${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
 				else
 					# normal bzip2
 					logit "info: backing up (${CMD_MYSQL}) database ${DATABASE} to ${DEST}"
-	     ${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 >${DEST}
+		 ${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 >${DEST}
 					CMD="${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 >${DEST}"
 				fi
 
 				if [ $? -ne 0 ]; then
 					logit "critical: DB backup of ${DATABASE} returned errors, more details in ${LOG_FILE}"
 	else
-	    logit "debug: (${CMD}) finished without errors"
+		logit "debug: (${CMD}) finished without errors"
 	fi
 			fi
 		done
@@ -1041,10 +1041,10 @@ if [ "${FTP_ENABLED}" == 1 ]; then
 	if [ -n "${CMD_FTPUPLOAD}" ] && [ -f "${CMD_FTPUPLOAD}" ] && [ -x "${CMD_FTPUPLOAD}" ];then
 		logit "info: uploading ${FS_DESTINDIR}/* to ftp://${FTP_HOST}:${FTP_CDIR}/"
 
-    is_running "ftp-upload" $$
-    if [ ${running_pid} -gt 0 ]; then
+	is_running "ftp-upload" $$
+	if [ ${running_pid} -gt 0 ]; then
 	logit "critical: another ftp-upload with pid ${running_pid} is already running"
-    else
+	else
 	 ${CMD_FTPUPLOAD} -h ${FTP_HOST} -u ${FTP_USER} --password ${FTP_PASS} -b -d ${FTP_CDIR} ${FS_DESTINDIR}/* 1>/dev/null 2>>${LOG_FILE}
 	CMD="${CMD_FTPUPLOAD} -h ${FTP_HOST} -u ${FTP_USER} --password ${FTP_PASS} -b -d ${FTP_CDIR} ${FS_DESTINDIR}/* 1>/dev/null 2>>${LOG_FILE}"
 
@@ -1053,7 +1053,7 @@ if [ "${FTP_ENABLED}" == 1 ]; then
 	else
 	logit "debug: (${CMD}) finished without errors"
 	fi
-    fi
+	fi
 
 		# cleanup after upload
 		if [ "${FTP_CLEANUPAFTERUPLOAD}" == 1 ]; then
@@ -1074,10 +1074,10 @@ if [ "${RSYNC_ENABLED}" == 1 ]; then
 	if [ -n "${CMD_RSYNC}" ] && [ -f "${CMD_RSYNC}" ] && [ -x "${CMD_RSYNC}" ];then
 		logit "info: rsyncing ${FS_DESTINDIR}/* to ${RSYNC_USER}@${RSYNC_HOST}:${RSYNC_CDIR}/"
 
-    is_running "rsync" $$
-    if [ ${running_pid} -gt 0 ]; then
+	is_running "rsync" $$
+	if [ ${running_pid} -gt 0 ]; then
 	logit "critical: another rsync with pid ${running_pid} is already running"
-    else
+	else
 	 ${CMD_RSYNC} -raz ${FS_DESTINDIR}/* ${RSYNC_USER}@${RSYNC_HOST}:${RSYNC_CDIR}/  1>/dev/null 2>>${LOG_FILE}
 	CMD="${CMD_RSYNC} -raz ${FS_DESTINDIR}/* ${RSYNC_USER}@${RSYNC_HOST}:${RSYNC_CDIR}/  1>/dev/null 2>>${LOG_FILE}"
 
@@ -1086,7 +1086,7 @@ if [ "${RSYNC_ENABLED}" == 1 ]; then
 	else
 	logit "debug: (${CMD}) finished without errors"
 	fi
-    fi
+	fi
 	else
 		logit "critical: RSYNC command(${CMD_RSYNC}) is not available"
 	fi
