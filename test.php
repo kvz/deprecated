@@ -35,4 +35,3 @@ require_once DIR_EGG_ROOT.'/EggShell.php';
 $E = new EggShell();
 
 $E->chownr('/tmp/kevin', 'kevin');
-

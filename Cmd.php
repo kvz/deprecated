@@ -97,4 +97,3 @@ class Cmd {
 		return $this->stdout;
 	}
 }
-?>
