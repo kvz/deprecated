@@ -1,6 +1,7 @@
 .cache
 .project
 .settings
+*.swp
 nbproject
 gitup.dat
 tests/
