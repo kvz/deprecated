@@ -330,6 +330,11 @@ class EggShell extends Base {
 	public function symlinkOnce ($target, $link, $options = array()) {
 		$this->mark();
 
+                // Destroy if target is different now
+                if (is_link($link) && readlink($link) !== $target) {
+                    unlink($link);
+                }
+
 		if (!is_link($link)) {
 			if (false === symlink($target, $link)) {
 				return false;
