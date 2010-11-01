@@ -994,12 +994,15 @@ class EggShell extends Base {
 	 */
 	public function crontabAdd ($command, $timeschedule) {
 		$this->mark();
-
-		return $this->exe(
-			'cat <(crontab -l) |grep -v "%s" <(echo "%s")',
-			addslashes($command),
-			sprintf('%s %s', $timeschedule, $command)
-		);
+		// Get
+		if (!($list = $this->exeContinue('crontab -l | grep -v "'.addslashes($command).'"'))) {
+			$list = '';
+		}
+		// Change
+		$list .= sprintf('%s %s', $timeschedule, $command). "\n";
+		// Set
+		$this->exe('echo "'.addslashes($list).'" | crontab -');
+		return true;
 	}
 
 	/**
