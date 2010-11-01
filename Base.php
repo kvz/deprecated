@@ -223,7 +223,7 @@ class Base {
 		} elseif (is_string($indentation)) {
 			$indent = $indentation;
 		} elseif ($indentation === true || $indentation === null) {
-			$indent = '	';
+			$indent = '    ';
 		} elseif ($indentation === false) {
 			$indent = '';
 		} else {
@@ -554,41 +554,41 @@ class Base {
 		$section   = false;
 		$showLevel = $level;
 		$useLevel  = $level;
-		$date	  = date($this->_options['log-date-format']);
+		$date      = date($this->_options['log-date-format']);
 
-		$indent	= '	';
-		$prefix	= "";
+		$indent    = '    ';
+		$prefix    = "";
 		if (in_array($level, $this->_options['log-section-open'])) {
 			$useLevel  = 'notice';
 			$showLevel = '';
-			#$date	  = '------->';
-			$date	  = '		';
+			#$date      = '------->';
+			$date      = '        ';
 			$section   = 'open';
-			$indent	= ' ';
-			$prefix	= "\n";
+			$indent    = ' ';
+			$prefix    = "\n";
 		} else if (in_array($level, $this->_options['log-section-close'])) {
 			$useLevel  = 'notice';
 			$showLevel = '';
 			$section   = 'close';
-			$date	  = '		';
-			$indent	= ' ';
+			$date      = '        ';
+			$indent    = ' ';
 			// Leave this out for now
 			#return false;
 		} elseif ($level == $this->_options['log-trail-level']) {
 			$useLevel  = 'notice';
 		} elseif ($level == 'stderr') {
 			$useLevel  = 'warning';
-			$date	  = '		';
+			$date      = '        ';
 			$showLevel = '';
-			$indent	= '		';
+			$indent    = '        ';
 		} elseif ($level == 'stdout') {
 			$useLevel  = 'debug';
-			$date	  = '		';
+			$date      = '        ';
 			$showLevel = '';
-			$indent	= '		';
+			$indent    = '        ';
 		}
 
-		$msgWeight	= $levels[$useLevel];
+		$msgWeight    = $levels[$useLevel];
 		$printWeight  = $levels[$this->_options['log-print-level']];
 		$memoryWeight = $levels[$this->_options['log-memory-level']];
 		$fileWeight   = $levels[$this->_options['log-file-level']];
