@@ -1005,6 +1005,10 @@ class EggShell extends Base {
 		return true;
 	}
 
+	public function diskId ($target = 'a1') {
+		return $this->exe('ls -al /dev/disk/by-uuid/ | awk \'/%s$/ {print $8}\'', $target);
+	}
+
 	/**
 	 * Replaces a string (in-place) using $this->vars
 	 *
