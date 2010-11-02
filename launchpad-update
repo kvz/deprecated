@@ -20,11 +20,11 @@ for APT in `find /etc/apt/ -name *.list`; do
         fi
         # scrape the ppa page to get the keyid
         KEYID=`wget -q --no-check-certificate https://launchpad.net/~$USER/+archive/$PPA -O- | grep -o "1024R/[A-Z0-9]\+" | cut -d/ -f2`
-        sudo apt-key adv --list-keys $KEYID >/dev/null 2>&1
+        apt-key adv --list-keys $KEYID >/dev/null 2>&1
         if [ $? != 0 ]
         then
             echo Grabbing key $KEYID for archive $PPA by ~$USER
-            sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com $KEYID
+            apt-key adv --recv-keys --keyserver keyserver.ubuntu.com $KEYID
         else
             echo Already have key $KEYID for archive $PPA by ~$USER
         fi

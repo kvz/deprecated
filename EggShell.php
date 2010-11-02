@@ -425,7 +425,7 @@ class EggShell extends Base {
 		$dFile = sprintf('/etc/apt/sources.list.d/%s.list', $dist);
 		if (!$this->fileExists($dFile)) {
 			$this->exe(
-				'sed s/%s/%s/g /etc/apt/sources.list | sudo tee /etc/apt/sources.list.d/%s.list',
+				'sed s/%s/%s/g /etc/apt/sources.list | tee /etc/apt/sources.list.d/%s.list',
 				$options['ubuntu-distr'],
 				$dist,
 				$dist
