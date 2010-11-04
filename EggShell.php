@@ -301,6 +301,22 @@ class EggShell extends Base {
 	}
 
 	/**
+	 * Get a machine's IPs
+	 *
+	 * @return mixed boolean on failure, string on $first == true, or array
+	 */
+	public function getIPs ($first = false, $ipv6 = true) {
+		$ifconfig = $this->exe('ifconfig');
+		if (!preg_match_all('/inet' . ($ipv6 ? '6?' : '') . ' addr: ?([^ ]+)/', $ifconfig, $ips)) {
+			return false;
+		}
+		if ($first === true) {
+			return $ips[1][0];
+		}
+		return $ips[1];
+	}
+
+	/**
 	 * Mkdir once
 	 *
 	 * @param <type> $pathname
@@ -330,10 +346,10 @@ class EggShell extends Base {
 	public function symlinkOnce ($target, $link, $options = array()) {
 		$this->mark();
 
-                // Destroy if target is different now
-                if (is_link($link) && readlink($link) !== $target) {
-                    unlink($link);
-                }
+		// Destroy if target is different now
+		if (is_link($link) && readlink($link) !== $target) {
+			unlink($link);
+		}
 
 		if (!is_link($link)) {
 			if (false === symlink($target, $link)) {
