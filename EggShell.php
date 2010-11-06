@@ -847,7 +847,7 @@ class EggShell extends Base {
 	 *
 	 * @return <type>
 	 */
-	function getArgs ($argv) {
+	public static function getArgs ($argv) {
 		$arguments = array();
 		for($i = 1; $i < count($argv); $i++) {
 			if (substr($argv[$i], 0, 2) === '--') {
