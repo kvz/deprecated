@@ -738,7 +738,7 @@ class EggShell extends Base {
 	 *
 	 * @return <type>
 	 */
-	function groupAdd ($group, $gid = null) {
+	public function groupAdd ($group, $gid = null) {
 		$cmd  = '/usr/sbin/groupadd';
 		$cmd .= ' '. $group;
 
@@ -759,7 +759,7 @@ class EggShell extends Base {
 	 *
 	 * @return <type>
 	 */
-	function userAdd ($username, $groupname = null, $uid = null, $fullname = null, $home = null, $shell = '/bin/bash') {
+	public function userAdd ($username, $groupname = null, $uid = null, $fullname = null, $home = null, $shell = '/bin/bash') {
 		$cmd  = '/usr/sbin/useradd';
 		$cmd .= ' '. $username;
 
@@ -791,7 +791,7 @@ class EggShell extends Base {
 	 *
 	 * @return mixed array or boolean on failure
 	 */
-	function userExists ($filter, $field = 'username') {
+	public function userExists ($filter, $field = 'username') {
 		$lines = file('/etc/passwd', FILE_IGNORE_NEW_LINES ^ FILE_SKIP_EMPTY_LINES);
 
 		foreach ($lines as $line) {
@@ -818,7 +818,7 @@ class EggShell extends Base {
 	 *
 	 * @return <type>
 	 */
-	function userPasswd ($username, $password, $options = array()) {
+	public function userPasswd ($username, $password, $options = array()) {
 		if (!array_key_exists('samba', $options)) $options['samba'] = false;
 
 		if (false === $this->exe('echo "%s:%s" | /usr/sbin/chpasswd',
@@ -877,7 +877,7 @@ class EggShell extends Base {
 	 *
 	 * @return <type>
 	 */
-	function groupExists ($filter, $field = 'group') {
+	public function groupExists ($filter, $field = 'group') {
 		$lines = file('/etc/group', FILE_IGNORE_NEW_LINES ^ FILE_SKIP_EMPTY_LINES);
 		foreach ($lines as $line) {
 			$parts = explode(':', $line);
