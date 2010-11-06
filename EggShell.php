@@ -115,7 +115,7 @@ class EggShell extends Base {
 			'stdout' => array($this, 'stdout'),
 			'stderr' => array($this, 'stderr'),
 		);
-		$Cmd->cmd($cmd);
+		$Cmd->exe($cmd);
 
 		if (false === $Cmd->okay) {
 			return $this->warning('Command: %s failed (%s). %s',

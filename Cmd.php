@@ -15,9 +15,9 @@ class Cmd {
 	public $callbacks = array();
 	public $collect = false;
 
-	public function reset() {
-		$this->okay	 = null;
-		$this->code	 = null;
+	public function reset () {
+		$this->okay     = null;
+		$this->code     = null;
 		$this->stdout   = array();
 		$this->stderr   = array();
 		$this->stdcmb   = array();
@@ -25,29 +25,29 @@ class Cmd {
 		$this->okaycode = (array)$this->okaycode;
 	}
 
-	public function join() {
+	public function join () {
 		$this->stdout = join("\n", $this->stdout);
 		$this->stderr = join("\n", $this->stderr);
 		$this->stdcmb = join("\n", $this->stdcmb);
 	}
 
-	public function  __construct($cmd = null) {
+	public function  __construct ($cmd = null) {
 		if (null !== $cmd) {
-			$this->cmd($cmd);
+			$this->exe($cmd);
 		}
 	}
 
-	public function cmdf($cmd) {
+	public function exef ($cmd) {
 		$args = func_get_args();
 		$cmd  = array_shift($args);
 		if (count($args)) {
 			$cmd = vsprintf($cmd, $args);
 		}
 
-		return $this->cmd($cmd);
+		return $this->exe($cmd);
 	}
 
-	public function stdout($str) {
+	public function stdout ($str) {
 		$this->stdout[] = $str;
 		$this->stdcmb[] = $str;
 		if (isset($this->callbacks[__FUNCTION__])) {
@@ -55,7 +55,7 @@ class Cmd {
 		}
 	}
 
-	public function stderr($str) {
+	public function stderr ($str) {
 		$this->stderr[] = $str;
 		$this->stdcmb[] = $str;
 		if (isset($this->callbacks[__FUNCTION__])) {
@@ -63,7 +63,7 @@ class Cmd {
 		}
 	}
 
-	public function cmd($cmd) {
+	public function exe ($cmd) {
 		$this->reset();
 
 		$descriptorspec = array(
@@ -93,7 +93,7 @@ class Cmd {
 		return $this->okay;
 	}
 
-	public function  __toString() {
+	public function  __toString () {
 		return $this->stdout;
 	}
 }
