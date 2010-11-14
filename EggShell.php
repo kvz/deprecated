@@ -63,6 +63,44 @@ class EggShell extends Base {
 		return $res;
 	}
 
+	public function sourceGet ($url, $path = null) {
+		$info = pathinfo($url);
+		$src = '/usr/src/';
+		$dir = $src . $info['filename'];
+		if ($path === null) $path = $src . $info['basename'];
+
+		$this->mkdirOnce($src);
+
+		$this->exe(
+			'[ -f %s ] || wget -O %s %s',
+			$path,
+			$path,
+			$url
+		);
+
+		if ($info['extension'] === 'bz2') {
+			$info2 = pathinfo($dir);
+			if ($info2['extension'] === 'tar') {
+				$dir = $src . $info2['filename'];
+				$this->exe('[ -d %s ] || ( cd %s && tar -jxvf %s )', $dir, $src, $path);
+			} else {
+				$this->exe('[ -d %s ] || ( cd %s && bunzip2 %s )', $dir, $src, $path);
+			}
+		} else if ($info['extension'] === 'gz') {
+			$info2 = pathinfo($dir);
+			if ($info2['extension'] === 'tar') {
+				$dir = $src . $info2['filename'];
+				$this->exe('[ -d %s ] || ( cd %s && tar -zxvf %s )', $dir, $src, $path);
+			} else {
+				$this->exe('[ -d %s ] || ( cd %s && gunzip %s )', $dir, $src, $path);
+			}
+		} else {
+			return $this->crit('Unsupported extension: %s', $info['extension']);
+		}
+
+		return $dir;
+	}
+
 	public function svnGet ($repository, $directory, $options = array()) {
 		if (!is_array($options)) {
 			$options = array(
