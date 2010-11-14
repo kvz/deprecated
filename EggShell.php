@@ -63,7 +63,46 @@ class EggShell extends Base {
 		return $res;
 	}
 
+	public function svnGet ($repository, $directory, $options = array()) {
+		if (!is_array($options)) {
+			$options = array(
+				'svn-revision' => $options,
+			);
+		}
+		$options = $this->merge($this->_options, $options);
+
+		if (!array_key_exists('svn-revision', $options)) $options['svn-revision'] = null;
+
+		$arg = '';
+		if ($options['svn-revision']) {
+			$arg = ' -r ' . $options['svn-revision'];
+		}
+
+		$parent = dirname($directory);
+
+		if (false === $this->mkdirOnce($parent)) {
+			return false;
+		}
+
+		if (!is_dir($directory)) {
+			$this->exe('svn co %s %s %s', $arg, $repository, $directory);
+		} else {
+			$this->exe(
+				'cd %s && svn up %s',
+				$directory,
+				$arg
+			);
+		}
+
+		return true;
+	}
+
 	public function gitGet ($repository, $directory, $options = array()) {
+		if (!is_array($options)) {
+			$options = array(
+				'git-checkout' => $options,
+			);
+		}
 		$options = $this->merge($this->_options, $options);
 
 		if (!array_key_exists('git-checkout', $options)) $options['git-checkout'] = 'master';
@@ -78,15 +117,19 @@ class EggShell extends Base {
 		if (!is_dir($directory)) {
 			$this->exe('git clone %s %s', $repository, $directory);
 		} else {
-			$this->exe('cd %s && git pull %s',
+			$this->exe(
+				'cd %s && git pull %s',
 				$directory,
-				$options['git-refspec']);
+				$options['git-refspec']
+			);
 		}
 
 		if ($options['git-checkout']) {
-			$this->exe('cd %s && git checkout %s',
+			$this->exe(
+				'cd %s && git checkout %s',
 				$directory,
-				$options['git-checkout']);
+				$options['git-checkout']
+			);
 		}
 
 		return true;
