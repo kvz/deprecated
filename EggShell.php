@@ -956,6 +956,10 @@ class EggShell extends Base {
 	}
 
 
+	public function cpuCores () {
+		return $this->exe('grep processor /proc/cpuinfo |wc -l');
+	}
+
 	public function chown ($filename, $user = null, $group = null) {
 		$this->mark();
 
