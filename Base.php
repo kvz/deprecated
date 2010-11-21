@@ -613,6 +613,10 @@ class Base {
 			$this->out($str);
 		}
 		if ($msgWeight <= $fileWeight) {
+                        if (!$this->_options['log-file']) {
+                            die("Error occured before log-file was set: " . $str . "\n");
+                        }
+
 			file_put_contents($this->_options['log-file'], $str."\n", FILE_APPEND);
 		}
 		if ($msgWeight <= $breakWeight) {
