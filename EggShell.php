@@ -1107,7 +1107,7 @@ class EggShell extends Base {
 	}
 
 	public function diskId ($target = 'a1') {
-		return $this->exe('ls -al /dev/disk/by-uuid/ | awk \'/%s$/ {print $8}\'', $target);
+		return $this->exe('ls -al /dev/disk/by-uuid/ | awk \'/%s$/ {X=NF-2; print $X}\'', $target);
 	}
 
 	/**
