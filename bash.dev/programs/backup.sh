@@ -1013,13 +1013,13 @@ if [ "${DB_ENABLED}" == 1 ]; then
 				if [ "${ENCRYPTION_ENABLED}" == 1 ]; then
 					# encrypt.
 					logit "info: backing up (${CMD_MYSQL}) and encrypting database ${DATABASE} to ${DEST}"
-		 ${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
-					CMD="${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
+		 ${CMD_MYSQLDUMP} -Q --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}
+					CMD="${CMD_MYSQLDUMP} -Q --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 | ${CMD_OPENSSL} enc -aes-256-cbc -salt -k ${ENCRYPTION_PASS} -out ${ENCR}"
 				else
 					# normal bzip2
 					logit "info: backing up (${CMD_MYSQL}) database ${DATABASE} to ${DEST}"
-		 ${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 >${DEST}
-					CMD="${CMD_MYSQLDUMP} -Q -B --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 >${DEST}"
+		 ${CMD_MYSQLDUMP} -Q --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 >${DEST}
+					CMD="${CMD_MYSQLDUMP} -Q --all --complete-insert --quote-names --add-drop-table -p${DB_PASS} -u${DB_USER} -h${DB_HOST} ${DATABASE} 2>>${LOG_FILE} | ${CMD_BZIP2} -qzc1 >${DEST}"
 				fi
 
 				if [ $? -ne 0 ]; then
