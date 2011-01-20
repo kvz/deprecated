@@ -53,7 +53,13 @@
 			'id' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
 			'message_id' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
 			'email_number' => array('type' => 'integer', 'default' => NULL, 'length' => 15, 'key' => 'primary',),
+			'to' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+			'from' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+			'reply_to' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+			'sender' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
 			'subject' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+			'body' => array('type' => 'text', 'default' => NULL,),
+			'plainmsg' => array('type' => 'text', 'default' => NULL,),
 			'slug' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
 			'size' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
 			'recent' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
@@ -300,7 +306,6 @@
 			if (isset($mail->sender)) {
 				$senderName = isset($mail->sender[0]->personal) ? $mail->sender[0]->personal : $mail->sender[0]->mailbox;
 			}
-
 			else {
 				$senderName = $fromName;
 				$mail->sender = $mail->from;
@@ -311,7 +316,29 @@
 				'id' => $this->__getId($mail->Msgno),
 				'message_id' => $mail->message_id,
 				'email_number' => $mail->Msgno,
+				'to' => printf(
+					'"%s" <%s>',
+					$toName,
+					$mail->toaddress
+				),
+				'from' => sprintf(
+					'"%s" <%s>',
+					$fromName,
+					sprintf('%s@%s', $mail->from[0]->mailbox, $mail->from[0]->host)
+				),
+				'reply_to' => sprintf(
+					'"%s" <%s>',
+					$replyToName,
+					sprintf('%s@%s', $mail->reply_to[0]->mailbox, $mail->reply_to[0]->host)
+				),
+				'sender' => sprintf(
+					'"%s" <%s>',
+					$replyToName,
+					sprintf('%s@%s', $mail->sender[0]->mailbox, $mail->sender[0]->host)
+				),
 				'subject' => htmlspecialchars($mail->subject),
+				'body' => $this->_getPart($message_id, 'TEXT/HTML', $structure),
+				'plainmsg' => $this->_getPart($message_id, 'TEXT/PLAIN', $structure),
 				'slug' => Inflector::slug($mail->subject, '-'),
 				'size' => $mail->Size,
 				'recent' => $mail->Recent,
@@ -321,39 +348,12 @@
 				'draft' => $mail->Draft,
 				'deleted' => $mail->Deleted,
 				'thread_count' => $this->_getThreadCount($mail),
-				'attachments' => $this->_attachement($mail->Msgno, $structure),
+				'attachments' => json_encode($this->_attachment($mail->Msgno, $structure)),
 				'in_reply_to' => isset($mail->in_reply_to) ? $mail->in_reply_to : false,
 				'reference' => isset($mail->references) ? $mail->references : false,
 				'new' => !isset($mail->in_reply_to) ? true : false,
 				'created' => $mail->date
 			);
-
-			$return['To'] = array(
-				'name' => $toName,
-				'email' => $mail->toaddress				
-			);
-
-			$return['From'] = array(
-				'name' => $fromName,
-				'email' => sprintf('%s@%s', $mail->from[0]->mailbox, $mail->from[0]->host)				
-			);
-
-			$return['ReplyTo'] = array(
-				'name' => $replyToName,
-				'email' => sprintf('%s@%s', $mail->reply_to[0]->mailbox, $mail->reply_to[0]->host)				
-			);
-			
-			$return['Sender'] = array(
-				'name' => $replyToName,
-				'email' => sprintf('%s@%s', $mail->sender[0]->mailbox, $mail->sender[0]->host)				
-			);
-
-			$return['Email'] = array(
-				'html' => $this->_getPart($message_id, 'TEXT/HTML', $structure),
-				'text' => $this->_getPart($message_id, 'TEXT/PLAIN', $structure)
-			);
-
-			$return['Attachment'] = $this->_getAttachments($structure, $message_id);
 
 			return $return;
 		}
@@ -463,17 +463,17 @@
 		 *
 		 * @return mixed, int for check (number of attachements) / array of attachements
 		 */
-		protected function _attachement($message_id, $structure, $count = true) {
+		protected function _attachment($message_id, $structure, $count = true) {
 			$has = 0;
 			$attachments = array();
 			if (isset($structure->parts)) {
 				foreach ($structure->parts as $partOfPart) {
 					if ($count) {
-						$has += $this->_attachement($message_id, $partOfPart, $count) == true ? 1 : 0;
+						$has += $this->_attachment($message_id, $partOfPart, $count) == true ? 1 : 0;
 					}
 
 					else {
-						$attachment = $this->_attachement($message_id, $partOfPart, $count);
+						$attachment = $this->_attachment($message_id, $partOfPart, $count);
 						if(!empty($attachment)){
 							$attachments[] = $attachment;
 						}
