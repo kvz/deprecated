@@ -307,11 +307,6 @@
 				$mail->senderaddress = $mail->fromaddress;
 			}
 
-			$return['EmailAccount'] = array(
-				'id' => $Model->server['id'],
-				'slug' => $Model->server['slug']
-			);
-			
 			$return[$Model->alias] = array(
 				'id' => $this->__getId($mail->Msgno),
 				'message_id' => $mail->message_id,
