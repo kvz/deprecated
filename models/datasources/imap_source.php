@@ -316,8 +316,6 @@
 				'text' => $this->_getPart($message_id, 'TEXT/PLAIN', $structure)
 			);
 
-			App::import('Lib', 'Emails.AttachmentDownloader');
-			$this->AttachmentDownloader = new AttachmentDownloader($message_id);
 			$return['Attachment'] = $this->_getAttachments($structure, $message_id);
 
 			return $return;
@@ -364,13 +362,6 @@
 						}
 					}
 					if($attachment['is_attachment']) {
-
-						$cachedAttachment = $this->AttachmentDownloader->alreadySaved($attachment);
-						if($cachedAttachment !== false){
-							$attachments[] = $cachedAttachment;
-							continue;
-						}
-						
 						$attachment['attachment'] = imap_fetchbody($this->MailServer, $message_id, $i+1);
 						if($structure->parts[$i]->encoding == 3) { // 3 = BASE64
 							$attachment['format'] = 'base64';
@@ -384,7 +375,7 @@
 						$attachment['mime_type'] = $this->_getMimeType($structure->parts[$i]);
 						$attachment['size'] = $structure->parts[$i]->bytes;
 
-						$attachments[] = $this->AttachmentDownloader->save($attachment);
+						$attachments[] = $attachment;
 					}
 				}
 			}
