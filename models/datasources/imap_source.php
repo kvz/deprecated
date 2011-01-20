@@ -134,7 +134,7 @@
 		 */
 		public function read(&$Model, $query) {
 			if (!$this->__connectToServer($Model, $query)) {
-				die('something wrong');
+				trigger_error('Cannot connect to server', E_USER_ERROR);
 				exit;
 			}
 
@@ -238,6 +238,15 @@
 			}
 
 			return $this->__isConnected = true;
+		}
+
+		public function lastError () {
+			if (($lastError = imap_last_error())) {
+				$this->errors = imap_errors();
+				$this->connected = false;
+				return $lastError;
+			}
+			return false;
 		}
 
 		/**
