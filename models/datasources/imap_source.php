@@ -30,7 +30,7 @@
 				'password' => false,
 				'email' => false,
 				'server' => 'localhost',
-				'type' => 'pop3',
+				'type' => 'imap',
 				'ssl' => false
 			),
 			'imap' => array(
@@ -41,7 +41,49 @@
 			)
 		);
 		
-		private $__connectionType = 'pop3';
+		private $__connectionType = '';
+
+
+		/**
+		 * Default array of field list for imap mailbox.
+		 *
+		 * @var array
+		 */
+		protected $_schema = array(
+			'id' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+			'message_id' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+			'email_number' => array('type' => 'integer', 'default' => NULL, 'length' => 15, 'key' => 'primary',),
+			'subject' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+			'slug' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+			'size' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+			'recent' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
+			'unread' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
+			'flagged' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
+			'answered' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
+			'draft' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
+			'deleted' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
+			'thread_count' => array('type' => 'integer', 'default' => NULL, 'length' => 15, 'key' => 'primary',),
+			'attachments' => array('type' => 'text', 'default' => NULL,),
+			'in_reply_to' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+			'reference' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+			'new' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
+			'created' => array('type' => 'datetime', 'default' => NULL,),
+		);
+
+		public $columns = array(
+			'primary_key' => array('name' => 'NOT NULL AUTO_INCREMENT'),
+			'string' => array('name' => 'varchar', 'limit' => '255'),
+			'text' => array('name' => 'text'),
+			'integer' => array('name' => 'int', 'limit' => '11', 'formatter' => 'intval'),
+			'float' => array('name' => 'float', 'formatter' => 'floatval'),
+			'datetime' => array('name' => 'datetime', 'format' => 'Y-m-d H:i:s', 'formatter' => 'date'),
+			'timestamp' => array('name' => 'timestamp', 'format' => 'Y-m-d H:i:s', 'formatter' => 'date'),
+			'time' => array('name' => 'time', 'format' => 'H:i:s', 'formatter' => 'date'),
+			'date' => array('name' => 'date', 'format' => 'Y-m-d', 'formatter' => 'date'),
+			'binary' => array('name' => 'blob'),
+			'boolean' => array('name' => 'tinyint', 'limit' => '1')
+		);
+
 
 		/**
 		 * __construct()
@@ -59,7 +101,7 @@
 		 * @return array the shcema of the model
 		 */
 		public function describe(&$model) {
-			return $model->schema;
+			return $this->_schema;
 		}
 
 		/**
@@ -149,7 +191,7 @@
 
 
 			if (!isset($this->config['type'])) {
-				$this->config['type'] = 'imap';
+				$this->config['type'] = $this->__baseConfigs['global']['type'];
 			}
 			$config = array_merge($this->__baseConfigs['global'], $this->__baseConfigs[$this->config['type']], $this->config);
 			$config['email'] = !empty($config['email']) ? $config['email'] : $config['username'];
