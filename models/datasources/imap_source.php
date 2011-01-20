@@ -240,6 +240,10 @@
 			return $this->__isConnected = true;
 		}
 
+		public function name ($data) {
+			return $data;
+		}
+
 		public function lastError () {
 			if (($lastError = imap_last_error())) {
 				$this->errors = imap_errors();
