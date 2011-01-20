@@ -159,19 +159,21 @@
 			switch ($config['type']) {
 				case 'imap':
 					$this->__connectionString = sprintf(
-						'{%s:%s%s}',
+						'{%s:%s%s%s}',
 						$config['server'],
 						$config['port'],
-						$config['ssl'] ? '/ssl' : ''
+						@$config['ssl'] ? '/ssl' : '',
+						@$config['connect'] ? '/' . @$config['connect'] : ''
 					);
 					break;
 
 				case 'pop3':
 					$this->__connectionString = sprintf(
-						'{%s:%s/pop3%s}',
+						'{%s:%s/pop3%s%s}',
 						$config['server'],
 						$config['port'],
-						$config['ssl'] ? '/ssl' : ''
+						@$config['ssl'] ? '/ssl' : '',
+						@$config['connect'] ? '/' . @$config['connect'] : ''
 					);
 					break;
 			}
