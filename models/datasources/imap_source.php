@@ -146,25 +146,12 @@
 			if ($this->__isConnected) {
 				return true;
 			}
-			
-			if(!isset($query['conditions'][$Model->alias.'.account'])){
-				return false;
+
+
+			if (!isset($this->config['type'])) {
+				$this->config['type'] = 'imap';
 			}
-
-			if(empty($Model->server)){
-				$Model->server = ClassRegistry::init('Emails.EmailAccount')->getConnectionDetails($query['conditions'][$Model->alias.'.account']);
-				if(empty($Model->server)){
-					return false;
-				}
-			}
-
-			$Model->server['type'] = isset($Model->server['type']) && !empty($Model->server['type']) ? $Model->server['type'] : 'pop3';
-
-			if ($Model->server['type'] == 'default' || !in_array($Model->server['type'], array_keys($this->__baseConfigs))) {
-				// throw error bad config.
-			}
-
-			$config = array_merge($this->__baseConfigs['global'], $this->__baseConfigs[$Model->server['type']], $Model->server);
+			$config = array_merge($this->__baseConfigs['global'], $this->__baseConfigs[$this->config['type']], $this->config);
 			$config['email'] = !empty($config['email']) ? $config['email'] : $config['username'];
 
 			$this->__connectionType = $config['type'];
