@@ -124,10 +124,10 @@ class ImapSource extends DataSource {
     /**
      * describe the data
      *
-     * @param mixed $model
+     * @param mixed $Model
      * @return array the shcema of the model
      */
-    public function describe (&$model) {
+    public function describe ($Model) {
         return $this->_schema;
     }
 
@@ -153,7 +153,7 @@ class ImapSource extends DataSource {
      *
      * @return the data requested by the model
      */
-    public function read (&$Model, $query) {
+    public function read ($Model, $query) {
         if (!$this->__connectToServer($Model, $query)) {
             return $this->err($Model, 'Cannot connect to server');
         }
@@ -197,7 +197,7 @@ class ImapSource extends DataSource {
      * @param <type> $params
      * @return <type>
      */
-    public function calculate (&$Model, $func, $params = array()) {
+    public function calculate ($Model, $func, $params = array()) {
         $params = (array) $params;
         switch (strtolower($func)) {
             case 'count':
