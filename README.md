@@ -68,4 +68,9 @@ Integrate
 ===========
 
     <?php
-    $ticketMails = $this->TicketEmail->find('all');
+    $ticketEmail = $this->TicketEmail->find('all', array(
+        'conditions' => array(
+            'unread' => 1,
+            'from' => 'kevin@true.nl',
+        ),
+    ));

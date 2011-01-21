@@ -139,6 +139,31 @@ class ImapSource extends DataSource {
     }
 
     /**
+     * Returns a query condition, or null if it wasn't found
+     *
+     * @param object $Model
+     * @param array  $query
+     * @param string $field
+     * 
+     * @return mixed or null
+     */
+    protected function _cond ($Model, $query, $field) {
+        $keys = array(
+            '`' . $Model->alias . '`.`' . $field . '`',
+            $Model->alias . '.' . $field,
+            $field,
+        );
+
+        foreach ($keys as $key) {
+            if (null !== ($val = @$query['conditions'][$key])) {
+                return $val;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * read data
      *
      * this is the main method that reads data from the datasource and
@@ -154,36 +179,105 @@ class ImapSource extends DataSource {
             return $this->err($Model, 'Cannot connect to server');
         }
 
-        switch ($Model->findQueryType) {
-            case 'count':
-                return array(
-                    array(
-                        $Model->alias => array(
-                            'count' => $this->_mailCount($query),
-                        ),
-                    ),
-                );
-                break;
+        // A string, delimited by spaces, in which the following keywords are allowed. Any multi-word arguments (e.g. FROM "joey smith") must be quoted.
+        //
+        // ALL - return all messages matching the rest of the criteria
+        // ANSWERED - match messages with the \\ANSWERED flag set
+        // BCC "string" - match messages with "string" in the Bcc: field
+        // BEFORE "date" - match messages with Date: before "date"
+        // BODY "string" - match messages with "string" in the body of the message
+        // CC "string" - match messages with "string" in the Cc: field
+        // DELETED - match deleted messages
+        // FLAGGED - match messages with the \\FLAGGED (sometimes referred to as Important or Urgent) flag set
+        // FROM "string" - match messages with "string" in the From: field
+        // KEYWORD "string" - match messages with "string" as a keyword
+        // NEW - match new messages
+        // OLD - match old messages
+        // ON "date" - match messages with Date: matching "date"
+        // RECENT - match messages with the \\RECENT flag set
+        // SEEN - match messages that have been read (the \\SEEN flag is set)
+        // SINCE "date" - match messages with Date: after "date"
+        // SUBJECT "string" - match messages with "string" in the Subject:
+        // TEXT "string" - match messages with text "string"
+        // TO "string" - match messages with "string" in the To:
+        // UNANSWERED - match messages that have not been answered
+        // UNDELETED - match messages that are not deleted
+        // UNFLAGGED - match messages that are not flagged
+        // UNKEYWORD "string" - match messages that do not have the keyword "string"
+        // UNSEEN - match messages which have not been read yet
+        //
+        // Does AND, not OR
 
-            case 'all':
-                $query['limit'] = $query['limit'] >= 1 ? $query['limit'] : 20;
-                return $this->_getMails($Model, $query);
-                break;
+        // 
+        // SORTDATE - message Date
+        // SORTARRIVAL - arrival date
+        // SORTFROM - mailbox in first From address
+        // SORTSUBJECT - message subject
+        // SORTTO - mailbox in first To address
+        // SORTCC - mailbox in first cc address
+        // SORTSIZE - size of message in octets
 
-            case 'first':
-                return array($this->_getMail($Model, $query));
-                break;
+        // Tranform order criteria
+        $orderReverse  = 1;
+        $orderCriteria = SORTDATE;
 
-            default:
-                return $this->err(
-                    'Unknown find type %s for query %s',
-                    $Model->findQueryType,
-                    $query
-                );
-                break;
+        // Tranform search criteria
+        $searchCriteria = array();
+        if (($val = $this->_cond($Model, $query, 'unread'))) {
+            $searchCriteria[] = $val ? 'UNSEEN' : 'SEEN';
+        }
+        if (($val = $this->_cond($Model, $query, 'from'))) {
+            $searchCriteria[] = 'FROM "' . $val . '"';
         }
 
-        return $result;
+        // Execute
+        $result = imap_sort(
+            $this->Stream,
+            $orderCriteria,
+            $orderReverse,
+            0,
+            join(' ', $searchCriteria)
+        );
+
+        // Trim
+        if (@$query['start'] && @$query['end']) {
+            $result = array_slice($result, @$query['start'], @$query['end'] - @$query['start']);
+        } elseif (@$query['limit']) {
+            $result = array_slice($result, @$query['start'] ? @$query['start'] : 0, @$query['limit']);
+        } elseif ($Model->findQueryType === 'first') {
+            $result = array_slice($result, 0, 1);
+        }
+
+        // Different findTypes, different output
+        if ($Model->findQueryType === 'list') {
+            return $result;
+        }
+        
+        if ($Model->findQueryType === 'count') {
+            return array(
+                array(
+                    $Model->alias => array(
+                        'count' => count($result),
+                    ),
+                ),
+            );
+        }
+
+        if ($Model->findQueryType === 'all' || $Model->findQueryType === 'first') {
+            $mails = array();
+            foreach ($result as $id) {
+                if (($mail = $this->_getFormattedMail($Model, $id))) {
+                    $mails[] = $mail;
+                }
+            }
+            return $mails;
+        }
+
+        return $this->err(
+            'Unknown find type %s for query %s',
+            $Model->findQueryType,
+            $query
+        );
     }
 
     /**
@@ -387,6 +481,11 @@ class ImapSource extends DataSource {
             $senderName          = $fromName;
             $mail->sender        = $mail->from;
             $mail->senderaddress = $mail->fromaddress;
+        }
+
+        if (empty($mail->message_id)) {
+            //return $this->err($Model, 'No message id for mail: %s', $message_id);
+            return array($Model->alias => array());
         }
 
         $return[$Model->alias] = array(
