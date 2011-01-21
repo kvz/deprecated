@@ -368,8 +368,6 @@ class ImapSource extends DataSource {
             $mails[] = $this->__getFormattedMail($Model, $i);
         }
 
-        unset($mail);
-
         return $mails;
     }
 
