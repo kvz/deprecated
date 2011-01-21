@@ -25,13 +25,9 @@
  * Redistributions of files must retain the above copyright notice.
  */
 class ImapSource extends DataSource {
-    public $driver = null;
-
-    private $__isConnected = false;
-
-    private $__connectionString = null;
-
-    public  $config = array();
+    protected $_isConnected     = false;
+    protected $_connectionString = null;
+    protected $_connectionType   = '';
     
     protected $_defaultConfigs = array(
         'global' => array(
@@ -52,8 +48,8 @@ class ImapSource extends DataSource {
         ),
     );
 
-    private $__connectionType = '';
-
+    public $config = array();
+    public $driver = null;
 
     /**
      * Default array of field list for imap mailbox.
@@ -154,7 +150,7 @@ class ImapSource extends DataSource {
      * @return the data requested by the model
      */
     public function read ($Model, $query) {
-        if (!$this->__connectToServer($Model, $query)) {
+        if (!$this->_connectToServer($Model, $query)) {
             return $this->err($Model, 'Cannot connect to server');
         }
 
@@ -171,11 +167,11 @@ class ImapSource extends DataSource {
 
             case 'all':
                 $query['limit'] = $query['limit'] >= 1 ? $query['limit'] : 20;
-                return $this->__getMails($Model, $query);
+                return $this->_getMails($Model, $query);
                 break;
 
             case 'first':
-                return array($this->__getMail($Model, $query));
+                return array($this->_getMail($Model, $query));
                 break;
 
             default:
@@ -209,16 +205,16 @@ class ImapSource extends DataSource {
     /**
      * connect to the mail server
      */
-    private function __connectToServer ($Model, $query) {
-        if ($this->__isConnected) {
+    protected function _connectToServer ($Model, $query) {
+        if ($this->_isConnected) {
             return true;
         }
 
-        $this->__connectionType = $this->config['type'];
+        $this->_connectionType = $this->config['type'];
 
         switch ($this->config['type']) {
             case 'imap':
-                $this->__connectionString = sprintf(
+                $this->_connectionString = sprintf(
                     '{%s:%s%s%s}',
                     $this->config['server'],
                     $this->config['port'],
@@ -228,7 +224,7 @@ class ImapSource extends DataSource {
                 break;
 
             case 'pop3':
-                $this->__connectionString = sprintf(
+                $this->_connectionString = sprintf(
                     '{%s:%s/pop3%s%s}',
                     $this->config['server'],
                     $this->config['port'],
@@ -242,8 +238,8 @@ class ImapSource extends DataSource {
             $this->thread = null;
             $retries = 0;
             while (($retries++) < $this->config['retry'] && !$this->thread) {
-                $this->MailServer = imap_open($this->__connectionString, $this->config['username'], $this->config['password']);
-                $this->thread     = @imap_thread($this->MailServer, SE_UID);
+                $this->Stream = imap_open($this->_connectionString, $this->config['username'], $this->config['password']);
+                $this->thread     = @imap_thread($this->Stream, SE_UID);
             }
 
             if (!$this->thread) {
@@ -257,7 +253,7 @@ class ImapSource extends DataSource {
             );
         }
 
-        return $this->__isConnected = true;
+        return $this->_isConnected = true;
     }
 
     public function name ($data) {
@@ -334,18 +330,18 @@ class ImapSource extends DataSource {
      *
      * @return array the email according to the find
      */
-    private function __getMail ($Model, $query) {
+    protected function _getMail ($Model, $query) {
         if (!isset($query['conditions'][$Model->alias . '.id']) || empty($query['conditions'][$Model->alias . '.id'])) {
             return array();
         }
 
-        if ($this->__connectionType == 'imap') {
+        if ($this->_connectionType == 'imap') {
             $uuid = $query['conditions'][$Model->alias . '.id'];
         } else {
             $uuid = base64_decode($query['conditions'][$Model->alias . '.id']);
         }
 
-        return $this->__getFormattedMail($Model, imap_msgno($this->MailServer, $uuid));
+        return $this->_getFormattedMail($Model, imap_msgno($this->Stream, $uuid));
     }
 
     /**
@@ -360,12 +356,12 @@ class ImapSource extends DataSource {
      * @param array $query the find conditions and params
      * @return array the data that was found
      */
-    private function __getMails ($Model, $query) {
+    protected function _getMails ($Model, $query) {
         $pagination = $this->_figurePagination($query);
 
         $mails = array();
         for ($i = $pagination['start']; $i > $pagination['end']; $i--) {
-            $mails[] = $this->__getFormattedMail($Model, $i);
+            $mails[] = $this->_getFormattedMail($Model, $i);
         }
 
         return $mails;
@@ -377,9 +373,9 @@ class ImapSource extends DataSource {
      * @param int $message_id the id of the message
      * @return array empty on error/nothing or array of formatted details
      */
-    private function __getFormattedMail ($Model, $message_id) {
-        $mail      = imap_headerinfo($this->MailServer, $message_id);
-        $structure = imap_fetchstructure($this->MailServer, $mail->Msgno);
+    protected function _getFormattedMail ($Model, $message_id) {
+        $mail      = imap_headerinfo($this->Stream, $message_id);
+        $structure = imap_fetchstructure($this->Stream, $mail->Msgno);
 
         $toName      = isset($mail->to[0]->personal) ? $mail->to[0]->personal : $mail->to[0]->mailbox;
         $fromName    = isset($mail->from[0]->personal) ? $mail->from[0]->personal : $mail->from[0]->mailbox;
@@ -479,7 +475,7 @@ class ImapSource extends DataSource {
                     }
                 }
                 if ($attachment['is_attachment']) {
-                    $attachment['attachment'] = imap_fetchbody($this->MailServer, $message_id, $i+1);
+                    $attachment['attachment'] = imap_fetchbody($this->Stream, $message_id, $i+1);
                     if ($structure->parts[$i]->encoding == 3) { // 3 = BASE64
                         $attachment['format'] = 'base64';
                     } elseif ($structure->parts[$i]->encoding == 4) { // 4 = QUOTED-PRINTABLE
@@ -509,10 +505,10 @@ class ImapSource extends DataSource {
      *
      * @return mixed on imap its the unique id (int) and for others its a base64_encoded string
      */
-    private function __getId ($uuid) {
-        switch ($this->__connectionType) {
+    protected function __getId ($uuid) {
+        switch ($this->_connectionType) {
             case 'imap':
-                return imap_uid($this->MailServer, $uuid);
+                return imap_uid($this->Stream, $uuid);
                 break;
 
             default:
@@ -531,7 +527,7 @@ class ImapSource extends DataSource {
      * @return int the number of emails found
      */
     protected function _mailCount ($query) {
-        return imap_num_msg($this->MailServer);
+        return imap_num_msg($this->Stream);
     }
 
     /**
@@ -632,7 +628,7 @@ class ImapSource extends DataSource {
         if ($mime_type == $this->_getMimeType($structure)) {
             $part_number = $part_number > 0 ? $part_number : 1;
 
-            return imap_fetchbody($this->MailServer, $msg_number, $part_number);
+            return imap_fetchbody($this->Stream, $msg_number, $part_number);
         }
 
         /* multipart */
