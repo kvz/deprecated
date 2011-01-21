@@ -3,16 +3,23 @@
  * Get emails in your app with cake like finds.
  *
  * Copyright (c) 2010 Carl Sutton ( dogmatic69 )
+ * Copyright (c) 2011 Kevin van Zonneveld ( kvz )
  *
  * @filesource
  * @copyright Copyright (c) 2010 Carl Sutton ( dogmatic69 )
+ * @copyright Copyright (c) 2011 Kevin van Zonneveld ( kvz )
  * @link http://www.infinitas-cms.org
+ * @link https://github.com/kvz/cakephp-emails-plugin
  * @package libs
  * @subpackage libs.models.datasources.reader
  * @license http://www.opensource.org/licenses/mit-license.php The MIT License
- * @since 0.8a
+ * @since 0.9a
  *
  * @author dogmatic69
+ * @author kvz
+ *
+ * Modifications since 0.8a (when code was stripped from Infinitas):
+ *   https://github.com/kvz/cakephp-emails-plugin/compare/10767bee59dd425ced5b97ae9604acf7f3c0d27a...master
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
@@ -24,7 +31,9 @@ class ImapSource extends DataSource {
 
     private $__connectionString = null;
 
-    private $__baseConfigs = array(
+    public  $config = array();
+    
+    protected $_defaultConfigs = array(
         'global' => array(
             'username' => false,
             'password' => false,
@@ -33,6 +42,7 @@ class ImapSource extends DataSource {
             'type' => 'imap',
             'ssl' => false,
             'retry' => 3,
+            'error_handler' => 'php',
         ),
         'imap' => array(
             'port' => 143,
@@ -99,6 +109,16 @@ class ImapSource extends DataSource {
      */
     function __construct ($config) {
         parent::__construct($config);
+
+        if (!isset($config['type'])) {
+            $type = $this->_defaultConfigs['global']['type'];
+        } else {
+            $type = $config['type'];
+        }
+        $newConfig = array_merge($this->_defaultConfigs['global'], $this->_defaultConfigs[$type], $this->config);
+        $newConfig['email'] = !empty($newConfig['email']) ? $newConfig['email'] : $newConfig['username'];
+
+        $this->config = $newConfig;
     }
 
     /**
@@ -135,7 +155,7 @@ class ImapSource extends DataSource {
      */
     public function read (&$Model, $query) {
         if (!$this->__connectToServer($Model, $query)) {
-            trigger_error('Cannot connect to server', E_USER_ERROR);
+            return $this->err($Model, 'Cannot connect to server');
             exit;
         }
 
@@ -196,32 +216,26 @@ class ImapSource extends DataSource {
             return true;
         }
 
-        if (!isset($this->config['type'])) {
-            $this->config['type'] = $this->__baseConfigs['global']['type'];
-        }
-        $config = array_merge($this->__baseConfigs['global'], $this->__baseConfigs[$this->config['type']], $this->config);
-        $config['email'] = !empty($config['email']) ? $config['email'] : $config['username'];
+        $this->__connectionType = $this->config['type'];
 
-        $this->__connectionType = $config['type'];
-
-        switch ($config['type']) {
+        switch ($this->config['type']) {
             case 'imap':
                 $this->__connectionString = sprintf(
                     '{%s:%s%s%s}',
-                    $config['server'],
-                    $config['port'],
-                    @$config['ssl'] ? '/ssl' : '',
-                    @$config['connect'] ? '/' . @$config['connect'] : ''
+                    $this->config['server'],
+                    $this->config['port'],
+                    @$this->config['ssl'] ? '/ssl' : '',
+                    @$this->config['connect'] ? '/' . @$this->config['connect'] : ''
                 );
                 break;
 
             case 'pop3':
                 $this->__connectionString = sprintf(
                     '{%s:%s/pop3%s%s}',
-                    $config['server'],
-                    $config['port'],
-                    @$config['ssl'] ? '/ssl' : '',
-                    @$config['connect'] ? '/' . @$config['connect'] : ''
+                    $this->config['server'],
+                    $this->config['port'],
+                    @$this->config['ssl'] ? '/ssl' : '',
+                    @$this->config['connect'] ? '/' . @$this->config['connect'] : ''
                 );
                 break;
         }
@@ -229,19 +243,20 @@ class ImapSource extends DataSource {
         try {
             $this->thread = null;
             $retries = 0;
-            while (($retries++) < $config['retry'] && !$this->thread) {
-                $this->MailServer = imap_open($this->__connectionString, $config['username'], $config['password']);
+            while (($retries++) < $this->config['retry'] && !$this->thread) {
+                $this->MailServer = imap_open($this->__connectionString, $this->config['username'], $this->config['password']);
                 $this->thread     = @imap_thread($this->MailServer, SE_UID);
             }
 
             if (!$this->thread) {
-                trigger_error('Unable to geth imap_thread', E_USER_ERROR);
-                return false;
+                return $this->err('Unable to get imap_thread after %s retries', $retries);
             }
-        } catch (Exception $error) {
-            pr(imap_last_error());
-            pr($error);
-            exit;
+        } catch (Exception $Exception) {
+            return $this->err(
+                'Unable to get imap_thread after %s retries. %s',
+                 $retries,
+                $Exception->getMessage() . ' ' . imap_last_error()
+            );
         }
 
         return $this->__isConnected = true;
@@ -251,10 +266,63 @@ class ImapSource extends DataSource {
         return $data;
     }
 
+
+    public function sensible($arguments) {
+        if (is_object($arguments)) {
+            return get_class($arguments);
+        }
+        if (!is_array($arguments)) {
+            if (!is_numeric($arguments) && !is_bool($arguments)) {
+                $arguments = "'".$arguments."'";
+            }
+            return $arguments;
+        }
+        $arr = array();
+        foreach($arguments as $key=>$val) {
+            if (is_array($val)) {
+                $val = json_encode($val);
+            } elseif (!is_numeric($val) && !is_bool($val)) {
+                $val = "'".$val."'";
+            }
+
+            if (strlen($val) > 33) {
+                $val = substr($val, 0, 30) . '...';
+            }
+            
+            $arr[] = $key.': '.$val;
+        }
+        return join(', ', $arr);
+    }
+
+    public function err ($Model, $format, $arg1 = null, $arg2 = null, $arg3 = null) {
+        $arguments = func_get_args();
+        $Model     = array_shift($arguments);
+        $format    = array_shift($arguments);
+
+        $str = $format;
+        if (count($arguments)) {
+            foreach($arguments as $k => $v) {
+                $arguments[$k] = $this->sensible($v);
+            }
+            $str = vsprintf($str, $arguments);
+        }
+
+        $this->error = $str;
+        $Model->onError();
+        
+        if ($this->config['error_handler'] === 'php') {
+            trigger_error($str, E_USER_ERROR);
+        }
+
+        return false;
+    }
+    
     public function lastError () {
+        if (($lastError = $this->error)) {
+            return $lastError;
+        }
         if (($lastError = imap_last_error())) {
-            $this->errors = imap_errors();
-            $this->connected = false;
+            $this->error = imap_errors();
             return $lastError;
         }
         return false;
