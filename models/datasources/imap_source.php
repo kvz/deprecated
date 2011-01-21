@@ -31,14 +31,15 @@
 				'email' => false,
 				'server' => 'localhost',
 				'type' => 'imap',
-				'ssl' => false
+				'ssl' => false,
+				'retry' => 3,
 			),
 			'imap' => array(
-				'port' => 143
+				'port' => 143,
 			),
 			'pop3' => array(
-				'port' => 110
-			)
+				'port' => 110,
+			),
 		);
 		
 		private $__connectionType = '';
@@ -227,11 +228,18 @@
 			}
 
 			try {
-				$this->MailServer = imap_open($this->__connectionString, $config['username'], $config['password']);
-				$this->thread = imap_thread($this->MailServer, SE_UID);
-			}
+				$this->thread = null;
+				$retries = 0;
+				while (($retries++) < $config['retry'] && !$this->thread) {
+					$this->MailServer = imap_open($this->__connectionString, $config['username'], $config['password']);
+					$this->thread	 = @imap_thread($this->MailServer, SE_UID);
+				}
 
-			catch (Exception $error) {
+				if (!$this->thread) {
+					trigger_error('Unable to geth imap_thread', E_USER_ERROR);
+					return false;
+				}
+			} catch (Exception $error) {
 				pr(imap_last_error());
 				pr($error);
 				exit;
