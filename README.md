@@ -11,7 +11,6 @@ Config
 
  - Edit your `database.php` file like so:
 
-
     <?php
     class DATABASE_CONFIG {
         // ... your normal database config here ...
@@ -46,7 +45,7 @@ Implement
 
         // Semi-important:
         // You want to use the datasource schema, and still be able to set
-        // $useTable to false. So:
+        // $useTable to false. So we override Cake's schema with that exception:
         function schema ($field = false) {
             if (!is_array($this->_schema) || $field === true) {
                 $db =& ConnectionManager::getDataSource($this->useDbConfig);
@@ -63,3 +62,10 @@ Implement
             return $this->_schema;
         }
     }
+
+
+Integrate
+===========
+
+    <?php
+    $ticketMails = $this->TicketEmail->find('all');
