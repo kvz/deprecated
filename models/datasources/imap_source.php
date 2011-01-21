@@ -156,7 +156,6 @@ class ImapSource extends DataSource {
     public function read (&$Model, $query) {
         if (!$this->__connectToServer($Model, $query)) {
             return $this->err($Model, 'Cannot connect to server');
-            exit;
         }
 
         switch ($Model->findQueryType) {
@@ -164,9 +163,9 @@ class ImapSource extends DataSource {
                 return array(
                     array(
                         $Model->alias => array(
-                            'count' => $this->_mailCount($query)
-                        )
-                    )
+                            'count' => $this->_mailCount($query),
+                        ),
+                    ),
                 );
                 break;
 
@@ -180,12 +179,11 @@ class ImapSource extends DataSource {
                 break;
 
             default:
-                pr($Model->findQueryType);
-                pr($query);
-                exit;
-                // find(list)
-                pr(imap_fetch_overview($this->MailServer, '400:350', 0));
-                exit;
+                return $this->err(
+                    'Unknown find type %s for query %s',
+                    $Model->findQueryType,
+                    $query
+                );
                 break;
         }
 
@@ -392,8 +390,8 @@ class ImapSource extends DataSource {
         if (isset($mail->sender)) {
             $senderName = isset($mail->sender[0]->personal) ? $mail->sender[0]->personal : $mail->sender[0]->mailbox;
         } else {
-            $senderName = $fromName;
-            $mail->sender = $mail->from;
+            $senderName          = $fromName;
+            $mail->sender        = $mail->from;
             $mail->senderaddress = $mail->fromaddress;
         }
 
@@ -555,7 +553,7 @@ class ImapSource extends DataSource {
                     $has += $this->_attachment($message_id, $partOfPart, $count) == true ? 1 : 0;
                 } else {
                     $attachment = $this->_attachment($message_id, $partOfPart, $count);
-                    if(!empty($attachment)){
+                    if (!empty($attachment)) {
                         $attachments[] = $attachment;
                     }
                 }
