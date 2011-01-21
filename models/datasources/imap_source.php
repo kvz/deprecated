@@ -265,7 +265,7 @@ class ImapSource extends DataSource {
     }
 
 
-    public function sensible($arguments) {
+    public function sensible ($arguments) {
         if (is_object($arguments)) {
             return get_class($arguments);
         }
