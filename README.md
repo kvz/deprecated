@@ -11,6 +11,7 @@ Config
 
  - Edit your `database.php` file like so:
 
+
     <?php
     class DATABASE_CONFIG {
         // ... your normal database config here ...
