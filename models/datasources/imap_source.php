@@ -173,6 +173,73 @@ class ImapSource extends DataSource {
     }
 
     /**
+     * Tranform search criteria from CakePHP -> Imap
+     *
+     * A string, delimited by spaces, in which the following keywords are allowed. Any multi-word arguments (e.g. FROM "joey smith") must be quoted.
+     * ALL - return all messages matching the rest of the criteria
+     * ANSWERED - match messages with the \\ANSWERED flag set
+     * BCC "string" - match messages with "string" in the Bcc: field
+     * BEFORE "date" - match messages with Date: before "date"
+     * BODY "string" - match messages with "string" in the body of the message
+     * CC "string" - match messages with "string" in the Cc: field
+     * DELETED - match deleted messages
+     * FLAGGED - match messages with the \\FLAGGED (sometimes referred to as Important or Urgent) flag set
+     * FROM "string" - match messages with "string" in the From: field
+     * KEYWORD "string" - match messages with "string" as a keyword
+     * NEW - match new messages
+     * OLD - match old messages
+     * ON "date" - match messages with Date: matching "date"
+     * RECENT - match messages with the \\RECENT flag set
+     * SEEN - match messages that have been read (the \\SEEN flag is set)
+     * SINCE "date" - match messages with Date: after "date"
+     * SUBJECT "string" - match messages with "string" in the Subject:
+     * TEXT "string" - match messages with text "string"
+     * TO "string" - match messages with "string" in the To:
+     * UNANSWERED - match messages that have not been answered
+     * UNDELETED - match messages that are not deleted
+     * UNFLAGGED - match messages that are not flagged
+     * UNKEYWORD "string" - match messages that do not have the keyword "string"
+     * UNSEEN - match messages which have not been read yet
+     *
+     * Does AND, not OR
+     *
+     * @param <type> $Model
+     * @param <type> $query
+     * @return string
+     */
+    protected function _makeSearch ($Model, $query) {
+        $searchCriteria = array();
+        if (($val = $this->_cond($Model, $query, 'unread'))) {
+            $searchCriteria[] = $val ? 'UNSEEN' : 'SEEN';
+        }
+        if (($val = $this->_cond($Model, $query, 'from'))) {
+            $searchCriteria[] = 'FROM "' . $val . '"';
+        }
+
+        return $searchCriteria;
+    }
+
+    /**
+     * Tranform order criteria from CakePHP -> Imap
+     *
+     */
+    protected function _makeOrder($Model, $query) {
+        // SORTDATE - message Date
+        // SORTARRIVAL - arrival date
+        // SORTFROM - mailbox in first From address
+        // SORTSUBJECT - message subject
+        // SORTTO - mailbox in first To address
+        // SORTCC - mailbox in first cc address
+        // SORTSIZE - size of message in octets
+
+        // Tranform order criteria
+        $orderReverse  = 1;
+        $orderCriteria = SORTDATE;
+
+        return array($orderReverse, $orderCriteria);
+    }
+
+    /**
      * read data
      *
      * this is the main method that reads data from the datasource and
@@ -188,56 +255,8 @@ class ImapSource extends DataSource {
             return $this->err($Model, 'Cannot connect to server');
         }
 
-        // A string, delimited by spaces, in which the following keywords are allowed. Any multi-word arguments (e.g. FROM "joey smith") must be quoted.
-        //
-        // ALL - return all messages matching the rest of the criteria
-        // ANSWERED - match messages with the \\ANSWERED flag set
-        // BCC "string" - match messages with "string" in the Bcc: field
-        // BEFORE "date" - match messages with Date: before "date"
-        // BODY "string" - match messages with "string" in the body of the message
-        // CC "string" - match messages with "string" in the Cc: field
-        // DELETED - match deleted messages
-        // FLAGGED - match messages with the \\FLAGGED (sometimes referred to as Important or Urgent) flag set
-        // FROM "string" - match messages with "string" in the From: field
-        // KEYWORD "string" - match messages with "string" as a keyword
-        // NEW - match new messages
-        // OLD - match old messages
-        // ON "date" - match messages with Date: matching "date"
-        // RECENT - match messages with the \\RECENT flag set
-        // SEEN - match messages that have been read (the \\SEEN flag is set)
-        // SINCE "date" - match messages with Date: after "date"
-        // SUBJECT "string" - match messages with "string" in the Subject:
-        // TEXT "string" - match messages with text "string"
-        // TO "string" - match messages with "string" in the To:
-        // UNANSWERED - match messages that have not been answered
-        // UNDELETED - match messages that are not deleted
-        // UNFLAGGED - match messages that are not flagged
-        // UNKEYWORD "string" - match messages that do not have the keyword "string"
-        // UNSEEN - match messages which have not been read yet
-        //
-        // Does AND, not OR
-
-        // 
-        // SORTDATE - message Date
-        // SORTARRIVAL - arrival date
-        // SORTFROM - mailbox in first From address
-        // SORTSUBJECT - message subject
-        // SORTTO - mailbox in first To address
-        // SORTCC - mailbox in first cc address
-        // SORTSIZE - size of message in octets
-
-        // Tranform order criteria
-        $orderReverse  = 1;
-        $orderCriteria = SORTDATE;
-
-        // Tranform search criteria
-        $searchCriteria = array();
-        if (($val = $this->_cond($Model, $query, 'unread'))) {
-            $searchCriteria[] = $val ? 'UNSEEN' : 'SEEN';
-        }
-        if (($val = $this->_cond($Model, $query, 'from'))) {
-            $searchCriteria[] = 'FROM "' . $val . '"';
-        }
+        $searchCriteria = $this->_makeSearch($Model, $query);
+        list($orderReverse, $orderCriteria) = $this->_makeOrder($Model, $query);
 
         // Execute
         $result = imap_sort(
@@ -248,7 +267,7 @@ class ImapSource extends DataSource {
             join(' ', $searchCriteria)
         );
 
-        // Trim
+        // Trim results based on pagination / limitation
         if (@$query['start'] && @$query['end']) {
             $result = array_slice($result, @$query['start'], @$query['end'] - @$query['start']);
         } elseif (@$query['limit']) {
@@ -257,7 +276,7 @@ class ImapSource extends DataSource {
             $result = array_slice($result, 0, 1);
         }
 
-        // Different findTypes, different output
+        // Format output depending on findQueryType
         if ($Model->findQueryType === 'list') {
             return $result;
         }
@@ -342,7 +361,7 @@ class ImapSource extends DataSource {
             $retries = 0;
             while (($retries++) < $this->config['retry'] && !$this->thread) {
                 $this->Stream = imap_open($this->_connectionString, $this->config['username'], $this->config['password']);
-                $this->thread = @imap_thread($this->Stream, SE_UID);
+                $this->thread = @imap_thread($this->Stream);
             }
 
             if (!$this->thread) {
@@ -432,11 +451,18 @@ class ImapSource extends DataSource {
     /**
      * get the basic details like sender and reciver with flags like attatchments etc
      *
-     * @param int $message_id the id of the message
+     * @param int $msg_number the number of the message
      * @return array empty on error/nothing or array of formatted details
      */
-    protected function _getFormattedMail ($Model, $message_id) {
-        $Mail      = imap_headerinfo($this->Stream, $message_id);
+    protected function _getFormattedMail ($Model, $msg_number) {
+        $Mail      = imap_headerinfo($this->Stream, $msg_number);
+        if (empty($Mail->message_id)) {
+            return $this->err(
+                $Model,
+                'Unable to find mail with message number: %s',
+                $msg_number
+            );
+        }
         $Structure = imap_fetchstructure($this->Stream, $Mail->Msgno);
 
         $toName      = isset($Mail->to[0]->personal) ? $Mail->to[0]->personal : $Mail->to[0]->mailbox;
@@ -451,13 +477,6 @@ class ImapSource extends DataSource {
             $Mail->senderaddress = $Mail->fromaddress;
         }
 
-        if (empty($Mail->message_id)) {
-            return $this->err(
-                $Model,
-                'Unable to find mail with message id: %s',
-                $message_id
-            );
-        }
 
         $return[$Model->alias] = array(
             'id' => $this->_getId($Mail->Msgno),
@@ -484,8 +503,8 @@ class ImapSource extends DataSource {
                 sprintf('%s@%s', $Mail->sender[0]->mailbox, $Mail->sender[0]->host)
             ),
             'subject' => htmlspecialchars($Mail->subject),
-            'body' => $this->_getPart($message_id, 'TEXT/HTML', $Structure),
-            'plainmsg' => $this->_getPart($message_id, 'TEXT/PLAIN', $Structure),
+            'body' => $this->_getPart($msg_number, 'TEXT/HTML', $Structure),
+            'plainmsg' => $this->_getPart($msg_number, 'TEXT/PLAIN', $Structure),
             'slug' => Inflector::slug($Mail->subject, '-'),
             'size' => $Mail->Size,
             'recent' => $Mail->Recent,
@@ -507,13 +526,13 @@ class ImapSource extends DataSource {
                 if ($mark === '\Seen') {
                     // imap_fetchbody() should be flagging it as "seen" already.
                     // but we can undo it:
-                    if (!imap_clearflag_full($this->Stream, $Mail->message_id, $mark, ST_UID)) {
-                        $this->err('Unable to unmark %s as %s', $Mail->message_id, $mark, ST_UID);
+                    if (!imap_clearflag_full($this->Stream, $msg_number, $mark)) {
+                        $this->err('Unable to unmark %s as %s', $msg_number, $mark);
                     }
                 }
             } else {
-                if (!imap_setflag_full($this->Stream, $Mail->message_id, $mark, ST_UID)) {
-                    $this->err('Unable to mark %s as %s', $Mail->message_id, $mark, ST_UID);
+                if (!imap_setflag_full($this->Stream, $msg_number, $mark)) {
+                    $this->err('Unable to mark %s as %s', $msg_number, $mark);
                 }
             }
         }
@@ -525,15 +544,15 @@ class ImapSource extends DataSource {
      * Get any attachments for the current message, images, documents etc
      *
      * @param <type> $structure
-     * @param <type> $message_id
+     * @param <type> $msg_number
      * @return <type>
      */
-    protected function _getAttachments ($structure, $message_id) {
+    protected function _getAttachments ($structure, $msg_number) {
         $attachments = array();
         if (isset($structure->parts) && count($structure->parts)) {
             for ($i = 0; $i < count($structure->parts); $i++) {
                 $attachment = array(
-                    'message_id' => $message_id,
+                    'message_id' => $msg_number,
                     'is_attachment' => false,
                     'filename' => '',
                     'mime_type' => '',
@@ -561,7 +580,7 @@ class ImapSource extends DataSource {
                     }
                 }
                 if ($attachment['is_attachment']) {
-                    $attachment['attachment'] = imap_fetchbody($this->Stream, $message_id, $i+1);
+                    $attachment['attachment'] = imap_fetchbody($this->Stream, $msg_number, ($i+1));
                     if ($structure->parts[$i]->encoding == 3) { // 3 = BASE64
                         $attachment['format'] = 'base64';
                     } elseif ($structure->parts[$i]->encoding == 4) { // 4 = QUOTED-PRINTABLE
@@ -585,22 +604,24 @@ class ImapSource extends DataSource {
 
 
     /**
-     * get a usable uuid for use in the code
+     * get a numeric id for use in the code
      *
      * @param string $uuid in the format <.*@.*> from the email
      *
      * @return mixed on imap its the unique id (int) and for others its a base64_encoded string
      */
-    protected function _getId ($uuid) {
-        switch ($this->_connectionType) {
-            case 'imap':
-                return imap_uid($this->Stream, $uuid);
-                break;
-
-            default:
-                return str_replace(array('<', '>'), '', base64_encode($mail->message_id));
-                break;
+    protected function _getId ($uuid, $id = null) {
+        if (is_numeric($uuid)) {
+            return $uuid;
         }
+
+        if ($this->_connectionType === 'pop3') {
+            if (!$id) {
+                return $this->err('Cant translate this pop3 id: %s to a number', $uuid);
+            }
+        }
+
+        return imap_uid($this->Stream, $uuid);
     }
 
     /**
