@@ -174,45 +174,52 @@ class ImapSource extends DataSource {
 
     /**
      * Tranform search criteria from CakePHP -> Imap
-     *
-     * A string, delimited by spaces, in which the following keywords are allowed. Any multi-word arguments (e.g. FROM "joey smith") must be quoted.
-     * ALL - return all messages matching the rest of the criteria
-     * ANSWERED - match messages with the \\ANSWERED flag set
-     * BCC "string" - match messages with "string" in the Bcc: field
-     * BEFORE "date" - match messages with Date: before "date"
-     * BODY "string" - match messages with "string" in the body of the message
-     * CC "string" - match messages with "string" in the Cc: field
-     * DELETED - match deleted messages
-     * FLAGGED - match messages with the \\FLAGGED (sometimes referred to as Important or Urgent) flag set
-     * FROM "string" - match messages with "string" in the From: field
-     * KEYWORD "string" - match messages with "string" as a keyword
-     * NEW - match new messages
-     * OLD - match old messages
-     * ON "date" - match messages with Date: matching "date"
-     * RECENT - match messages with the \\RECENT flag set
-     * SEEN - match messages that have been read (the \\SEEN flag is set)
-     * SINCE "date" - match messages with Date: after "date"
-     * SUBJECT "string" - match messages with "string" in the Subject:
-     * TEXT "string" - match messages with text "string"
-     * TO "string" - match messages with "string" in the To:
-     * UNANSWERED - match messages that have not been answered
-     * UNDELETED - match messages that are not deleted
-     * UNFLAGGED - match messages that are not flagged
-     * UNKEYWORD "string" - match messages that do not have the keyword "string"
-     * UNSEEN - match messages which have not been read yet
-     *
      * Does AND, not OR
      *
-     * @param <type> $Model
-     * @param <type> $query
-     * @return string
+     * Supported:
+     *  FROM "string" - match messages with "string" in the From: field
+     *  SEEN - match messages that have been read (the \\SEEN flag is set)
+     *  UNSEEN - match messages which have not been read yet
+     *
+     * @todo: 
+     *  A string, delimited by spaces, in which the following keywords are allowed. Any multi-word arguments (e.g. FROM "joey smith") must be quoted.
+     *  ALL - return all messages matching the rest of the criteria
+     *  ANSWERED - match messages with the \\ANSWERED flag set
+     *  BCC "string" - match messages with "string" in the Bcc: field
+     *  BEFORE "date" - match messages with Date: before "date"
+     *  BODY "string" - match messages with "string" in the body of the message
+     *  CC "string" - match messages with "string" in the Cc: field
+     *  DELETED - match deleted messages
+     *  FLAGGED - match messages with the \\FLAGGED (sometimes referred to as Important or Urgent) flag set
+     *  KEYWORD "string" - match messages with "string" as a keyword
+     *  NEW - match new messages
+     *  OLD - match old messages
+     *  ON "date" - match messages with Date: matching "date"
+     *  RECENT - match messages with the \\RECENT flag set
+     *  SINCE "date" - match messages with Date: after "date"
+     *  SUBJECT "string" - match messages with "string" in the Subject:
+     *  TEXT "string" - match messages with text "string"
+     *  TO "string" - match messages with "string" in the To:
+     *  UNANSWERED - match messages that have not been answered
+     *  UNDELETED - match messages that are not deleted
+     *  UNFLAGGED - match messages that are not flagged
+     *  UNKEYWORD "string" - match messages that do not have the keyword "string"
+     *
+     * @param object $Model
+     * @param array  $query
+     *
+     * @return array
      */
     protected function _makeSearch ($Model, $query) {
         $searchCriteria = array();
 
+        // Special case. When somebody specifies primaryKey(s),
+        // We don't have to do an actual search
         if (($id = $this->_cond($Model, $query, $Model->primaryKey))) {
             return $id;
         }
+
+        // Normal search parameters
         if (($val = $this->_cond($Model, $query, 'unread'))) {
             $searchCriteria[] = $val ? 'UNSEEN' : 'SEEN';
         }
@@ -226,15 +233,22 @@ class ImapSource extends DataSource {
     /**
      * Tranform order criteria from CakePHP -> Imap
      *
+     * For now always sorts on date descending.
+     * @todo: Support the following sort parameters:
+     *  SORTDATE - message Date
+     *  SORTARRIVAL - arrival date
+     *  SORTFROM - mailbox in first From address
+     *  SORTSUBJECT - message subject
+     *  SORTTO - mailbox in first To address
+     *  SORTCC - mailbox in first cc address
+     *  SORTSIZE - size of message in octets
+     *
+     * @param object $Model
+     * @param array  $query
+     * 
+     * @return array
      */
     protected function _makeOrder($Model, $query) {
-        // SORTDATE - message Date
-        // SORTARRIVAL - arrival date
-        // SORTFROM - mailbox in first From address
-        // SORTSUBJECT - message subject
-        // SORTTO - mailbox in first To address
-        // SORTCC - mailbox in first cc address
-        // SORTSIZE - size of message in octets
 
         // Tranform order criteria
         $orderReverse  = 1;
@@ -255,7 +269,7 @@ class ImapSource extends DataSource {
      * @return the data requested by the model
      */
     public function read ($Model, $query) {
-        if (!$this->_connectToServer($Model, $query)) {
+        if (!$this->connect($Model, $query)) {
             return $this->err($Model, 'Cannot connect to server');
         }
 
@@ -284,7 +298,7 @@ class ImapSource extends DataSource {
             return array();
         }
 
-        // Trim results based on pagination / limitation
+        // Trim resulting ids based on pagination / limitation
         if (@$query['start'] && @$query['end']) {
             $result = array_slice($result, @$query['start'], @$query['end'] - @$query['start']);
         } elseif (@$query['limit']) {
@@ -296,9 +310,7 @@ class ImapSource extends DataSource {
         // Format output depending on findQueryType
         if ($Model->findQueryType === 'list') {
             return $result;
-        }
-        
-        if ($Model->findQueryType === 'count') {
+        } else if ($Model->findQueryType === 'count') {
             return array(
                 array(
                     $Model->alias => array(
@@ -306,9 +318,7 @@ class ImapSource extends DataSource {
                     ),
                 ),
             );
-        }
-
-        if ($Model->findQueryType === 'all' || $Model->findQueryType === 'first') {
+        } else if ($Model->findQueryType === 'all' || $Model->findQueryType === 'first') {
             $mails = array();
             foreach ($result as $id) {
                 if (($mail = $this->_getFormattedMail($Model, $id))) {
@@ -344,7 +354,7 @@ class ImapSource extends DataSource {
     /**
      * connect to the mail server
      */
-    protected function _connectToServer ($Model, $query) {
+    public function connect ($Model, $query) {
         if ($this->_isConnected) {
             return true;
         }
@@ -402,7 +412,6 @@ class ImapSource extends DataSource {
     public function name ($data) {
         return $data;
     }
-
 
     public function sensible ($arguments) {
         if (is_object($arguments)) {
@@ -687,35 +696,35 @@ class ImapSource extends DataSource {
         return $attachments;
     }
 
-    protected function _getMimeType ($structure) {
+    protected function _getMimeType ($Structure) {
         $primary_mime_type = array('TEXT', 'MULTIPART', 'MESSAGE', 'APPLICATION', 'AUDIO', 'IMAGE', 'VIDEO', 'OTHER');
-        if ($structure->subtype) {
-            return $primary_mime_type[(int) $structure->type] . '/' . $structure->subtype;
+        if ($Structure->subtype) {
+            return $primary_mime_type[(int) $Structure->type] . '/' . $Structure->subtype;
         }
 
         return 'TEXT/PLAIN';
     }
 
-    protected function _getPart ($msg_number, $mime_type, $structure = null, $part_number = false) {
+    protected function _getPart ($msg_number, $mime_type, $Structure = null, $part_number = false) {
         $prefix = null;
-        if (!$structure) {
+        if (!$Structure) {
             return false;
         }
 
-        if ($mime_type == $this->_getMimeType($structure)) {
+        if ($mime_type == $this->_getMimeType($Structure)) {
             $part_number = $part_number > 0 ? $part_number : 1;
 
             return imap_fetchbody($this->Stream, $msg_number, $part_number);
         }
 
         /* multipart */
-        if ($structure->type == 1) {
-            foreach ($structure->parts as $index => $sub_structure) {
+        if ($Structure->type == 1) {
+            foreach ($Structure->parts as $index => $SubStructure) {
                 if ($part_number) {
                     $prefix = $part_number . '.';
                 }
 
-                $data = $this->_getPart($msg_number, $mime_type, $sub_structure, $prefix . ($index + 1));
+                $data = $this->_getPart($msg_number, $mime_type, $SubStructure, $prefix . ($index + 1));
                 if ($data) {
                     return quoted_printable_decode($data);
                 }
@@ -726,11 +735,11 @@ class ImapSource extends DataSource {
     /**
      * Figure out how many emails there are in the thread for this mail.
      *
-     * @param object $mail the imap header of the mail
+     * @param object $Mail the imap header of the mail
      * @return int the number of mails in the thred
      */
-    protected function _getThreadCount ($mail) {
-        if (isset($mail->reference) || isset($mail->in_reply_to)) {
+    protected function _getThreadCount ($Mail) {
+        if (isset($Mail->reference) || isset($Mail->in_reply_to)) {
             return '?';
         }
 
