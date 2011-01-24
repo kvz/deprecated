@@ -241,7 +241,7 @@ class ImapSource extends DataSource {
         // Special case. When somebody specifies primaryKey(s),
         // We don't have to do an actual search
         if (($id = $this->_cond($Model, $query, $Model->primaryKey))) {
-            return $id;
+            return $this->_toUid($id);
         }
 
         // Flag search parameters
@@ -557,7 +557,7 @@ class ImapSource extends DataSource {
 
 
         $return[$Model->alias] = array(
-            'id' => $this->_toId($Mail->Msgno),
+            'id' => $this->_toId($uid),
             'message_id' => $Mail->message_id,
             'email_number' => $Mail->Msgno,
             'to' => sprintf(
@@ -680,7 +680,6 @@ class ImapSource extends DataSource {
         return $uid;
     }
 
-
     /**
      * get id for use in the code
      *
@@ -690,19 +689,7 @@ class ImapSource extends DataSource {
      */
     protected function _toId ($uid, $id = null) {
         $id = $uid;
-
         return $id;
-        if (is_numeric($uid)) {
-            return $uid;
-        }
-
-        if ($this->_connectionType === 'pop3') {
-            if (!$id) {
-                return $this->err('Cant translate this pop3 id: %s to a number', $uid);
-            }
-        }
-
-        return imap_uid($this->Stream, $uid);
     }
 
     /**
