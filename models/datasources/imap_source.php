@@ -650,7 +650,7 @@ class ImapSource extends DataSource {
                     }
                 }
                 if ($attachment['is_attachment']) {
-                    $attachment['attachment'] = imap_fetchbody($this->Stream, $uid, ($i+1), FT_UID & FT_PEEK);
+                    $attachment['attachment'] = imap_fetchbody($this->Stream, $uid, ($i+1), FT_UID | FT_PEEK);
                     if ($structure->parts[$i]->encoding == 3) { // 3 = BASE64
                         $attachment['format'] = 'base64';
                     } elseif ($structure->parts[$i]->encoding == 4) { // 4 = QUOTED-PRINTABLE
@@ -755,7 +755,7 @@ class ImapSource extends DataSource {
 
         if ($mime_type == $this->_getMimeType($Structure)) {
             $part_number = $part_number > 0 ? $part_number : 1;
-            return imap_fetchbody($this->Stream, $uid, $part_number, FT_UID);
+            return imap_fetchbody($this->Stream, $uid, $part_number, FT_UID | FT_PEEK);
         }
 
         /* multipart */
