@@ -448,7 +448,7 @@ class ImapSource extends DataSource {
         }
 
         $return[$Model->alias] = array(
-            'id' => $this->__getId($mail->Msgno),
+            'id' => $this->_getId($mail->Msgno),
             'message_id' => $mail->message_id,
             'email_number' => $mail->Msgno,
             'to' => printf(
@@ -563,7 +563,7 @@ class ImapSource extends DataSource {
      *
      * @return mixed on imap its the unique id (int) and for others its a base64_encoded string
      */
-    protected function __getId ($uuid) {
+    protected function _getId ($uuid) {
         switch ($this->_connectionType) {
             case 'imap':
                 return imap_uid($this->Stream, $uuid);
