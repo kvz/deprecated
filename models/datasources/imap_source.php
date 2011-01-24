@@ -112,7 +112,7 @@ class ImapSource extends DataSource {
      *
      * @param mixed $config
      */
-    function __construct ($config) {
+    public function __construct ($config) {
         parent::__construct($config);
 
         if (!isset($config['type'])) {
@@ -124,6 +124,19 @@ class ImapSource extends DataSource {
         $newConfig['email'] = !empty($newConfig['email']) ? $newConfig['email'] : $newConfig['username'];
 
         $this->config = $newConfig;
+    }
+
+    /**
+     * Expunge messages marked for deletion
+     */
+    public function __destruct () {
+        if ($this->_isConnected && $this->Stream) {
+            $this->_isConnected = false;
+            // If set to CL_EXPUNGE, the function will silently expunge the
+            // mailbox before closing, removing all messages marked for deletion.
+            // You can achieve the same thing by using imap_expunge()
+            imap_close($this->Stream, CL_EXPUNGE);
+        }
     }
 
     /**
