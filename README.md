@@ -1,6 +1,21 @@
 Imap datasource for CakePHP. Ripped from Infinitas. 
 [Changes since then](https://github.com/kvz/cakephp-emails-plugin/compare/10767bee59dd425ced5b97ae9604acf7f3c0d27a...master)
 
+Warning
+============
+This datasource automatically closes the imap connection with `CL_EXPUNGE`.
+This means that if you `->delete()` mails, they will really be gone
+from your mailserver, and are not just marked for deletion.
+
+Todo
+================
+
+ - Better conditions support  
+   'Complex' conditions such as: NOT, OR, arrays as values
+   Full support for all the imap_search keys
+ - 
+ 
+
 Install
 ============
 
@@ -105,6 +120,17 @@ Here are a couple of supported examples:
     $subject = $this->TicketEmail->field('subject');
     print(compact('subject'));
 
+
     // Delete one
     $this->TicketEmail->delete(21879);
+
+    // Delete many
+    $this->TicketEmail->deleteAll(array(
+        'deleted' => 0,
+        'seen' => 0,
+        'from' => 'kevin@true.nl',
+    ));
+
+
+
 

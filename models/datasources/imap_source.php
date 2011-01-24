@@ -188,6 +188,26 @@ class ImapSource extends DataSource {
     }
 
     /**
+     * Returns ids from searchCriteria or false if there's other criteria involved
+     *
+     * @param array $searchCriteria
+     *
+     * @return false or array
+     */
+    protected function _uidsByCriteria ($searchCriteria) {
+        if (is_numeric($searchCriteria) || Set::numeric($searchCriteria)) {
+            // We already know the id, or list of ids
+            $results = $searchCriteria;
+            if (!is_array($results)) {
+                $results = array($results);
+            }
+            return $results;
+        }
+
+        return false;
+    }
+
+    /**
      * Tranform search criteria from CakePHP -> Imap
      * Does AND, not OR
      *
@@ -305,13 +325,27 @@ class ImapSource extends DataSource {
     }
 
     public function delete ($Model, $conditions = null) {
-        $args = func_get_args();
-        $Model = array_shift($args);
-
-        $query = compact('conditions');
+        $query          = compact('conditions');
         $searchCriteria = $this->_makeSearch($Model, $query);
+        $uids           = $this->_uidsByCriteria($searchCriteria);
+        if ($uids === false) {
+            $uids = $Model->find('list', $query);
+        }
 
-        prd(compact('searchCriteria', 'conditions'));
+        // Nothing was found
+        if (empty($uids)) {
+            return false;
+        }
+
+        $success = true;
+        foreach ($uids as $uid) {
+            if (!imap_delete($this->Stream, $uid, FT_UID)) {
+                $this->err('Unable to delete email with uid: %s', $uid);
+                $success = false;
+            }
+        }
+
+        return $success;
     }
 
     /**
@@ -331,17 +365,11 @@ class ImapSource extends DataSource {
         }
 
         $searchCriteria = $this->_makeSearch($Model, $query);
-
-        if (is_numeric($searchCriteria) || Set::numeric($searchCriteria)) {
-            // We already know the id, or list of ids
-            $results = $searchCriteria;
-            if (!is_array($results)) {
-                $results = array($results);
-            }
-        } else {
+        $uids           = $this->_uidsByCriteria($searchCriteria);
+        if ($uids === false) {
             // Perform Search & Order. Returns list of ids
             list($orderReverse, $orderCriteria) = $this->_makeOrder($Model, $query);
-            $results = imap_sort(
+            $uids = imap_sort(
                 $this->Stream,
                 $orderCriteria,
                 $orderReverse,
@@ -351,33 +379,33 @@ class ImapSource extends DataSource {
         }
         
         // Nothing was found
-        if ($results === false) {
+        if (empty($uids)) {
             return array();
         }
 
         // Trim resulting ids based on pagination / limitation
         if (@$query['start'] && @$query['end']) {
-            $results = array_slice($results, @$query['start'], @$query['end'] - @$query['start']);
+            $uids = array_slice($uids, @$query['start'], @$query['end'] - @$query['start']);
         } elseif (@$query['limit']) {
-            $results = array_slice($results, @$query['start'] ? @$query['start'] : 0, @$query['limit']);
+            $uids = array_slice($uids, @$query['start'] ? @$query['start'] : 0, @$query['limit']);
         } elseif ($Model->findQueryType === 'first') {
-            $results = array_slice($results, 0, 1);
+            $uids = array_slice($uids, 0, 1);
         }
 
         // Format output depending on findQueryType
         if ($Model->findQueryType === 'list') {
-            return $results;
+            return $uids;
         } else if ($Model->findQueryType === 'count') {
             return array(
                 array(
                     $Model->alias => array(
-                        'count' => count($results),
+                        'count' => count($uids),
                     ),
                 ),
             );
         } else if ($Model->findQueryType === 'all' || $Model->findQueryType === 'first') {
             $mails = array();
-            foreach ($results as $uid) {
+            foreach ($uids as $uid) {
                 if (($mail = $this->_getFormattedMail($Model, $uid))) {
                     $mails[] = $mail;
                 }
