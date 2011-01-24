@@ -39,6 +39,7 @@ class ImapSource extends DataSource {
             'ssl' => false,
             'retry' => 3,
             'error_handler' => 'php',
+            'auto_mark_as' => array('seen'),
         ),
         'imap' => array(
             'port' => 143,
@@ -46,6 +47,14 @@ class ImapSource extends DataSource {
         'pop3' => array(
             'port' => 110,
         ),
+    );
+
+    public $marks = array(
+        '\Seen',
+        '\Answered',
+        '\Flagged',
+        '\Deleted',
+        '\Draft',
     );
 
     public $config = array();
@@ -427,68 +436,87 @@ class ImapSource extends DataSource {
      * @return array empty on error/nothing or array of formatted details
      */
     protected function _getFormattedMail ($Model, $message_id) {
-        $mail      = imap_headerinfo($this->Stream, $message_id);
-        $structure = imap_fetchstructure($this->Stream, $mail->Msgno);
+        $Mail      = imap_headerinfo($this->Stream, $message_id);
+        $Structure = imap_fetchstructure($this->Stream, $Mail->Msgno);
 
-        $toName      = isset($mail->to[0]->personal) ? $mail->to[0]->personal : $mail->to[0]->mailbox;
-        $fromName    = isset($mail->from[0]->personal) ? $mail->from[0]->personal : $mail->from[0]->mailbox;
-        $replyToName = isset($mail->reply_to[0]->personal) ? $mail->reply_to[0]->personal : $mail->reply_to[0]->mailbox;
+        $toName      = isset($Mail->to[0]->personal) ? $Mail->to[0]->personal : $Mail->to[0]->mailbox;
+        $fromName    = isset($Mail->from[0]->personal) ? $Mail->from[0]->personal : $Mail->from[0]->mailbox;
+        $replyToName = isset($Mail->reply_to[0]->personal) ? $Mail->reply_to[0]->personal : $Mail->reply_to[0]->mailbox;
 
-        if (isset($mail->sender)) {
-            $senderName = isset($mail->sender[0]->personal) ? $mail->sender[0]->personal : $mail->sender[0]->mailbox;
+        if (isset($Mail->sender)) {
+            $senderName = isset($Mail->sender[0]->personal) ? $Mail->sender[0]->personal : $Mail->sender[0]->mailbox;
         } else {
             $senderName          = $fromName;
-            $mail->sender        = $mail->from;
-            $mail->senderaddress = $mail->fromaddress;
+            $Mail->sender        = $Mail->from;
+            $Mail->senderaddress = $Mail->fromaddress;
         }
 
-        if (empty($mail->message_id)) {
-            //return $this->err($Model, 'No message id for mail: %s', $message_id);
-            return array($Model->alias => array());
+        if (empty($Mail->message_id)) {
+            return $this->err($Model, 'Unable to find mail with message id: %s', $message_id);
+            //return array($Model->alias => array());
         }
 
         $return[$Model->alias] = array(
-            'id' => $this->_getId($mail->Msgno),
-            'message_id' => $mail->message_id,
-            'email_number' => $mail->Msgno,
+            'id' => $this->_getId($Mail->Msgno),
+            'message_id' => $Mail->message_id,
+            'email_number' => $Mail->Msgno,
             'to' => printf(
                 '"%s" <%s>',
                 $toName,
-                $mail->toaddress
+                $Mail->toaddress
             ),
             'from' => sprintf(
                 '"%s" <%s>',
                 $fromName,
-                sprintf('%s@%s', $mail->from[0]->mailbox, $mail->from[0]->host)
+                sprintf('%s@%s', $Mail->from[0]->mailbox, $Mail->from[0]->host)
             ),
             'reply_to' => sprintf(
                 '"%s" <%s>',
                 $replyToName,
-                sprintf('%s@%s', $mail->reply_to[0]->mailbox, $mail->reply_to[0]->host)
+                sprintf('%s@%s', $Mail->reply_to[0]->mailbox, $Mail->reply_to[0]->host)
             ),
             'sender' => sprintf(
                 '"%s" <%s>',
                 $replyToName,
-                sprintf('%s@%s', $mail->sender[0]->mailbox, $mail->sender[0]->host)
+                sprintf('%s@%s', $Mail->sender[0]->mailbox, $Mail->sender[0]->host)
             ),
-            'subject' => htmlspecialchars($mail->subject),
-            'body' => $this->_getPart($message_id, 'TEXT/HTML', $structure),
-            'plainmsg' => $this->_getPart($message_id, 'TEXT/PLAIN', $structure),
-            'slug' => Inflector::slug($mail->subject, '-'),
-            'size' => $mail->Size,
-            'recent' => $mail->Recent,
-            'unread' => (int)(bool)trim($mail->Unseen),
-            'flagged' => (int)(bool)trim($mail->Flagged),
-            'answered' => $mail->Answered,
-            'draft' => $mail->Draft,
-            'deleted' => $mail->Deleted,
-            'thread_count' => $this->_getThreadCount($mail),
-            'attachments' => json_encode($this->_attachment($mail->Msgno, $structure)),
-            'in_reply_to' => isset($mail->in_reply_to) ? $mail->in_reply_to : false,
-            'reference' => isset($mail->references) ? $mail->references : false,
-            'new' => !isset($mail->in_reply_to) ? true : false,
-            'created' => $mail->date
+            'subject' => htmlspecialchars($Mail->subject),
+            'body' => $this->_getPart($message_id, 'TEXT/HTML', $Structure),
+            'plainmsg' => $this->_getPart($message_id, 'TEXT/PLAIN', $Structure),
+            'slug' => Inflector::slug($Mail->subject, '-'),
+            'size' => $Mail->Size,
+            'recent' => $Mail->Recent,
+            'unread' => (int)(bool)trim($Mail->Unseen),
+            'flagged' => (int)(bool)trim($Mail->Flagged),
+            'answered' => $Mail->Answered,
+            'draft' => $Mail->Draft,
+            'deleted' => $Mail->Deleted,
+            'thread_count' => $this->_getThreadCount($Mail),
+            'attachments' => json_encode($this->_attachment($Mail->Msgno, $Structure)),
+            'in_reply_to' => isset($Mail->in_reply_to) ? $Mail->in_reply_to : false,
+            'reference' => isset($Mail->references) ? $Mail->references : false,
+            'new' => !isset($Mail->in_reply_to) ? true : false,
+            'created' => $Mail->date
         );
+
+        foreach ($this->marks as $mark) {
+            if (!in_array($mark, $this->config['auto_mark_as'])) {
+                if ($mark === '\Seen') {
+                    // imap_fetchbody() should be flagging it as "seen" already.
+                    // but we can undo it:
+                    if (!imap_clearflag_full($this->Stream, $Mail->Msgno, $mark)) {
+                        echo 'NNNNNNNNNNNNNNNNNNNNNNNNNNN';
+                        $this->err('Unable to unmark %s as %s', $Mail->Msgno, $mark);
+                    } else {
+                        echo 'YYYYYYYYYYYYYYYYYYYYYYYYYYY';
+                    }
+                }
+            } else {
+                if (!imap_setflag_full($this->Stream, $Mail->message_id, $mark)) {
+                    $this->err('Unable to mark %s as %s', $Mail->message_id, $mark);
+                }
+            }
+        }
 
         return $return;
     }
@@ -578,16 +606,16 @@ class ImapSource extends DataSource {
     /**
      * used to check / get the attachements in an email.
      *
-     * @param object $structure the structure of the email
+     * @param object $Structure the structure of the email
      * @param bool $count count them (true), or get them (false)
      *
      * @return mixed, int for check (number of attachements) / array of attachements
      */
-    protected function _attachment ($message_id, $structure, $count = true) {
+    protected function _attachment ($message_id, $Structure, $count = true) {
         $has = 0;
         $attachments = array();
-        if (isset($structure->parts)) {
-            foreach ($structure->parts as $partOfPart) {
+        if (isset($Structure->parts)) {
+            foreach ($Structure->parts as $partOfPart) {
                 if ($count) {
                     $has += $this->_attachment($message_id, $partOfPart, $count) == true ? 1 : 0;
                 } else {
@@ -598,16 +626,16 @@ class ImapSource extends DataSource {
                 }
             }
         } else {
-            if (isset($structure->disposition)) {
-                if (strtolower($structure->disposition) == 'attachment') {
+            if (isset($Structure->disposition)) {
+                if (strtolower($Structure->disposition) == 'attachment') {
                     if ($count) {
                         return true;
                     } else {
                         return array(
-                            'type' => $structure->type,
-                            'subtype' => $structure->subtype,
-                            'file' => $structure->dparameters[0]->value,
-                            'size' => $structure->bytes
+                            'type' => $Structure->type,
+                            'subtype' => $Structure->subtype,
+                            'file' => $Structure->dparameters[0]->value,
+                            'size' => $Structure->bytes
                         );
                     }
                 }

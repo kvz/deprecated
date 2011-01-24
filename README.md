@@ -26,6 +26,13 @@ Config
             'ssl' => true,
             'encoding' => 'UTF-8',
             'error_handler' => 'php',
+            'auto_mark_as' => array(
+                '\Seen',
+                // '\Answered',
+                // '\Flagged',
+                // '\Deleted',
+                // '\Draft',
+            ),
         );
     }
 
