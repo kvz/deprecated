@@ -77,6 +77,7 @@ Integrate
 Here are a couple of supported examples:
 
     <?php
+    // Get many
     $ticketEmails = $this->TicketEmail->find('all', array(
         'conditions' => array(
             'answered' => 0,
@@ -91,6 +92,7 @@ Here are a couple of supported examples:
     ));
     print_r(compact('ticketEmails'));
 
+    // Get one
     $ticketEmail = $this->TicketEmail->find('first', array(
         'conditions' => array(
             'id' => 21879,
@@ -98,8 +100,11 @@ Here are a couple of supported examples:
     ));
     print_r(compact('ticketEmail'));
 
-    $this->TicketEmail->id = 21878;
+    // Get subject
+    $this->TicketEmail->id = 21879;
     $subject = $this->TicketEmail->field('subject');
     print(compact('subject'));
-    
+
+    // Delete one
+    $this->TicketEmail->delete(21879);
 

@@ -306,6 +306,12 @@ class ImapSource extends DataSource {
 
     public function delete ($Model, $conditions = null) {
         $args = func_get_args();
+        $Model = array_shift($args);
+
+        $query = compact('conditions');
+        $searchCriteria = $this->_makeSearch($Model, $query);
+
+        prd(compact('searchCriteria', 'conditions'));
     }
 
     /**
@@ -676,6 +682,10 @@ class ImapSource extends DataSource {
      * @param <type> $id
      */
     protected function _toUid ($id) {
+        if (is_array($id)) {
+            return array_map(array($this, __FUNCTION__), $id);
+        };
+
         $uid = $id;
         return $uid;
     }
@@ -687,7 +697,11 @@ class ImapSource extends DataSource {
      *
      * @return mixed on imap its the unique id (int) and for others its a base64_encoded string
      */
-    protected function _toId ($uid, $id = null) {
+    protected function _toId ($uid) {
+        if (is_array($uid)) {
+            return array_map(array($this, __FUNCTION__), $uid);
+        };
+
         $id = $uid;
         return $id;
     }
