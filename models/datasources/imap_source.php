@@ -452,8 +452,11 @@ class ImapSource extends DataSource {
         }
 
         if (empty($Mail->message_id)) {
-            return $this->err($Model, 'Unable to find mail with message id: %s', $message_id);
-            //return array($Model->alias => array());
+            return $this->err(
+                $Model,
+                'Unable to find mail with message id: %s',
+                $message_id
+            );
         }
 
         $return[$Model->alias] = array(
@@ -504,16 +507,13 @@ class ImapSource extends DataSource {
                 if ($mark === '\Seen') {
                     // imap_fetchbody() should be flagging it as "seen" already.
                     // but we can undo it:
-                    if (!imap_clearflag_full($this->Stream, $Mail->Msgno, $mark)) {
-                        echo 'NNNNNNNNNNNNNNNNNNNNNNNNNNN';
-                        $this->err('Unable to unmark %s as %s', $Mail->Msgno, $mark);
-                    } else {
-                        echo 'YYYYYYYYYYYYYYYYYYYYYYYYYYY';
+                    if (!imap_clearflag_full($this->Stream, $Mail->message_id, $mark, ST_UID)) {
+                        $this->err('Unable to unmark %s as %s', $Mail->message_id, $mark, ST_UID);
                     }
                 }
             } else {
-                if (!imap_setflag_full($this->Stream, $Mail->message_id, $mark)) {
-                    $this->err('Unable to mark %s as %s', $Mail->message_id, $mark);
+                if (!imap_setflag_full($this->Stream, $Mail->message_id, $mark, ST_UID)) {
+                    $this->err('Unable to mark %s as %s', $Mail->message_id, $mark, ST_UID);
                 }
             }
         }
