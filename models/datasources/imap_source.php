@@ -333,11 +333,15 @@ class ImapSource extends DataSource {
             $retries = 0;
             while (($retries++) < $this->config['retry'] && !$this->thread) {
                 $this->Stream = imap_open($this->_connectionString, $this->config['username'], $this->config['password']);
-                $this->thread     = @imap_thread($this->Stream, SE_UID);
+                $this->thread = @imap_thread($this->Stream, SE_UID);
             }
 
             if (!$this->thread) {
-                return $this->err('Unable to get imap_thread after %s retries', $retries);
+                return $this->err(
+                    'Unable to get imap_thread after %s retries. %s',
+                    $retries,
+                    imap_last_error()
+                );
             }
         } catch (Exception $Exception) {
             return $this->err(
