@@ -233,6 +233,11 @@ class ImapSource extends DataSource {
     protected function _makeSearch ($Model, $query) {
         $searchCriteria = array();
 
+        if (!@$query['conditions']) {
+            $query['conditions'] = array();
+        }
+
+
         // Special case. When somebody specifies primaryKey(s),
         // We don't have to do an actual search
         if (($id = $this->_cond($Model, $query, $Model->primaryKey))) {
