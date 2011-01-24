@@ -80,7 +80,7 @@ class ImapSource extends DataSource {
         'size' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
 
         'recent' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
-        'unread' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
+        'seen' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
         'flagged' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
         'answered' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
         'draft' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
@@ -179,8 +179,8 @@ class ImapSource extends DataSource {
         );
 
         foreach ($keys as $key) {
-            if (null !== ($val = @$query['conditions'][$key])) {
-                return $val;
+            if (array_key_exists($key, @$query['conditions'])) {
+                return $query['conditions'][$key];
             }
         }
 
@@ -193,31 +193,36 @@ class ImapSource extends DataSource {
      *
      * Supported:
      *  FROM "string" - match messages with "string" in the From: field
+     *
+     *  ANSWERED - match messages with the \\ANSWERED flag set
+     *  UNANSWERED - match messages that have not been answered
+     *
      *  SEEN - match messages that have been read (the \\SEEN flag is set)
      *  UNSEEN - match messages which have not been read yet
+     *
      *  DELETED - match deleted messages
      *  UNDELETED - match messages that are not deleted
      *
+     *  FLAGGED - match messages with the \\FLAGGED (sometimes referred to as Important or Urgent) flag set
+     *  UNFLAGGED - match messages that are not flagged
+     *
+     *  RECENT - match messages with the \\RECENT flag set
+     * 
      * @todo: 
      *  A string, delimited by spaces, in which the following keywords are allowed. Any multi-word arguments (e.g. FROM "joey smith") must be quoted.
      *  ALL - return all messages matching the rest of the criteria
-     *  ANSWERED - match messages with the \\ANSWERED flag set
      *  BCC "string" - match messages with "string" in the Bcc: field
      *  BEFORE "date" - match messages with Date: before "date"
      *  BODY "string" - match messages with "string" in the body of the message
      *  CC "string" - match messages with "string" in the Cc: field
-     *  FLAGGED - match messages with the \\FLAGGED (sometimes referred to as Important or Urgent) flag set
      *  KEYWORD "string" - match messages with "string" as a keyword
      *  NEW - match new messages
      *  OLD - match old messages
      *  ON "date" - match messages with Date: matching "date"
-     *  RECENT - match messages with the \\RECENT flag set
      *  SINCE "date" - match messages with Date: after "date"
      *  SUBJECT "string" - match messages with "string" in the Subject:
      *  TEXT "string" - match messages with text "string"
      *  TO "string" - match messages with "string" in the To:
-     *  UNANSWERED - match messages that have not been answered
-     *  UNFLAGGED - match messages that are not flagged
      *  UNKEYWORD "string" - match messages that do not have the keyword "string"
      *
      * @param object $Model
@@ -234,13 +239,32 @@ class ImapSource extends DataSource {
             return $id;
         }
 
-        // Normal search parameters
-        if (null !== ($val = $this->_cond($Model, $query, 'read'))) {
-            $searchCriteria[] = $val ? 'SEEN' : 'UNSEEN';
+        // Flag search parameters
+        $flags = array(
+            'recent',
+            'seen',
+            'flagged',
+            'answered',
+            'draft',
+            'deleted',
+        );
+
+        foreach ($flags as $flag) {
+            if (null !== ($val = $this->_cond($Model, $query, $flag))) {
+                $upper   = strtoupper($flag);
+                $unupper = 'UN' . $upper;
+
+                if (!$val && ($flag === 'recent')) {
+                    // There is no UNRECENT :/
+                    // Just don't set the condition
+                    continue;
+                }
+
+                $searchCriteria[] = $val ? $upper : $unupper;
+            }
         }
-        if (null !== ($val = $this->_cond($Model, $query, 'deleted'))) {
-            $searchCriteria[] = $val ? 'DELETED' : 'UNDELETED';
-        }
+
+        // Strin search parameters
         if (($val = $this->_cond($Model, $query, 'from'))) {
             $searchCriteria[] = 'FROM "' . $val . '"';
         }
@@ -273,6 +297,10 @@ class ImapSource extends DataSource {
         $orderCriteria = SORTDATE;
 
         return array($orderReverse, $orderCriteria);
+    }
+
+    public function delete ($Model, $conditions = null) {
+        $args = func_get_args();
     }
 
     /**
@@ -553,7 +581,7 @@ class ImapSource extends DataSource {
             'size' => $Mail->Size,
             
             'recent' => $Mail->Recent === 'R' ? 1 : 0,
-            'unread' => $Mail->Unseen === 'U' ? 1 : 0,
+            'seen' => $Mail->Unseen === 'U' ? 0 : 1,
             'flagged' => $Mail->Flagged === 'F' ? 1 : 0,
             'answered' => $Mail->Answered === 'A' ? 1 : 0,
             'draft' => $Mail->Draft === 'X' ? 1 : 0,
@@ -568,7 +596,7 @@ class ImapSource extends DataSource {
         );
 
         // Seen is an exceptional marking
-        if ($return[$Model->alias]['unread'] == 1) {
+        if ($return[$Model->alias]['seen'] == 0) {
             // imap_fetchbody() automatically flags it as "seen".
             // so we may need to restore that to "unseen" if the config
             // doesn't want automarking as asuch
