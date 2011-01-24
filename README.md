@@ -74,10 +74,26 @@ Implement
 Integrate
 ===========
 
+Here are a couple of supported examples:
+
     <?php
-    $ticketEmail = $this->TicketEmail->find('all', array(
+    $ticketEmails = $this->TicketEmail->find('all', array(
         'conditions' => array(
             'unread' => 1,
             'from' => 'kevin@true.nl',
         ),
     ));
+    print_r(compact('ticketEmails'));
+
+    $ticketEmail = $this->TicketEmail->find('first', array(
+        'conditions' => array(
+            'id' => 21879,
+        ),
+    ));
+    print_r(compact('ticketEmail'));
+
+    $this->TicketEmail->id = 21878;
+    $subject = $this->TicketEmail->field('subject');
+    print(compact('subject'));
+    
+

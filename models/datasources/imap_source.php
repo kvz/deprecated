@@ -209,6 +209,10 @@ class ImapSource extends DataSource {
      */
     protected function _makeSearch ($Model, $query) {
         $searchCriteria = array();
+
+        if (($id = $this->_cond($Model, $query, $Model->primaryKey))) {
+            return $id;
+        }
         if (($val = $this->_cond($Model, $query, 'unread'))) {
             $searchCriteria[] = $val ? 'UNSEEN' : 'SEEN';
         }
@@ -256,16 +260,29 @@ class ImapSource extends DataSource {
         }
 
         $searchCriteria = $this->_makeSearch($Model, $query);
-        list($orderReverse, $orderCriteria) = $this->_makeOrder($Model, $query);
 
-        // Execute
-        $result = imap_sort(
-            $this->Stream,
-            $orderCriteria,
-            $orderReverse,
-            0,
-            join(' ', $searchCriteria)
-        );
+        if (is_numeric($searchCriteria) || Set::numeric($searchCriteria)) {
+            // We already know the id, or list of ids
+            $result = $searchCriteria;
+            if (!is_array($result)) {
+                $result = array($result);
+            }
+        } else {
+            // Perform Search & Order. Returns list of ids
+            list($orderReverse, $orderCriteria) = $this->_makeOrder($Model, $query);
+            $result = imap_sort(
+                $this->Stream,
+                $orderCriteria,
+                $orderReverse,
+                0,
+                join(' ', $searchCriteria)
+            );
+        }
+
+        // Nothing was found
+        if ($result === false) {
+            return array();
+        }
 
         // Trim results based on pagination / limitation
         if (@$query['start'] && @$query['end']) {
