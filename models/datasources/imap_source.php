@@ -328,51 +328,51 @@ class ImapSource extends DataSource {
 
         if (is_numeric($searchCriteria) || Set::numeric($searchCriteria)) {
             // We already know the id, or list of ids
-            $result = $searchCriteria;
-            if (!is_array($result)) {
-                $result = array($result);
+            $results = $searchCriteria;
+            if (!is_array($results)) {
+                $results = array($results);
             }
         } else {
             // Perform Search & Order. Returns list of ids
             list($orderReverse, $orderCriteria) = $this->_makeOrder($Model, $query);
-            $result = imap_sort(
+            $results = imap_sort(
                 $this->Stream,
                 $orderCriteria,
                 $orderReverse,
-                0,
+                SE_UID,
                 join(' ', $searchCriteria)
             );
         }
-
+        
         // Nothing was found
-        if ($result === false) {
+        if ($results === false) {
             return array();
         }
 
         // Trim resulting ids based on pagination / limitation
         if (@$query['start'] && @$query['end']) {
-            $result = array_slice($result, @$query['start'], @$query['end'] - @$query['start']);
+            $results = array_slice($results, @$query['start'], @$query['end'] - @$query['start']);
         } elseif (@$query['limit']) {
-            $result = array_slice($result, @$query['start'] ? @$query['start'] : 0, @$query['limit']);
+            $results = array_slice($results, @$query['start'] ? @$query['start'] : 0, @$query['limit']);
         } elseif ($Model->findQueryType === 'first') {
-            $result = array_slice($result, 0, 1);
+            $results = array_slice($results, 0, 1);
         }
 
         // Format output depending on findQueryType
         if ($Model->findQueryType === 'list') {
-            return $result;
+            return $results;
         } else if ($Model->findQueryType === 'count') {
             return array(
                 array(
                     $Model->alias => array(
-                        'count' => count($result),
+                        'count' => count($results),
                     ),
                 ),
             );
         } else if ($Model->findQueryType === 'all' || $Model->findQueryType === 'first') {
             $mails = array();
-            foreach ($result as $id) {
-                if (($mail = $this->_getFormattedMail($Model, $id))) {
+            foreach ($results as $uid) {
+                if (($mail = $this->_getFormattedMail($Model, $uid))) {
                     $mails[] = $mail;
                 }
             }
@@ -519,7 +519,7 @@ class ImapSource extends DataSource {
             return $lastError;
         }
         if (($lastError = imap_last_error())) {
-            $this->error = imap_errors();
+            $this->error = $lastError;
             return $lastError;
         }
         return false;
@@ -528,19 +528,20 @@ class ImapSource extends DataSource {
     /**
      * get the basic details like sender and reciver with flags like attatchments etc
      *
-     * @param int $msg_number the number of the message
+     * @param int $uid the number of the message
      * @return array empty on error/nothing or array of formatted details
      */
-    protected function _getFormattedMail ($Model, $msg_number) {
-        $Mail      = imap_headerinfo($this->Stream, $msg_number);
-        if (empty($Mail->message_id)) {
+    protected function _getFormattedMail ($Model, $uid) {
+        $Structure = imap_fetchstructure($this->Stream, $uid, FT_UID);
+        if (!($msg_number = imap_msgno($this->Stream, $uid))) {
             return $this->err(
                 $Model,
-                'Unable to find mail with message number: %s',
-                $msg_number
+                'Unable to find mail message number, corresponding with uid: %s',
+                $uid
             );
         }
-        $Structure = imap_fetchstructure($this->Stream, $Mail->Msgno);
+
+        $Mail = imap_headerinfo($this->Stream, $msg_number);
 
         $toName      = isset($Mail->to[0]->personal) ? $Mail->to[0]->personal : $Mail->to[0]->mailbox;
         $fromName    = isset($Mail->from[0]->personal) ? $Mail->from[0]->personal : $Mail->from[0]->mailbox;
@@ -556,7 +557,7 @@ class ImapSource extends DataSource {
 
 
         $return[$Model->alias] = array(
-            'id' => $this->_getId($Mail->Msgno),
+            'id' => $this->_toId($Mail->Msgno),
             'message_id' => $Mail->message_id,
             'email_number' => $Mail->Msgno,
             'to' => sprintf(
@@ -580,8 +581,8 @@ class ImapSource extends DataSource {
                 sprintf('%s@%s', $Mail->sender[0]->mailbox, $Mail->sender[0]->host)
             ),
             'subject' => htmlspecialchars($Mail->subject),
-            'body' => $this->_getPart($msg_number, 'TEXT/HTML', $Structure),
-            'plainmsg' => $this->_getPart($msg_number, 'TEXT/PLAIN', $Structure),
+            'body' => $this->_getPart($uid, 'TEXT/HTML', $Structure),
+            'plainmsg' => $this->_getPart($uid, 'TEXT/PLAIN', $Structure),
             'slug' => Inflector::slug($Mail->subject, '-'),
             'size' => $Mail->Size,
             
@@ -593,29 +594,17 @@ class ImapSource extends DataSource {
             'deleted' => $Mail->Deleted === 'D' ? 1 : 0,
 
             'thread_count' => $this->_getThreadCount($Mail),
-            'attachments' => json_encode($this->_attachment($Mail->Msgno, $Structure)),
+            'attachments' => json_encode($this->_attachment($uid, $Structure)),
             'in_reply_to' => isset($Mail->in_reply_to) ? $Mail->in_reply_to : false,
             'reference' => isset($Mail->references) ? $Mail->references : false,
             'new' => !isset($Mail->in_reply_to) ? true : false,
             'created' => $Mail->date
         );
 
-        // Seen is an exceptional marking
-        if ($return[$Model->alias]['seen'] == 0) {
-            // imap_fetchbody() automatically flags it as "seen".
-            // so we may need to restore that to "unseen" if the config
-            // doesn't want automarking as asuch
-            if (!in_array('\Seen', $this->config['auto_mark_as'])) {
-                if (!imap_clearflag_full($this->Stream, $msg_number, '\Seen')) {
-                    $this->err('Unable to unmark %s as %s', $msg_number, '\Seen');
-                }
-            }
-        }
-
         // Normal marking
         $marks = join(' ', $this->config['auto_mark_as']);
-        if (!imap_setflag_full($this->Stream, $msg_number, $marks)) {
-            $this->err('Unable to mark email %s as %s', $msg_number, $marks);
+        if (!imap_setflag_full($this->Stream, $uid, $marks, ST_UID)) {
+            $this->err('Unable to mark email %s as %s', $uid, $marks);
         }
 
         return $return;
@@ -625,15 +614,15 @@ class ImapSource extends DataSource {
      * Get any attachments for the current message, images, documents etc
      *
      * @param <type> $structure
-     * @param <type> $msg_number
+     * @param <type> $uid
      * @return <type>
      */
-    protected function _getAttachments ($structure, $msg_number) {
+    protected function _getAttachments ($structure, $uid) {
         $attachments = array();
         if (isset($structure->parts) && count($structure->parts)) {
             for ($i = 0; $i < count($structure->parts); $i++) {
                 $attachment = array(
-                    'message_id' => $msg_number,
+                    'message_id' => $uid,
                     'is_attachment' => false,
                     'filename' => '',
                     'mime_type' => '',
@@ -661,7 +650,7 @@ class ImapSource extends DataSource {
                     }
                 }
                 if ($attachment['is_attachment']) {
-                    $attachment['attachment'] = imap_fetchbody($this->Stream, $msg_number, ($i+1));
+                    $attachment['attachment'] = imap_fetchbody($this->Stream, $uid, ($i+1), FT_UID & FT_PEEK);
                     if ($structure->parts[$i]->encoding == 3) { // 3 = BASE64
                         $attachment['format'] = 'base64';
                     } elseif ($structure->parts[$i]->encoding == 4) { // 4 = QUOTED-PRINTABLE
@@ -681,28 +670,39 @@ class ImapSource extends DataSource {
         return $attachments;
     }
 
-
+    /**
+     * get id for use in the mail protocol
+     *
+     * @param <type> $id
+     */
+    protected function _toUid ($id) {
+        $uid = $id;
+        return $uid;
+    }
 
 
     /**
-     * get a numeric id for use in the code
+     * get id for use in the code
      *
-     * @param string $uuid in the format <.*@.*> from the email
+     * @param string $uid in the format <.*@.*> from the email
      *
      * @return mixed on imap its the unique id (int) and for others its a base64_encoded string
      */
-    protected function _getId ($uuid, $id = null) {
-        if (is_numeric($uuid)) {
-            return $uuid;
+    protected function _toId ($uid, $id = null) {
+        $id = $uid;
+
+        return $id;
+        if (is_numeric($uid)) {
+            return $uid;
         }
 
         if ($this->_connectionType === 'pop3') {
             if (!$id) {
-                return $this->err('Cant translate this pop3 id: %s to a number', $uuid);
+                return $this->err('Cant translate this pop3 id: %s to a number', $uid);
             }
         }
 
-        return imap_uid($this->Stream, $uuid);
+        return imap_uid($this->Stream, $uid);
     }
 
     /**
@@ -713,15 +713,15 @@ class ImapSource extends DataSource {
      *
      * @return mixed, int for check (number of attachements) / array of attachements
      */
-    protected function _attachment ($message_id, $Structure, $count = true) {
+    protected function _attachment ($uid, $Structure, $count = true) {
         $has = 0;
         $attachments = array();
         if (isset($Structure->parts)) {
             foreach ($Structure->parts as $partOfPart) {
                 if ($count) {
-                    $has += $this->_attachment($message_id, $partOfPart, $count) == true ? 1 : 0;
+                    $has += $this->_attachment($uid, $partOfPart, $count) == true ? 1 : 0;
                 } else {
-                    $attachment = $this->_attachment($message_id, $partOfPart, $count);
+                    $attachment = $this->_attachment($uid, $partOfPart, $count);
                     if (!empty($attachment)) {
                         $attachments[] = $attachment;
                     }
@@ -760,7 +760,7 @@ class ImapSource extends DataSource {
         return 'TEXT/PLAIN';
     }
 
-    protected function _getPart ($msg_number, $mime_type, $Structure = null, $part_number = false) {
+    protected function _getPart ($uid, $mime_type, $Structure = null, $part_number = false) {
         $prefix = null;
         if (!$Structure) {
             return false;
@@ -768,8 +768,7 @@ class ImapSource extends DataSource {
 
         if ($mime_type == $this->_getMimeType($Structure)) {
             $part_number = $part_number > 0 ? $part_number : 1;
-
-            return imap_fetchbody($this->Stream, $msg_number, $part_number);
+            return imap_fetchbody($this->Stream, $uid, $part_number, FT_UID);
         }
 
         /* multipart */
@@ -779,7 +778,7 @@ class ImapSource extends DataSource {
                     $prefix = $part_number . '.';
                 }
 
-                $data = $this->_getPart($msg_number, $mime_type, $SubStructure, $prefix . ($index + 1));
+                $data = $this->_getPart($uid, $mime_type, $SubStructure, $prefix . ($index + 1));
                 if ($data) {
                     return quoted_printable_decode($data);
                 }
