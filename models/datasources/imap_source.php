@@ -421,51 +421,6 @@ class ImapSource extends DataSource {
     }
 
     /**
-     * Get the full email for a read / find(first)
-     *
-     * @param object $Model
-     * @param array $query
-     *
-     * @return array the email according to the find
-     */
-    protected function _getMail ($Model, $query) {
-        if (!isset($query['conditions'][$Model->alias . '.id']) || empty($query['conditions'][$Model->alias . '.id'])) {
-            return array();
-        }
-
-        if ($this->_connectionType == 'imap') {
-            $uuid = $query['conditions'][$Model->alias . '.id'];
-        } else {
-            $uuid = base64_decode($query['conditions'][$Model->alias . '.id']);
-        }
-
-        return $this->_getFormattedMail($Model, imap_msgno($this->Stream, $uuid));
-    }
-
-    /**
-     * Get the emails
-     *
-     * The method for finding all emails paginated from the mail server, used
-     * by code like find('all') etc.
-     *
-     * @todo conditions / order other find params
-     *
-     * @param object $Model the model doing the find
-     * @param array $query the find conditions and params
-     * @return array the data that was found
-     */
-    protected function _getMails ($Model, $query) {
-        $pagination = $this->_figurePagination($query);
-
-        $mails = array();
-        for ($i = $pagination['start']; $i > $pagination['end']; $i--) {
-            $mails[] = $this->_getFormattedMail($Model, $i);
-        }
-
-        return $mails;
-    }
-
-    /**
      * get the basic details like sender and reciver with flags like attatchments etc
      *
      * @param int $message_id the id of the message
@@ -620,19 +575,6 @@ class ImapSource extends DataSource {
         }
     }
 
-
-    /**
-     * get the count of mails for the given conditions and params
-     *
-     * @todo conditions / order other find params
-     *
-     * @param array $query conditions for the query
-     * @return int the number of emails found
-     */
-    protected function _mailCount ($query) {
-        return imap_num_msg($this->Stream);
-    }
-
     /**
      * used to check / get the attachements in an email.
      *
@@ -677,40 +619,6 @@ class ImapSource extends DataSource {
         }
 
         return $attachments;
-    }
-
-    /**
-     * Figure out how many and from where emails should be returned. Uses the
-     * current page and the limit set to figure out what to send back
-     *
-     * @param array $query the current query
-     * @return array of start / end int for the for() loop in the email find
-     */
-    protected function _figurePagination ($query) {
-        $count = $this->_mailCount($query); // total mails
-        $pages = ceil($count / $query['limit']); // total pages
-        $query['page'] = $query['page'] <= $pages ? $query['page'] : $pages; // dont let the page be more than available pages
-
-        $return = array(
-            'start' => $query['page'] == 1
-                ? $count    // start at the end
-                : ($pages - $query['page'] + 1) * $query['limit'], // start at the end - x pages
-        );
-
-        $return['end'] = $query['limit'] >= $count
-            ? 0
-            : $return['start'] - $query['limit'];
-
-        $return['end'] = $return['end'] >= 0 ? $return['end'] : 0;
-
-        if (isset($query['order']['date']) && $query['order']['date'] == 'asc') {
-            return array(
-                'start' => $return['end'],
-                'end' => $return['start'],
-            );
-        }
-
-        return $return;
     }
 
     protected function _getMimeType ($structure) {
