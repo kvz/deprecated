@@ -598,7 +598,7 @@ class ImapSource extends DataSource {
             'in_reply_to' => isset($Mail->in_reply_to) ? $Mail->in_reply_to : false,
             'reference' => isset($Mail->references) ? $Mail->references : false,
             'new' => !isset($Mail->in_reply_to) ? true : false,
-            'created' => $Mail->date
+            'created' => date('Y-m-d H:i:s', strtotime($Mail->date)),
         );
 
         // Normal marking
