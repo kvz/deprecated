@@ -79,7 +79,8 @@ Here are a couple of supported examples:
     <?php
     $ticketEmails = $this->TicketEmail->find('all', array(
         'conditions' => array(
-            'unread' => 1,
+            'read' => 0,
+            'deleted' => 0,
             'from' => 'kevin@true.nl',
         ),
     ));

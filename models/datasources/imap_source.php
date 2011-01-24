@@ -66,9 +66,9 @@ class ImapSource extends DataSource {
      * @var array
      */
     protected $_schema = array(
-        'id' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+        'id' => array('type' => 'integer', 'default' => NULL, 'length' => 15, 'key' => 'primary',),
         'message_id' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
-        'email_number' => array('type' => 'integer', 'default' => NULL, 'length' => 15, 'key' => 'primary',),
+        'email_number' => array('type' => 'integer', 'default' => NULL, 'length' => 15,),
         'to' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
         'from' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
         'reply_to' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
@@ -78,12 +78,14 @@ class ImapSource extends DataSource {
         'plainmsg' => array('type' => 'text', 'default' => NULL,),
         'slug' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
         'size' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+
         'recent' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
         'unread' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
         'flagged' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
         'answered' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
         'draft' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
         'deleted' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
+
         'thread_count' => array('type' => 'integer', 'default' => NULL, 'length' => 15, 'key' => 'primary',),
         'attachments' => array('type' => 'text', 'default' => NULL,),
         'in_reply_to' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
@@ -193,6 +195,8 @@ class ImapSource extends DataSource {
      *  FROM "string" - match messages with "string" in the From: field
      *  SEEN - match messages that have been read (the \\SEEN flag is set)
      *  UNSEEN - match messages which have not been read yet
+     *  DELETED - match deleted messages
+     *  UNDELETED - match messages that are not deleted
      *
      * @todo: 
      *  A string, delimited by spaces, in which the following keywords are allowed. Any multi-word arguments (e.g. FROM "joey smith") must be quoted.
@@ -202,7 +206,6 @@ class ImapSource extends DataSource {
      *  BEFORE "date" - match messages with Date: before "date"
      *  BODY "string" - match messages with "string" in the body of the message
      *  CC "string" - match messages with "string" in the Cc: field
-     *  DELETED - match deleted messages
      *  FLAGGED - match messages with the \\FLAGGED (sometimes referred to as Important or Urgent) flag set
      *  KEYWORD "string" - match messages with "string" as a keyword
      *  NEW - match new messages
@@ -214,7 +217,6 @@ class ImapSource extends DataSource {
      *  TEXT "string" - match messages with text "string"
      *  TO "string" - match messages with "string" in the To:
      *  UNANSWERED - match messages that have not been answered
-     *  UNDELETED - match messages that are not deleted
      *  UNFLAGGED - match messages that are not flagged
      *  UNKEYWORD "string" - match messages that do not have the keyword "string"
      *
@@ -233,8 +235,11 @@ class ImapSource extends DataSource {
         }
 
         // Normal search parameters
-        if (($val = $this->_cond($Model, $query, 'unread'))) {
-            $searchCriteria[] = $val ? 'UNSEEN' : 'SEEN';
+        if (null !== ($val = $this->_cond($Model, $query, 'read'))) {
+            $searchCriteria[] = $val ? 'SEEN' : 'UNSEEN';
+        }
+        if (null !== ($val = $this->_cond($Model, $query, 'deleted'))) {
+            $searchCriteria[] = $val ? 'DELETED' : 'UNDELETED';
         }
         if (($val = $this->_cond($Model, $query, 'from'))) {
             $searchCriteria[] = 'FROM "' . $val . '"';
@@ -546,12 +551,14 @@ class ImapSource extends DataSource {
             'plainmsg' => $this->_getPart($msg_number, 'TEXT/PLAIN', $Structure),
             'slug' => Inflector::slug($Mail->subject, '-'),
             'size' => $Mail->Size,
-            'recent' => $Mail->Recent,
-            'unread' => (int)(bool)trim($Mail->Unseen),
-            'flagged' => (int)(bool)trim($Mail->Flagged),
-            'answered' => $Mail->Answered,
-            'draft' => $Mail->Draft,
-            'deleted' => $Mail->Deleted,
+            
+            'recent' => $Mail->Recent === 'R' ? 1 : 0,
+            'unread' => $Mail->Unseen === 'U' ? 1 : 0,
+            'flagged' => $Mail->Flagged === 'F' ? 1 : 0,
+            'answered' => $Mail->Answered === 'A' ? 1 : 0,
+            'draft' => $Mail->Draft === 'X' ? 1 : 0,
+            'deleted' => $Mail->Deleted === 'D' ? 1 : 0,
+
             'thread_count' => $this->_getThreadCount($Mail),
             'attachments' => json_encode($this->_attachment($Mail->Msgno, $Structure)),
             'in_reply_to' => isset($Mail->in_reply_to) ? $Mail->in_reply_to : false,
