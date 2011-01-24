@@ -508,7 +508,7 @@ class ImapSource extends DataSource {
             'id' => $this->_getId($Mail->Msgno),
             'message_id' => $Mail->message_id,
             'email_number' => $Mail->Msgno,
-            'to' => printf(
+            'to' => sprintf(
                 '"%s" <%s>',
                 $toName,
                 $Mail->toaddress
@@ -547,20 +547,22 @@ class ImapSource extends DataSource {
             'created' => $Mail->date
         );
 
-        foreach ($this->marks as $mark) {
-            if (!in_array($mark, $this->config['auto_mark_as'])) {
-                if ($mark === '\Seen') {
-                    // imap_fetchbody() should be flagging it as "seen" already.
-                    // but we can undo it:
-                    if (!imap_clearflag_full($this->Stream, $msg_number, $mark)) {
-                        $this->err('Unable to unmark %s as %s', $msg_number, $mark);
-                    }
-                }
-            } else {
-                if (!imap_setflag_full($this->Stream, $msg_number, $mark)) {
-                    $this->err('Unable to mark %s as %s', $msg_number, $mark);
+        // Seen is an exceptional marking
+        if ($return[$Model->alias]['unread'] == 1) {
+            // imap_fetchbody() automatically flags it as "seen".
+            // so we may need to restore that to "unseen" if the config
+            // doesn't want automarking as asuch
+            if (!in_array('\Seen', $this->config['auto_mark_as'])) {
+                if (!imap_clearflag_full($this->Stream, $msg_number, '\Seen')) {
+                    $this->err('Unable to unmark %s as %s', $msg_number, '\Seen');
                 }
             }
+        }
+
+        // Normal marking
+        $marks = join(' ', $this->config['auto_mark_as']);
+        if (!imap_setflag_full($this->Stream, $msg_number, $marks)) {
+            $this->err('Unable to mark email %s as %s', $msg_number, $marks);
         }
 
         return $return;
