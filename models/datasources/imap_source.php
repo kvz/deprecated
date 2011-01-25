@@ -69,14 +69,20 @@ class ImapSource extends DataSource {
         'id' => array('type' => 'integer', 'default' => NULL, 'length' => 15, 'key' => 'primary',),
         'message_id' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
         'email_number' => array('type' => 'integer', 'default' => NULL, 'length' => 15,),
+
         'to' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+        'to_name' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
         'from' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+        'from_name' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
         'reply_to' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+        'reply_to_name' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
         'sender' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+        'sender_name' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+
         'subject' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
+        'slug' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
         'body' => array('type' => 'text', 'default' => NULL,),
         'plainmsg' => array('type' => 'text', 'default' => NULL,),
-        'slug' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
         'size' => array('type' => 'string', 'default' => NULL, 'length' => 255,),
 
         'recent' => array('type' => 'boolean', 'default' => NULL, 'length' => 1,),
@@ -377,7 +383,7 @@ class ImapSource extends DataSource {
                 join(' ', $searchCriteria)
             );
         }
-        
+
         // Nothing was found
         if (empty($uids)) {
             return array();
@@ -560,14 +566,64 @@ class ImapSource extends DataSource {
     }
 
     /**
+     * Tries to parse mail & name data from Mail object for to, from, etc.
+     * Gracefully degrades where needed
+     *
+     * Type: to, from, sender, reply_to
+     * Need: box, name, host, address, full
+     *
+     * @param object $Mail
+     * @param string $type
+     * @param string $need
+     *
+     * @return mixed string or array
+     */
+    protected function _personId ($Mail, $type = 'to', $need = null) {
+        if ($type === 'sender' && !isset($Mail->sender)) {
+            $type = 'from';
+        }
+
+        $info['box'] = '';
+        if (isset($Mail->{$type}[0]->mailbox)) {
+            $info['box'] = $Mail->{$type}[0]->mailbox;
+        } 
+        $info['name'] = $info['box'];
+        if (isset($Mail->{$type}[0]->personal)) {
+            $info['name'] = $Mail->{$type}[0]->personal;
+        }
+
+        $info['host'] = '';
+        if (isset($Mail->{$type}[0]->host)) {
+            $info['host'] = $Mail->{$type}[0]->host;
+        }
+        
+        $info['address'] = '';
+        if ($info['box'] && $info['host']) {
+            $info['address'] = $info['box'] . '@' . $info['host'];
+        }
+
+        $info['full'] = $info['address'];
+        if ($info['name']) {
+            $info['full'] = sprintf('"%s" <%s>', $info['name'], $info['address']);
+        }
+
+        if ($need !== null) {
+            return $info[$need];
+        }
+        
+        return $info;
+    }
+
+    /**
      * get the basic details like sender and reciver with flags like attatchments etc
      *
      * @param int $uid the number of the message
      * @return array empty on error/nothing or array of formatted details
      */
     protected function _getFormattedMail ($Model, $uid) {
-        $Structure = imap_fetchstructure($this->Stream, $uid, FT_UID);
-        if (!($msg_number = imap_msgno($this->Stream, $uid))) {
+        // Translate uid to msg_no or fail
+        if (($msg_number = imap_msgno($this->Stream, $uid)) < 2) {
+            pr(compact('msg_number', 'uid'));
             return $this->err(
                 $Model,
                 'Unable to find mail message number, corresponding with uid: %s',
@@ -575,63 +631,58 @@ class ImapSource extends DataSource {
             );
         }
 
-        $Mail = imap_headerinfo($this->Stream, $msg_number);
-
-        $toName      = isset($Mail->to[0]->personal) ? $Mail->to[0]->personal : $Mail->to[0]->mailbox;
-        $fromName    = isset($Mail->from[0]->personal) ? $Mail->from[0]->personal : $Mail->from[0]->mailbox;
-        $replyToName = isset($Mail->reply_to[0]->personal) ? $Mail->reply_to[0]->personal : $Mail->reply_to[0]->mailbox;
-
-        if (isset($Mail->sender)) {
-            $senderName = isset($Mail->sender[0]->personal) ? $Mail->sender[0]->personal : $Mail->sender[0]->mailbox;
-        } else {
-            $senderName          = $fromName;
-            $Mail->sender        = $Mail->from;
-            $Mail->senderaddress = $Mail->fromaddress;
+        // Get Mail with a property: 'date' or fail
+        if (!($Mail = imap_headerinfo($this->Stream, $msg_number)) || !property_exists($Mail, 'date')) {
+            pr(compact('Mail'));
+            return $this->err(
+                $Model,
+                'Unable to find mail date property in Mail corresponding with uid: %s. Something must be wrong',
+                $uid
+            );
         }
 
+        // Get Mail with a property: 'type' or fail
+        if (!($Structure = imap_fetchstructure($this->Stream, $uid, FT_UID)) || !property_exists($Structure, 'type')) {
+            pr(compact('Structure'));
+            return $this->err(
+                $Model,
+                'Unable to find structure type property in Mail corresponding with uid: %s. Something must be wrong',
+                $uid
+            );
+        }
 
         $return[$Model->alias] = array(
             'id' => $this->_toId($uid),
             'message_id' => $Mail->message_id,
             'email_number' => $Mail->Msgno,
-            'to' => sprintf(
-                '"%s" <%s>',
-                $toName,
-                $Mail->toaddress
-            ),
-            'from' => sprintf(
-                '"%s" <%s>',
-                $fromName,
-                sprintf('%s@%s', $Mail->from[0]->mailbox, $Mail->from[0]->host)
-            ),
-            'reply_to' => sprintf(
-                '"%s" <%s>',
-                $replyToName,
-                sprintf('%s@%s', $Mail->reply_to[0]->mailbox, $Mail->reply_to[0]->host)
-            ),
-            'sender' => sprintf(
-                '"%s" <%s>',
-                $replyToName,
-                sprintf('%s@%s', $Mail->sender[0]->mailbox, $Mail->sender[0]->host)
-            ),
-            'subject' => htmlspecialchars($Mail->subject),
+            
+            'to' => $this->_personId($Mail, 'to', 'address'),
+            'to_name' => $this->_personId($Mail, 'to', 'name'),
+            'from' => $this->_personId($Mail, 'from', 'address'),
+            'from_name' => $this->_personId($Mail, 'from', 'name'),
+            'reply_to' => $this->_personId($Mail, 'reply_to', 'address'),
+            'reply_to_name' => $this->_personId($Mail, 'reply_to', 'name'),
+            'sender' => $this->_personId($Mail, 'sender', 'address'),
+            'sender_name' => $this->_personId($Mail, 'sender', 'name'),
+            
+            'subject' => htmlspecialchars(@$Mail->subject),
+            'slug' => Inflector::slug(@$Mail->subject, '-'),
             'body' => $this->_getPart($uid, 'TEXT/HTML', $Structure),
             'plainmsg' => $this->_getPart($uid, 'TEXT/PLAIN', $Structure),
-            'slug' => Inflector::slug($Mail->subject, '-'),
-            'size' => $Mail->Size,
+            'size' => @$Mail->Size,
             
-            'recent' => $Mail->Recent === 'R' ? 1 : 0,
-            'seen' => $Mail->Unseen === 'U' ? 0 : 1,
-            'flagged' => $Mail->Flagged === 'F' ? 1 : 0,
-            'answered' => $Mail->Answered === 'A' ? 1 : 0,
-            'draft' => $Mail->Draft === 'X' ? 1 : 0,
-            'deleted' => $Mail->Deleted === 'D' ? 1 : 0,
+            'recent' => @$Mail->Recent === 'R' ? 1 : 0,
+            'seen' => @$Mail->Unseen === 'U' ? 0 : 1,
+            'flagged' => @$Mail->Flagged === 'F' ? 1 : 0,
+            'answered' => @$Mail->Answered === 'A' ? 1 : 0,
+            'draft' => @$Mail->Draft === 'X' ? 1 : 0,
+            'deleted' => @$Mail->Deleted === 'D' ? 1 : 0,
 
             'thread_count' => $this->_getThreadCount($Mail),
             'attachments' => json_encode($this->_attachment($uid, $Structure)),
-            'in_reply_to' => isset($Mail->in_reply_to) ? $Mail->in_reply_to : false,
-            'reference' => isset($Mail->references) ? $Mail->references : false,
-            'new' => !isset($Mail->in_reply_to) ? true : false,
+            'in_reply_to' => @$Mail->in_reply_to,
+            'reference' => @$Mail->references,
+            'new' => (int)@$Mail->in_reply_to,
             'created' => date('Y-m-d H:i:s', strtotime($Mail->date)),
         );
 
