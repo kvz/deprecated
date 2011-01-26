@@ -672,6 +672,7 @@ class ImapSource extends DataSource {
             
             'subject' => htmlspecialchars(@$Mail->subject),
             'slug' => Inflector::slug(@$Mail->subject, '-'),
+            'header' => imap_fetchheader($this->Stream, $uid, FT_UID),
             'body' => $this->_getPart($uid, 'TEXT/HTML', $Structure),
             'plainmsg' => $this->_getPart($uid, 'TEXT/PLAIN', $Structure),
             'size' => @$Mail->Size,
