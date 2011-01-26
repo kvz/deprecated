@@ -1,6 +1,8 @@
 Imap datasource for CakePHP. Ripped from Infinitas. 
 [Changes since then](https://github.com/kvz/cakephp-emails-plugin/compare/10767bee59dd425ced5b97ae9604acf7f3c0d27a...master)
 
+Requires CakePHP 1.3
+
 Warning
 ============
 This datasource automatically closes the imap connection with `CL_EXPUNGE`.
@@ -25,6 +27,7 @@ Config
 ========
 
  - Edit your `database.php` file like so:
+
 
     <?php
     class DATABASE_CONFIG {
@@ -130,7 +133,4 @@ Here are a couple of supported examples:
         'seen' => 0,
         'from' => 'kevin@true.nl',
     ));
-
-
-
 
