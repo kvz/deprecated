@@ -621,13 +621,17 @@ class ImapSource extends DataSource {
      * @return array empty on error/nothing or array of formatted details
      */
     protected function _getFormattedMail ($Model, $uid) {
-        // Translate uid to msg_no or fail
-        if (($msg_number = imap_msgno($this->Stream, $uid)) < 2) {
-            pr(compact('msg_number', 'uid'));
+        // Translate uid to msg_no. Has no decent fail
+        $msg_number = imap_msgno($this->Stream, $uid);
+
+        // A hack to detect if imap_msgno failed, and we're in fact looking at the wrong mail
+        if ($uid != ($mailuid = imap_uid($this->Stream, $msg_number))) {
+            pr(compact('Mail'));
             return $this->err(
                 $Model,
-                'Unable to find mail message number, corresponding with uid: %s',
-                $uid
+                'Mail id mismatch. parameter id: %s vs mail id: %s',
+                $uid,
+                $mailuid
             );
         }
 
