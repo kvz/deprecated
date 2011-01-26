@@ -410,9 +410,10 @@ class ImapSource extends DataSource {
                 ),
             );
         } else if ($Model->findQueryType === 'all' || $Model->findQueryType === 'first') {
+            $attachments = @$query['recursive'] > 0;
             $mails = array();
             foreach ($uids as $uid) {
-                if (($mail = $this->_getFormattedMail($Model, $uid))) {
+                if (($mail = $this->_getFormattedMail($Model, $uid, $attachments))) {
                     $mails[] = $mail;
                 }
             }
@@ -620,7 +621,7 @@ class ImapSource extends DataSource {
      * @param int $uid the number of the message
      * @return array empty on error/nothing or array of formatted details
      */
-    protected function _getFormattedMail ($Model, $uid) {
+    protected function _getFormattedMail ($Model, $uid, $attachments = false) {
         // Translate uid to msg_no. Has no decent fail
         $msg_number = imap_msgno($this->Stream, $uid);
 
@@ -690,6 +691,10 @@ class ImapSource extends DataSource {
             'created' => date('Y-m-d H:i:s', strtotime($Mail->date)),
         );
 
+        if ($attachments) {
+            $return['Attachment'] = $this->_getAttachments($Structure, $uid, $Model);
+        }
+
         // Auto mark after read
         if (!empty($this->config['auto_mark_as'])) {
             $marks = '\\' . join(' \\', $this->config['auto_mark_as']);
@@ -704,15 +709,16 @@ class ImapSource extends DataSource {
     /**
      * Get any attachments for the current message, images, documents etc
      *
-     * @param <type> $structure
+     * @param <type> $Structure
      * @param <type> $uid
      * @return <type>
      */
-    protected function _getAttachments ($structure, $uid) {
+    protected function _getAttachments ($Structure, $uid, $Model) {
         $attachments = array();
-        if (isset($structure->parts) && count($structure->parts)) {
-            for ($i = 0; $i < count($structure->parts); $i++) {
+        if (isset($Structure->parts) && count($Structure->parts)) {
+            for ($i = 0; $i < count($Structure->parts); $i++) {
                 $attachment = array(
+                    strtolower(Inflector::singularize($Model->alias) . '_id') => $this->_toId($uid),
                     'message_id' => $uid,
                     'is_attachment' => false,
                     'filename' => '',
@@ -723,8 +729,8 @@ class ImapSource extends DataSource {
                     'attachment' => ''
                 );
 
-                if ($structure->parts[$i]->ifdparameters) {
-                    foreach ($structure->parts[$i]->dparameters as $object) {
+                if ($Structure->parts[$i]->ifdparameters) {
+                    foreach ($Structure->parts[$i]->dparameters as $object) {
                         if (strtolower($object->attribute) == 'filename') {
                             $attachment['is_attachment'] = true;
                             $attachment['filename'] = $object->value;
@@ -732,8 +738,8 @@ class ImapSource extends DataSource {
                     }
                 }
 
-                if ($structure->parts[$i]->ifparameters) {
-                    foreach ($structure->parts[$i]->parameters as $object) {
+                if ($Structure->parts[$i]->ifparameters) {
+                    foreach ($Structure->parts[$i]->parameters as $object) {
                         if (strtolower($object->attribute) == 'name') {
                             $attachment['is_attachment'] = true;
                             $attachment['name'] = $object->value;
@@ -742,16 +748,16 @@ class ImapSource extends DataSource {
                 }
                 if ($attachment['is_attachment']) {
                     $attachment['attachment'] = imap_fetchbody($this->Stream, $uid, ($i+1), FT_UID | FT_PEEK);
-                    if ($structure->parts[$i]->encoding == 3) { // 3 = BASE64
+                    if ($Structure->parts[$i]->encoding == 3) { // 3 = BASE64
                         $attachment['format'] = 'base64';
-                    } elseif ($structure->parts[$i]->encoding == 4) { // 4 = QUOTED-PRINTABLE
+                    } elseif ($Structure->parts[$i]->encoding == 4) { // 4 = QUOTED-PRINTABLE
                         $attachment['attachment'] = quoted_printable_decode($attachment['attachment']);
                         //$attachment['format'] = 'base64';
                     }
 
-                    $attachment['type']      = strtolower($structure->parts[$i]->subtype);
-                    $attachment['mime_type'] = $this->_getMimeType($structure->parts[$i]);
-                    $attachment['size']      = $structure->parts[$i]->bytes;
+                    $attachment['type']      = strtolower($Structure->parts[$i]->subtype);
+                    $attachment['mime_type'] = $this->_getMimeType($Structure->parts[$i]);
+                    $attachment['size']      = $Structure->parts[$i]->bytes;
 
                     $attachments[] = $attachment;
                 }
