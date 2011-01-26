@@ -687,9 +687,11 @@ class ImapSource extends DataSource {
         );
 
         // Normal marking
-        $marks = join(' ', $this->config['auto_mark_as']);
-        if (!imap_setflag_full($this->Stream, $uid, $marks, ST_UID)) {
-            $this->err('Unable to mark email %s as %s', $uid, $marks);
+        if (!empty($this->config['auto_mark_as'])) {
+            $marks = '\\' . join(' \\', $this->config['auto_mark_as']);
+            if (!imap_setflag_full($this->Stream, $uid, $marks, ST_UID)) {
+                $this->err('Unable to mark email %s as %s', $uid, $marks);
+            }
         }
 
         return $return;
