@@ -686,7 +686,7 @@ class ImapSource extends DataSource {
             'created' => date('Y-m-d H:i:s', strtotime($Mail->date)),
         );
 
-        // Normal marking
+        // Auto mark after read
         if (!empty($this->config['auto_mark_as'])) {
             $marks = '\\' . join(' \\', $this->config['auto_mark_as']);
             if (!imap_setflag_full($this->Stream, $uid, $marks, ST_UID)) {
