@@ -749,11 +749,20 @@ class ImapSource extends DataSource {
                 }
                 if ($attachment['is_attachment']) {
                     $attachment['attachment'] = imap_fetchbody($this->Stream, $uid, ($i+1), FT_UID | FT_PEEK);
-                    if ($Structure->parts[$i]->encoding == 3) { // 3 = BASE64
+                    if ($Structure->parts[$i]->encoding == 3) {
                         $attachment['format'] = 'base64';
-                    } elseif ($Structure->parts[$i]->encoding == 4) { // 4 = QUOTED-PRINTABLE
+                    } elseif ($Structure->parts[$i]->encoding == 4) {
+                        // 4 = QUOTED-PRINTABLE
                         $attachment['attachment'] = quoted_printable_decode($attachment['attachment']);
                         //$attachment['format'] = 'base64';
+                    } elseif ($Structure->parts[$i]->encoding == 0) {
+                        $attachment['format'] = '7BIT';
+                    } elseif ($Structure->parts[$i]->encoding == 1) {
+                        $attachment['format'] = '8BIT';
+                    } elseif ($Structure->parts[$i]->encoding == 2) {
+                        $attachment['format'] = 'BINARY';
+                    } elseif ($Structure->parts[$i]->encoding == 5) {
+                        $attachment['format'] = 'OTHER';
                     }
 
                     $attachment['type']      = strtolower($Structure->parts[$i]->subtype);

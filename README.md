@@ -97,7 +97,8 @@ Here are a couple of supported examples:
     <?php
     // Get many
     $ticketEmails = $this->TicketEmail->find('all', array(
-        // Set recursive to 1 to also get attachments
+        // Set recursive to 1 to also get attachments,
+        // presented in a separate [Attachment][0] model
         'recursive' => -1,
         'conditions' => array(
             'answered' => 0,
