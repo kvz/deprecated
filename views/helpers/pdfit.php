@@ -15,6 +15,8 @@ class PdfitHelper extends Helper {
         'tidy' => false,
         'dir' => '',
         'filemask' => '/tmp/document-:uuid.:ext',
+        'set_time_limit' => 0,
+        'memory_limit' => '1624M',
     );
 	protected $_html;
 	protected $_served;
@@ -51,11 +53,12 @@ class PdfitHelper extends Helper {
             );
         }
         
-		set_time_limit(0);
-		ini_set('memory_limit', '1624M');
 		$this->_options = array_merge($this->_options, $options);
 		$this->_served = false;
-		$this->_defaultOpts();
+
+		set_time_limit($this->_options['set_time_limit']);
+		ini_set('memory_limit', $this->_options['memory_limit']);
+
 	}
 
 	protected function _headers ($filename) {
