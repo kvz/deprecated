@@ -4,212 +4,213 @@
  *
  */
 class PdfitHelper extends Helper {
-    protected $_options;
-    protected $_html;
-    protected $_served;
-    public    $logs;
+	protected $_options;
+	protected $_html;
+	protected $_served;
+	public	$logs;
 
-    protected function _defaultOpts() {
-        if (!isset($this->_options['title'])) $this->_options['title'] = '';
-        if (!isset($this->_options['subtitle'])) $this->_options['subtitle'] = '';
-        if (!isset($this->_options['debug'])) $this->_options['debug'] = 0;
-        if (!isset($this->_options['dumphtml'])) $this->_options['dumphtml'] = false;
-        if (!isset($this->_options['background'])) $this->_options['background'] = false;
-        if (!isset($this->_options['serve'])) $this->_options['serve'] = false;
-        if (!isset($this->_options['tidy'])) $this->_options['tidy'] = false;
-        if (!isset($this->_options['method'])) $this->_options['method'] = 'tcpdf';
-        if (!isset($this->_options['dir'])) $this->_options['dir'] = '/tmp';
-        if (!isset($this->_options['filebase'])) $this->_options['filebase'] = tempnam($this->_options['dir'], 'pdfit_'. date('Ymd_His').'_').'%s.%s';
-    }
+	protected function _defaultOpts() {
+		if (!isset($this->_options['title'])) $this->_options['title'] = '';
+		if (!isset($this->_options['subtitle'])) $this->_options['subtitle'] = '';
+		if (!isset($this->_options['debug'])) $this->_options['debug'] = 0;
+		if (!isset($this->_options['dumphtml'])) $this->_options['dumphtml'] = false;
+		if (!isset($this->_options['background'])) $this->_options['background'] = false;
+		if (!isset($this->_options['serve'])) $this->_options['serve'] = false;
+		if (!isset($this->_options['tidy'])) $this->_options['tidy'] = false;
+		if (!isset($this->_options['method'])) $this->_options['method'] = 'tcpdf';
+		if (!isset($this->_options['dir'])) $this->_options['dir'] = '/tmp';
+		if (!isset($this->_options['filebase'])) $this->_options['filebase'] = tempnam($this->_options['dir'], 'pdfit_'. date('Ymd_His').'_').'%s.%s';
+	}
 
-    public function  __call($name, $arguments) {
-        $format = array_shift($arguments);
-        $str    = vsprintf($format, $arguments);
-        $this->logs[$name][] = $str;
+	public function  __call($name, $arguments) {
+		$format = array_shift($arguments);
+		$str	= vsprintf($format, $arguments);
+		$this->logs[$name][] = $str;
 
-        if ($this->_options['debug'] > 0) {
-            if ($name === 'err') {
-                trigger_error($str, E_USER_ERROR);
-            }
-        }
-        if ($this->_options['debug'] > 1) {
-            if ($name === 'debug') {
-                echo($str."\n");
-            }
-        }
+		if ($this->_options['debug'] > 0) {
+			if ($name === 'err') {
+				trigger_error($str, E_USER_ERROR);
+			}
+		}
+		if ($this->_options['debug'] > 1) {
+			if ($name === 'debug') {
+				echo($str."\n");
+			}
+		}
 
-        return false;
-    }
-    
-    public function  __construct($options) {
-        $this->setup($options);
-    }
-    
-    public function setup($options) {
-        set_time_limit(0);
-        ini_set('memory_limit', '1624M');
-        $this->_options = $options;
-        $this->_served = false;
-        $this->_defaultOpts();
-    }
+		return false;
+	}
 
-    protected function _headers($filename) {
-        // Disable cache (from Cake core file controller.php, disableCache function):
-        //
-        //        header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-        //        header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-        //        header("Cache-Control: no-store, no-cache, must-revalidate");
-        //        header("Cache-Control: post-check=0, pre-check=0", false);
-        //        header("Pragma: no-cache");
-        //        header("Content-type: application/pdf");
+	public function  __construct($options) {
+		$this->setup($options);
+	}
 
-        header("Expires: 0");
-        header("Pragma: no-cache");
-        header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
-//        header("Content-Type: application/force-download");
-//        header("Content-Type: application/octet-stream");
-//        header("Content-Type: application/download");
-        header('Content-disposition: attachment; filename=' . basename($filename));
-        header("Content-Type: application/pdf");
-        header("Content-Transfer-Encoding: binary");
-        header('Content-Length: ' . filesize($filename));
-    }
-    
-    public function serve($filename) {
-        $this->_served = true;
-        $this->_headers($filename);
-        readfile($filename);
-    }
+	public function setup($options) {
+		set_time_limit(0);
+		ini_set('memory_limit', '1624M');
+		$this->_options = $options;
+		$this->_served = false;
+		$this->_defaultOpts();
+	}
 
-    public function exe() {
-        $args = func_get_args();
-        $cmd  = array_shift($args);
-        if (count($args)) {
-            $cmd = vsprintf($cmd, $args);
-        }
+	protected function _headers($filename) {
+		// Disable cache (from Cake core file controller.php, disableCache function):
+		//
+		//		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+		//		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+		//		header("Cache-Control: no-store, no-cache, must-revalidate");
+		//		header("Cache-Control: post-check=0, pre-check=0", false);
+		//		header("Pragma: no-cache");
+		//		header("Content-type: application/pdf");
 
-        $buf = shell_exec($cmd);
-        $this->debug('Running \'%s\', returned: \'%s\'', $cmd, $buf);
-        return $buf;
-    }
+		header("Pragma: public");
+		header("Expires: 0");
+		header("Pragma: no-cache");
+		header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+		header("Content-Type: application/force-download");
+		header("Content-Type: application/octet-stream");
+		header("Content-Type: application/download");
+		header('Content-disposition: attachment; filename=' . basename($filename));
+		header("Content-Type: application/pdf");
+		header("Content-Transfer-Encoding: binary");
+		header('Content-Length: ' . filesize($filename));
+	}
 
-    public function tidy($html, $options = array()) {
-        $this->debug('%s() called', __FUNCTION__);
-        
-        // Prereqs
-        if (!function_exists('tidy_parse_string')) {
-            return $this->err('Function \'tidy_parse_string\' not found. You need to: aptitude install php5-tidy');
-        }
+	public function serve($filename) {
+		$this->_served = true;
+		$this->_headers($filename);
+		readfile($filename);
+	}
 
-        // Specify configuration
-        $default_options = array(
-            'clean' => true,
-            'indent' => true,
-            'indent-spaces' => 4,
-            'output-html' => true,
-            'wrap' => 200,
-        );
+	public function exe() {
+		$args = func_get_args();
+		$cmd  = array_shift($args);
+		if (count($args)) {
+			$cmd = vsprintf($cmd, $args);
+		}
 
-        $options = array_merge($default_options, $options);
+		$buf = shell_exec($cmd);
+		$this->debug('Running \'%s\', returned: \'%s\'', $cmd, $buf);
+		return $buf;
+	}
 
-        // Tidy
-        $tidy = tidy_parse_string($html, $options, 'utf8');
-        $tidy->cleanRepair();
+	public function tidy($html, $options = array()) {
+		$this->debug('%s() called', __FUNCTION__);
 
-        // Output
-        return (string)$tidy;
-    }
+		// Prereqs
+		if (!function_exists('tidy_parse_string')) {
+			return $this->err('Function \'tidy_parse_string\' not found. You need to: aptitude install php5-tidy');
+		}
 
-    public function pdf($html, $options = array()) {
-        if (!empty($options)) {
-            $this->setup($options);
-        }
-        $this->_html = $html;
+		// Specify configuration
+		$default_options = array(
+			'clean' => true,
+			'indent' => true,
+			'indent-spaces' => 4,
+			'output-html' => true,
+			'wrap' => 200,
+		);
 
-        if ($this->_options['tidy']) {
-            if (false === ($this->_html = $this->tidy($html))) {
-                return false;
-            }
-        }
+		$options = array_merge($default_options, $options);
 
-        if ($this->_options['dumphtml']) {
-            echo sprintf('<xmp>%s</xmp>', $this->_html);
-            return;
-        }
+		// Tidy
+		$tidy = tidy_parse_string($html, $options, 'utf8');
+		$tidy->cleanRepair();
 
-        if (false !== ($pdfFilePath = call_user_func(array($this, '_'.$this->_options['method']), $this->_html))) {
-            if ($this->_options['serve'] && !$this->_served) {
-                return $this->serve($pdfFilePath);
-            }
-        }
+		// Output
+		return (string)$tidy;
+	}
 
-        return $pdfFilePath;
-    }
+	public function pdf($html, $options = array()) {
+		if (!empty($options)) {
+			$this->setup($options);
+		}
+		$this->_html = $html;
 
-    protected function _pdfFile($extension = 'pdf', $method = '') {
-        return sprintf($this->_options['filebase'], $method, $extension);
-    }
+		if ($this->_options['tidy']) {
+			if (false === ($this->_html = $this->tidy($html))) {
+				return false;
+			}
+		}
 
-    protected function _html2ps() {
-        $htmlFilePath = $this->_pdfFile('html');
-        $psFilePath   = $this->_pdfFile('ps');
-        $pdfFilePath  = $this->_pdfFile('pdf', __FUNCTION__);
+		if ($this->_options['dumphtml']) {
+			echo sprintf('<xmp>%s</xmp>', $this->_html);
+			return;
+		}
 
-        // save html
-        file_put_contents($htmlFilePath, $this->_html);
-        
-        // 2 ps
-        $o = $this->exe('html2ps --number -D --toc bh -dc -o ', $psFilePath, $htmlFilePath);
-        
-        // 2 pdf
-        $o = $this->exe('ps2pdf', $psFilePath, $pdfFilePath);
-        //if (false === $o) {
-        //    echo 'return: ';
-        //    print_r($S->return_var);
-        //    echo 'output: ';
-        //    print_r($S->output);
-        //    echo 'errors: ';
-        //    print_r($S->errors);
-        //    echo 'command: ';
-        //    print_r($S->command);
-        //    die();
-        //}
+		if (false !== ($pdfFilePath = call_user_func(array($this, '_'.$this->_options['method']), $this->_html))) {
+			if ($this->_options['serve'] && !$this->_served) {
+				return $this->serve($pdfFilePath);
+			}
+		}
 
-        @unlink($htmlFilePath);
-        @unlink($psFilePath);
+		return $pdfFilePath;
+	}
 
-        return $pdfFilePath;
-    }
+	protected function _pdfFile($extension = 'pdf', $method = '') {
+		return sprintf($this->_options['filebase'], $method, $extension);
+	}
 
-    protected function _retrieve($filepath) {
-        $this->debug('%s() called', __FUNCTION__);
-        
-        if (substr($filepath, 0, 4) === 'http') {
-            $temp = tempnam($this->_options['dir'], 'pdfit_cache_');
-            
-            if (!($buf = file_get_contents($filepath))) {
-                return $this->err('Unable to retrieve %s', $filepath);
-            }
-            
-            if (!file_put_contents($temp, $buf)) {
-                return $this->err('Unable to store %s in %s', $filepath, $temp);
-            }
+	protected function _html2ps() {
+		$htmlFilePath = $this->_pdfFile('html');
+		$psFilePath   = $this->_pdfFile('ps');
+		$pdfFilePath  = $this->_pdfFile('pdf', __FUNCTION__);
 
-            $filepath = $temp;
-        }
+		// save html
+		file_put_contents($htmlFilePath, $this->_html);
 
-        if (!file_exists($filepath)) {
-            return $this->err('%s does not exist', $filepath);
-        }
-        
-        return $filepath;
-    }
+		// 2 ps
+		$o = $this->exe('html2ps --number -D --toc bh -dc -o ', $psFilePath, $htmlFilePath);
 
-    protected function _wkhtmltopdf() {
-        $this->debug('%s() called', __FUNCTION__);
-        $htmlFilePath  = $this->_pdfFile('html');
-        $pdfFilePath   = $this->_pdfFile('pdf', __FUNCTION__);
-        $bgPdfFilePath = $this->_pdfFile('bg.pdf', __FUNCTION__);
+		// 2 pdf
+		$o = $this->exe('ps2pdf', $psFilePath, $pdfFilePath);
+		//if (false === $o) {
+		//	echo 'return: ';
+		//	print_r($S->return_var);
+		//	echo 'output: ';
+		//	print_r($S->output);
+		//	echo 'errors: ';
+		//	print_r($S->errors);
+		//	echo 'command: ';
+		//	print_r($S->command);
+		//	die();
+		//}
+
+		@unlink($htmlFilePath);
+		@unlink($psFilePath);
+
+		return $pdfFilePath;
+	}
+
+	protected function _retrieve($filepath) {
+		$this->debug('%s() called', __FUNCTION__);
+
+		if (substr($filepath, 0, 4) === 'http') {
+			$temp = tempnam($this->_options['dir'], 'pdfit_cache_');
+
+			if (!($buf = file_get_contents($filepath))) {
+				return $this->err('Unable to retrieve %s', $filepath);
+			}
+
+			if (!file_put_contents($temp, $buf)) {
+				return $this->err('Unable to store %s in %s', $filepath, $temp);
+			}
+
+			$filepath = $temp;
+		}
+
+		if (!file_exists($filepath)) {
+			return $this->err('%s does not exist', $filepath);
+		}
+
+		return $filepath;
+	}
+
+	protected function _wkhtmltopdf() {
+		$this->debug('%s() called', __FUNCTION__);
+		$htmlFilePath  = $this->_pdfFile('html');
+		$pdfFilePath   = $this->_pdfFile('pdf', __FUNCTION__);
+		$bgPdfFilePath = $this->_pdfFile('bg.pdf', __FUNCTION__);
 
         // Prereqs
         if (!file_exists('/bin/wkhtmltopdf')) {
@@ -218,56 +219,72 @@ class PdfitHelper extends Helper {
             );
         }
 
-        $pdfTk = '/usr/bin/pdftk';
-        if ($this->_options['background'] && !file_exists($pdfTk)) {
-            return $this->err(
-                'For backgrounds in wkhtmltopdf you need pdftk but it is not installed. Try: aptitude install pdftk'
+		$pdfTk = '/usr/bin/pdftk';
+		if ($this->_options['background'] && !file_exists($pdfTk)) {
+			return $this->err('For backgrounds in wkhtmltopdf you need pdftk but it is not installed. Try: aptitude install pdftk'
             );
-        }
+		}
 
-        # From: http://code.google.com/p/wkhtmltopdf/issues/detail?id=3
-        $wkhDir = dirname(dirname(dirname(__FILE__))).'/vendors/wkhtmltopdf';
-        $wkhExe = $wkhDir . '/html2pdf.sh';
+		# From: http://code.google.com/p/wkhtmltopdf/issues/detail?id=3
+		$wkhDir = dirname(dirname(dirname(__FILE__))).'/vendors/wkhtmltopdf';
+		$wkhExe = $wkhDir.'/html2pdf.sh';
 
-        // save html
-        if (!file_put_contents($htmlFilePath, $this->_html)) {
-            return $this->err('Unable to write %s', $htmlFilePath);
-        }
 
-        if (!isset($this->_options['title'])) $this->_options['title'] = '';
-        if (!isset($this->_options['subtitle'])) $this->_options['subtitle'] = '';
+		// save html
+		if (!file_put_contents($htmlFilePath, $this->_html)) {
+			return $this->err('Unable to write %s', $htmlFilePath);
+		}
 
-        $opts = array(
-            '--outline',
+		if (!isset($this->_options['title'])) $this->_options['title'] = '';
+		if (!isset($this->_options['subtitle'])) $this->_options['subtitle'] = '';
 
-            '--margin-top 15mm',
-            '--margin-bottom 20mm',
+		$opts = array(
+			'--outline',
 
-            '--no-background',
-            '--page-size A4',
-            '--dpi 96',
-            '--orientation Portrait',
-        );
+			'--margin-top 15mm',
+			'--margin-bottom 20mm',
 
-        if (!empty($this->_options['toc'])) {
-            $opts[] = '--toc';
-            $opts[] = '--toc-font-name Helvetica';
-            $opts[] = '--toc-depth 2';
-            $opts[] = '--toc-no-dots';
-        }
-        
-        $o = $this->exe('bash %s %s %s '.join(' ', $opts).'', $wkhExe, $htmlFilePath, $pdfFilePath);
-        $this->debug($o);
+			'--no-background',
+			'--page-size A4',
+			'--dpi 96',
+			'--orientation Portrait',
 
-        if ($this->_options['background']) {
-            $bgPath = $this->_retrieve($this->_options['background']);
-            $o = $this->exe('%s %s background %s output %s', $pdfTk, $pdfFilePath, $bgPath, $bgPdfFilePath);
-            $this->debug($o);
-            rename($bgPdfFilePath, $pdfFilePath);
-        }
-        
-        @unlink($htmlFilePath);
+			'--disable-javascript',
+		);
 
-        return $pdfFilePath;
-    }
+		if (!empty($this->_options['toc'])) {
+			$opts[] = '--toc';
+			$opts[] = '--toc-font-name Helvetica';
+			$opts[] = '--toc-depth 2';
+			$opts[] = '--toc-no-dots';
+		}
+
+//	  @todo: Header text is breaking hard because of escaping issues
+//		$headertxt = '';
+//		if (!empty($this->_options['title'])) {
+//			$headertxt .= $this->_options['title'];
+//		}
+//		if (!empty($this->_options['subtitle'])) {
+//			$headertxt .= ' ndash; '.$this->_options['subtitle'];
+//		}
+//		if ($headertxt) {
+//			#$opts[] = '--header-left \''.$headertxt.'\'';
+//			$opts[] = '--header-right [page]/[toPage]';
+//			$opts[] = '--header-line';
+//		}
+
+		$o = $this->exe('bash %s %s %s '.join(' ', $opts).'', $wkhExe, $htmlFilePath, $pdfFilePath);
+		$this->debug($o);
+
+		if ($this->_options['background']) {
+			$bgPath = $this->_retrieve($this->_options['background']);
+			$o = $this->exe('%s %s background %s output %s', $pdfTk, $pdfFilePath, $bgPath, $bgPdfFilePath);
+			$this->debug($o);
+			rename($bgPdfFilePath, $pdfFilePath);
+		}
+
+		@unlink($htmlFilePath);
+
+		return $pdfFilePath;
+	}
 }
