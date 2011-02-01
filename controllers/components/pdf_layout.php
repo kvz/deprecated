@@ -33,7 +33,7 @@ Class PdfLayoutComponent extends Object{
 	public function startup(&$Controller) {
 		$this->Controller = &$Controller;
 
-		$this->Controller->helpers['Pdfview.pdfit'] = $this->_settings;
+		$this->Controller->helpers['Pdfview.Pdfit'] = $this->_settings;
 
 		if ($this->Controller->params['url']['ext'] === $this->_settings['ext']) {
 			Configure::write('debug', $this->_settings['debug']);
