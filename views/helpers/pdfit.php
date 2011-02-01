@@ -14,7 +14,7 @@ class PdfitHelper extends Helper {
         'serve' => false,
         'tidy' => false,
         'dir' => '',
-        'filemask' => '/tmp/document-:uuid.:ext',
+        'filemask' => '/tmp/document-:day-:uuid.:ext',
         'set_time_limit' => 0,
         'memory_limit' => '1624M',
     );
@@ -161,6 +161,7 @@ class PdfitHelper extends Helper {
             $this->_options['filemask'],
             array(
                 'uuid' => String::uuid(),
+                'day' => date('Ymd'),
                 'ext' => $ext,
                 'method' => $method,
             )
