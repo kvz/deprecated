@@ -63,13 +63,12 @@ class PdfitHelper extends Helper {
         //        header("Pragma: no-cache");
         //        header("Content-type: application/pdf");
 
-        header("Pragma: public");
         header("Expires: 0");
         header("Pragma: no-cache");
         header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
-        header("Content-Type: application/force-download");
-        header("Content-Type: application/octet-stream");
-        header("Content-Type: application/download");
+//        header("Content-Type: application/force-download");
+//        header("Content-Type: application/octet-stream");
+//        header("Content-Type: application/download");
         header('Content-disposition: attachment; filename=' . basename($filename));
         header("Content-Type: application/pdf");
         header("Content-Transfer-Encoding: binary");
@@ -214,45 +213,21 @@ class PdfitHelper extends Helper {
 
         // Prereqs
         if (!file_exists('/bin/wkhtmltopdf')) {
-            return $this->err('wkhtmltopdf is not installed. Try:
-
-sudo aptitude install openssl build-essential xorg libqt4-dev qt4-dev-tools xvfb
-
-# You will want to compile a patched static vertion of qt and build
-# wkhtmltopdf using that
-
-# 32 BIT LINUX - A STATIC IS READILY AVAILABLE, JUST COPY TO BIN:
-
-cd /usr/src
-wget http://wkhtmltopdf.googlecode.com/files/wkhtmltopdf-0.8.3-static.tar.bz2
-tar -xjvf wkhtmltopdf-0.8.3-static.tar.bz2
-mv wkhtmltopdf /bin/wkhtmltopdf
-
-# OR, 64 BIT LINUX - MAKE YOUR OWN STATIC:
-
-cd /usr/src
-svn checkout http://wkhtmltopdf.googlecode.com/svn/tags/0.8.3/ wkhtmltopdf
-cd wkhtmltopdf
-sed -i~ \'s#i386#amd64#g\' static-build.sh
-./static-build.sh linux
-cp ./wkhtmltopdf /bin/wkhtmltopdf
-chmod a+x /bin/wkhtmltopdf
-
-            ');
+            return $this->err(
+                'wkhtmltopdf is not installed. Check for instructions here: https://github.com/antialize/wkhtmltopdf'
+            );
         }
 
         $pdfTk = '/usr/bin/pdftk';
         if ($this->_options['background'] && !file_exists($pdfTk)) {
-            return $this->err('For backgrounds in wkhtmltopdf you need pdftk but it is not installed. Try:
-
-aptitude install pdftk
-            ');
+            return $this->err(
+                'For backgrounds in wkhtmltopdf you need pdftk but it is not installed. Try: aptitude install pdftk'
+            );
         }
 
         # From: http://code.google.com/p/wkhtmltopdf/issues/detail?id=3
         $wkhDir = dirname(dirname(dirname(__FILE__))).'/vendors/wkhtmltopdf';
-        $wkhExe = $wkhDir.'/html2pdf.sh';
-
+        $wkhExe = $wkhDir . '/html2pdf.sh';
 
         // save html
         if (!file_put_contents($htmlFilePath, $this->_html)) {
@@ -272,8 +247,6 @@ aptitude install pdftk
             '--page-size A4',
             '--dpi 96',
             '--orientation Portrait',
-
-            '--disable-javascript',
         );
 
         if (!empty($this->_options['toc'])) {
@@ -282,20 +255,6 @@ aptitude install pdftk
             $opts[] = '--toc-depth 2';
             $opts[] = '--toc-no-dots';
         }
-        
-//      @todo: Header text is breaking hard because of escaping issues
-//        $headertxt = '';
-//        if (!empty($this->_options['title'])) {
-//            $headertxt .= $this->_options['title'];
-//        }
-//        if (!empty($this->_options['subtitle'])) {
-//            $headertxt .= ' ndash; '.$this->_options['subtitle'];
-//        }
-//        if ($headertxt) {
-//            #$opts[] = '--header-left \''.$headertxt.'\'';
-//            $opts[] = '--header-right [page]/[toPage]';
-//            $opts[] = '--header-line';
-//        }
         
         $o = $this->exe('bash %s %s %s '.join(' ', $opts).'', $wkhExe, $htmlFilePath, $pdfFilePath);
         $this->debug($o);
@@ -311,5 +270,4 @@ aptitude install pdftk
 
         return $pdfFilePath;
     }
-
 }
