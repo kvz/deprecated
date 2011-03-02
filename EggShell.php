@@ -144,7 +144,7 @@ class EggShell extends Base {
 		$options = $this->merge($this->_options, $options);
 
 		if (!array_key_exists('git-checkout', $options)) $options['git-checkout'] = 'master';
-		if (!array_key_exists('git-refspec', $options)) $options['git-refspec'] = 'origin master';
+		//if (!array_key_exists('git-refspec', $options)) $options['git-refspec'] = 'origin master';
 
 		$parent  = dirname($directory);
 
@@ -154,21 +154,13 @@ class EggShell extends Base {
 
 		if (!is_dir($directory)) {
 			$this->exe('git clone %s %s', $repository, $directory);
-		} else {
-			$this->exe(
-				'cd %s && git pull %s',
-				$directory,
-				$options['git-refspec']
-			);
 		}
 
-		if ($options['git-checkout']) {
-			$this->exe(
-				'cd %s && git checkout %s',
-				$directory,
-				$options['git-checkout']
-			);
-		}
+		$this->exeContinue('cd %s && git am --abort', $directory);
+		$this->exe('cd %s && git fetch origin', $directory);
+		$this->exe('cd %s && git checkout %s', $directory, $options['git-checkout']);
+		$this->exe('cd %s && git reset --hard %', $directory, 'origin/' . $options['git-checkout']);
+		$this->exe('cd %s && git clean -f', $directory);
 
 		return true;
 	}
