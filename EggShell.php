@@ -519,7 +519,7 @@ class EggShell extends Base {
 				$dist,
 				$dist
 			);
-			$this->exe('apt-get -fy update');
+			$this->exe('DEBIAN_FRONTEND=noninteractive apt-get -fy update');
 		}
 
 		if (is_string($packages)) {
@@ -585,7 +585,7 @@ class EggShell extends Base {
 		}
 
 		#return $this->exe('export DEBIAN_FRONTEND=noninteractive && aptitude -y install %s', $package);
-		return $this->exe('export DEBIAN_FRONTEND=noninteractive && apt-get -yfq --force-yes install %s', $package);
+		return $this->exe('DEBIAN_FRONTEND=noninteractive apt-get -yfq --force-yes install %s', $package);
 	}
 
 	/**
@@ -690,7 +690,7 @@ class EggShell extends Base {
 			if (false === $this->aptSourcesUpdate()) {
 				return false;
 			}
-			$this->exe('apt-get -y --force-yes install medibuntu-keyring');
+			$this->exe('DEBIAN_FRONTEND=noninteractive apt-get -y --force-yes install medibuntu-keyring');
 		}
 
 		if ($options['apt-refresh']) {
@@ -721,17 +721,17 @@ class EggShell extends Base {
 	}
 
 	public function aptSourcesUpdate () {
-		if (false === $this->exe('aptitude -o Aptitude::Cmdline::ignore-trust-violations=true -y update')) {
+		if (false === $this->exe('DEBIAN_FRONTEND=noninteractive aptitude -o Aptitude::Cmdline::ignore-trust-violations=true -y update')) {
 			return false;
 		}
-		if (false === $this->exe('dpkg --configure -a')) {
+		if (false === $this->exe('DEBIAN_FRONTEND=noninteractive dpkg --configure -a')) {
 			return false;
 		}
 		return true;
 	}
 
 	public function aptDistUpgrade () {
-		return $this->exe('aptitude -y dist-upgrade');
+		return $this->exe('DEBIAN_FRONTEND=noninteractive aptitude -y dist-upgrade');
 	}
 
 	/**
