@@ -295,7 +295,7 @@ class ImapSource extends DataSource {
             }
         }
 
-        // Strin search parameters
+        // String search parameters
         if (($val = $this->_cond($Model, $query, 'from'))) {
             $searchCriteria[] = 'FROM "' . $val . '"';
         }
@@ -621,7 +621,7 @@ class ImapSource extends DataSource {
      * @param int $uid the number of the message
      * @return array empty on error/nothing or array of formatted details
      */
-    protected function _getFormattedMail ($Model, $uid, $attachments = false) {
+    protected function _getFormattedMail ($Model, $uid, $fetchAttachments = false) {
         // Translate uid to msg_no. Has no decent fail
         $msg_number = imap_msgno($this->Stream, $uid);
 
@@ -656,6 +656,7 @@ class ImapSource extends DataSource {
             );
         }
 
+        $hasAttachments = count($this->_flatParts($uid, false, $Structure));
         $return[$Model->alias] = array(
             'id' => $this->_toId($uid),
             'message_id' => $Mail->message_id,
@@ -685,14 +686,14 @@ class ImapSource extends DataSource {
             'deleted' => @$Mail->Deleted === 'D' ? 1 : 0,
 
             'thread_count' => $this->_getThreadCount($Mail),
-            'attachments' => json_encode($this->_attachment($uid, $Structure)),
+            'attachments' => $hasAttachments,
             'in_reply_to' => @$Mail->in_reply_to,
             'reference' => @$Mail->references,
             'new' => (int)@$Mail->in_reply_to,
             'created' => date('Y-m-d H:i:s', strtotime($Mail->date)),
         );
 
-        if ($attachments) {
+        if ($fetchAttachments && $hasAttachments) {
             $return['Attachment'] = $this->_getAttachments($Structure, $uid, $Model);
         }
 
@@ -707,70 +708,126 @@ class ImapSource extends DataSource {
         return $return;
     }
 
+    protected function _flatParts ($uid, $mixed = true, $Structure = false, $partnr = 1){
+        if (!$Structure) {
+            $Structure = imap_fetchstructure($this->Stream, $uid, FT_UID);
+        }
+        $flatParts = array();
+
+        //This shows the headers part number (I need to work a little more on this part)
+
+        if ($Structure->parts > 0){
+            $decimas = explode('.', $partnr);
+            $decimas[count($decimas)-1] -= 1;
+            $np = join('.', $decimas);
+        } else {
+            $np = $partnr;
+        }
+
+        if (($mixed || $Structure->subtype !== 'MIXED')) {
+            $flatParts[$np] = $Structure;
+        }
+
+        if (count($Structure->parts) > 0){
+            foreach ($Structure->parts as $n => $Part){
+                if ($n >= 1){
+                    $arr_decimas = explode('.', $partnr);
+                    $arr_decimas[count($arr_decimas) - 1] += 1;
+                    $partnr = join('.', $arr_decimas);
+                }
+
+                if ($Part->type != 1 && ($mixed || $Part->subtype !== 'MIXED')) {
+                    $flatParts[$partnr] = $Part;
+                }
+
+                if (count(@$Part->parts) > 0){
+                    if ($Part->type == 1){
+                        $flatParts = Set::merge(
+                            $flatParts,
+                            $this->_flatParts($uid, $mixed, $Part, $partnr.'.'.($n+1))
+                        );
+                    } else {
+                        foreach ($Part->parts as $idx => $Part2){
+                            $flatParts = Set::merge(
+                                $flatParts,
+                                $this->_flatParts($uid, $mixed, $Part2, $partnr.'.'.($idx+1))
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        return $flatParts;
+    }
+
     /**
      * Get any attachments for the current message, images, documents etc
      *
      * @param <type> $Structure
      * @param <type> $uid
+     * @param <type> $Model
+     * 
      * @return <type>
      */
-    protected function _getAttachments ($Structure, $uid, $Model) {
-        $attachments = array();
-        if (isset($Structure->parts) && count($Structure->parts)) {
-            for ($i = 0; $i < count($Structure->parts); $i++) {
-                $attachment = array(
-                    strtolower(Inflector::singularize($Model->alias) . '_id') => $this->_toId($uid),
-                    'message_id' => $uid,
-                    'is_attachment' => false,
-                    'filename' => '',
-                    'mime_type' => '',
-                    'type' => '',
-                    'name' => '',
-                    'size' => 0,
-                    'attachment' => ''
-                );
+    protected function _getAttachments ($Structure, $uid, $Model, $level = 0) {
+        $flatParts = $this->_flatParts($uid, false);
 
-                if ($Structure->parts[$i]->ifdparameters) {
-                    foreach ($Structure->parts[$i]->dparameters as $object) {
-                        if (strtolower($object->attribute) == 'filename') {
-                            $attachment['is_attachment'] = true;
-                            $attachment['filename'] = $object->value;
-                        }
+        foreach ($flatParts as $path => $Part) {
+            $attachment = array(
+                strtolower(Inflector::singularize($Model->alias) . '_id') => $this->_toId($uid),
+                'message_id' => $uid,
+                'is_attachment' => false,
+                'filename' => '',
+                'mime_type' => '',
+                'type' => strtolower($Part->subtype),
+                'name' => '',
+                'size' => 0,
+                'attachment' => ''
+            );
+
+            if ($Part->ifdparameters) {
+                foreach ($Part->dparameters as $Object) {
+                    if (strtolower($Object->attribute) === 'filename') {
+                        $attachment['is_attachment'] = true;
+                        $attachment['filename'] = $Object->value;
                     }
                 }
+            }
 
-                if ($Structure->parts[$i]->ifparameters) {
-                    foreach ($Structure->parts[$i]->parameters as $object) {
-                        if (strtolower($object->attribute) == 'name') {
-                            $attachment['is_attachment'] = true;
-                            $attachment['name'] = $object->value;
-                        }
+            if ($Part->ifparameters) {
+                foreach ($Part->parameters as $Object) {
+                    if (strtolower($Object->attribute) === 'name') {
+                        $attachment['is_attachment'] = true;
+                        $attachment['name'] = $Object->value;
                     }
                 }
-                if ($attachment['is_attachment']) {
-                    $attachment['attachment'] = imap_fetchbody($this->Stream, $uid, ($i+1), FT_UID | FT_PEEK);
-                    if ($Structure->parts[$i]->encoding == 3) {
-                        $attachment['format'] = 'base64';
-                    } elseif ($Structure->parts[$i]->encoding == 4) {
-                        // 4 = QUOTED-PRINTABLE
-                        $attachment['attachment'] = quoted_printable_decode($attachment['attachment']);
-                        //$attachment['format'] = 'base64';
-                    } elseif ($Structure->parts[$i]->encoding == 0) {
-                        $attachment['format'] = '7BIT';
-                    } elseif ($Structure->parts[$i]->encoding == 1) {
-                        $attachment['format'] = '8BIT';
-                    } elseif ($Structure->parts[$i]->encoding == 2) {
-                        $attachment['format'] = 'BINARY';
-                    } elseif ($Structure->parts[$i]->encoding == 5) {
-                        $attachment['format'] = 'OTHER';
-                    }
+            }
 
-                    $attachment['type']      = strtolower($Structure->parts[$i]->subtype);
-                    $attachment['mime_type'] = $this->_getMimeType($Structure->parts[$i]);
-                    $attachment['size']      = $Structure->parts[$i]->bytes;
+            $attachment['attachment'] = imap_fetchbody($this->Stream, $uid, $path, FT_UID | FT_PEEK);
 
-                    $attachments[] = $attachment;
+            #$attachment['attachment'] = Common::abbr($attachment['attachment']);
+            if ($attachment['is_attachment']) {
+                if ($Part->encoding == 3) {
+                    $attachment['format'] = 'base64';
+                } elseif ($Part->encoding == 4) {
+                    // 4 = QUOTED-PRINTABLE
+                    $attachment['attachment'] = quoted_printable_decode($attachment['attachment']);
+                    //$attachment['format'] = 'base64';
+                } elseif ($Part->encoding == 0) {
+                    $attachment['format'] = '7BIT';
+                } elseif ($Part->encoding == 1) {
+                    $attachment['format'] = '8BIT';
+                } elseif ($Part->encoding == 2) {
+                    $attachment['format'] = 'BINARY';
+                } elseif ($Part->encoding == 5) {
+                    $attachment['format'] = 'OTHER';
                 }
+
+                $attachment['mime_type'] = $this->_getMimeType($Part);
+                $attachment['size']      = $Part->bytes;
+                
+                $attachments[] = $attachment;
             }
         }
 
@@ -805,52 +862,6 @@ class ImapSource extends DataSource {
 
         $id = $uid;
         return $id;
-    }
-
-    /**
-     * used to check / get the attachements in an email.
-     *
-     * @param object $Structure the structure of the email
-     * @param bool $count count them (true), or get them (false)
-     *
-     * @return mixed, int for check (number of attachements) / array of attachements
-     */
-    protected function _attachment ($uid, $Structure, $count = true) {
-        $has = 0;
-        $attachments = array();
-        if (isset($Structure->parts)) {
-            foreach ($Structure->parts as $partOfPart) {
-                if ($count) {
-                    $has += $this->_attachment($uid, $partOfPart, $count) == true ? 1 : 0;
-                } else {
-                    $attachment = $this->_attachment($uid, $partOfPart, $count);
-                    if (!empty($attachment)) {
-                        $attachments[] = $attachment;
-                    }
-                }
-            }
-        } else {
-            if (isset($Structure->disposition)) {
-                if (strtolower($Structure->disposition) == 'attachment') {
-                    if ($count) {
-                        return true;
-                    } else {
-                        return array(
-                            'type' => $Structure->type,
-                            'subtype' => $Structure->subtype,
-                            'file' => $Structure->dparameters[0]->value,
-                            'size' => $Structure->bytes
-                        );
-                    }
-                }
-            }
-        }
-
-        if ($count) {
-            return (int)$has;
-        }
-
-        return $attachments;
     }
 
     protected function _getMimeType ($Structure) {
