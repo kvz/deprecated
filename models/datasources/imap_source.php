@@ -115,6 +115,26 @@ class ImapSource extends DataSource {
     );
 
 
+    public $dataTypes = array(
+        0 => 'text',
+        1 => 'multipart',
+        2 => 'message',
+        3 => 'application',
+        4 => 'audio',
+        5 => 'image',
+        6 => 'video',
+        7 => 'other',
+    );
+
+    public $encodingTypes = array(
+        0 => '7bit',
+        1 => '8bit',
+        2 => 'binary',
+        3 => 'base64',
+        4 => 'quoted-printable',
+        5 => 'other',
+    );
+
     /**
      * __construct()
      *
@@ -647,16 +667,14 @@ class ImapSource extends DataSource {
         }
 
         // Get Mail with a property: 'type' or fail
-        if (!($Structure = imap_fetchstructure($this->Stream, $uid, FT_UID)) || !property_exists($Structure, 'type')) {
-            pr(compact('Structure'));
+        if (!($flatStructure = $this->_flatStructure($Model, $uid))) {
             return $this->err(
                 $Model,
                 'Unable to find structure type property in Mail corresponding with uid: %s. Something must be wrong',
                 $uid
             );
         }
-
-        $hasAttachments = count($this->_flatParts($uid, false, $Structure));
+        
         $return[$Model->alias] = array(
             'id' => $this->_toId($uid),
             'message_id' => $Mail->message_id,
@@ -674,8 +692,8 @@ class ImapSource extends DataSource {
             'subject' => htmlspecialchars(@$Mail->subject),
             'slug' => Inflector::slug(@$Mail->subject, '-'),
             'header' => @imap_fetchheader($this->Stream, $uid, FT_UID),
-            'body' => $this->_getPart($uid, 'TEXT/HTML', $Structure),
-            'plainmsg' => $this->_getPart($uid, 'TEXT/PLAIN', $Structure),
+            'body' => $this->_fetchFirstByMime($flatStructure, 'text/html'),
+            'plainmsg' => $this->_fetchFirstByMime($flatStructure, 'text/html'),
             'size' => @$Mail->Size,
             
             'recent' => @$Mail->Recent === 'R' ? 1 : 0,
@@ -686,15 +704,14 @@ class ImapSource extends DataSource {
             'deleted' => @$Mail->Deleted === 'D' ? 1 : 0,
 
             'thread_count' => $this->_getThreadCount($Mail),
-            'attachments' => $hasAttachments,
             'in_reply_to' => @$Mail->in_reply_to,
             'reference' => @$Mail->references,
             'new' => (int)@$Mail->in_reply_to,
             'created' => date('Y-m-d H:i:s', strtotime($Mail->date)),
         );
 
-        if ($fetchAttachments && $hasAttachments) {
-            $return['Attachment'] = $this->_getAttachments($Structure, $uid, $Model);
+        if ($fetchAttachments) {
+            $return['Attachment'] = $this->_fetchAttachments($flatStructure, $Model);
         }
 
         // Auto mark after read
@@ -708,49 +725,98 @@ class ImapSource extends DataSource {
         return $return;
     }
 
-    protected function _flatParts ($uid, $mixed = true, $Structure = false, $partnr = 1){
+    protected function awesomePart($Part, $uid) {
+        if (!($Part->format = @$this->encodingTypes[$Part->type])) {
+            $Part->format = $this->encodingTypes[0];
+        }
+        
+        if (!($Part->datatype = @$this->dataTypes[$Part->type])) {
+            $Part->datatype = $this->dataTypes[0];
+        }
+
+        $Part->mimeType = strtolower($Part->datatype . '/' . $Part->subtype);
+
+        $Part->is_attachment = false;
+        $Part->filename      = '';
+        $Part->name          = '';
+        $Part->uid           = $uid;
+
+        if ($Part->ifdparameters) {
+            foreach ($Part->dparameters as $Object) {
+                if (strtolower($Object->attribute) === 'filename') {
+                    $Part->is_attachment = true;
+                    $Part->filename      = $Object->value;
+                }
+            }
+        }
+
+        if ($Part->ifparameters) {
+            foreach ($Part->parameters as $Object) {
+                if (strtolower($Object->attribute) === 'name') {
+                    $Part->is_attachment = true;
+                    $Part->name          = $Object->value;
+                }
+            }
+        }
+
+        return $Part;
+    }
+
+    /**
+     *
+     * Contains parts of:
+     *  http://p2p.wrox.com/pro-php/8658-fyi-parsing-imap_fetchstructure.html
+     *  http://www.php.net/manual/en/function.imap-fetchstructure.php#86685
+     *
+     * @param <type> $uid
+     * @param <type> $mixed
+     * @param <type> $Structure
+     * @param <type> $partnr
+     *
+     * @return <type>
+     */
+    protected function _flatStructure ($Model, $uid, $Structure = false, $partnr = 1) {
+        $mainRun = false;
         if (!$Structure) {
+            $mainRun  = true;
             $Structure = imap_fetchstructure($this->Stream, $uid, FT_UID);
+            if (!property_exists($Structure, 'type')) {
+                return $this->err('No type in structure');
+            }
         }
         $flatParts = array();
 
-        //This shows the headers part number (I need to work a little more on this part)
-
-        if ($Structure->parts > 0){
+        if (!empty($Structure->parts)) {
             $decimas = explode('.', $partnr);
             $decimas[count($decimas)-1] -= 1;
-            $np = join('.', $decimas);
+            $Structure->path = join('.', $decimas);
         } else {
-            $np = $partnr;
+            $Structure->path = $partnr;
         }
-
-        if (($mixed || $Structure->subtype !== 'MIXED')) {
-            $flatParts[$np] = $Structure;
-        }
-
-        if (count($Structure->parts) > 0){
-            foreach ($Structure->parts as $n => $Part){
+        $flatParts[$Structure->path] = $this->awesomePart($Structure, $uid);
+        
+        if (!empty($Structure->parts)) {
+            foreach ($Structure->parts as $n => $Part) {
                 if ($n >= 1){
                     $arr_decimas = explode('.', $partnr);
                     $arr_decimas[count($arr_decimas) - 1] += 1;
                     $partnr = join('.', $arr_decimas);
                 }
+                $Part->path = $partnr;
 
-                if ($Part->type != 1 && ($mixed || $Part->subtype !== 'MIXED')) {
-                    $flatParts[$partnr] = $Part;
-                }
+                $flatParts[$Part->path] = $this->awesomePart($Part, $uid);
 
-                if (count(@$Part->parts) > 0){
+                if (!empty($Part->parts)) {
                     if ($Part->type == 1){
                         $flatParts = Set::merge(
                             $flatParts,
-                            $this->_flatParts($uid, $mixed, $Part, $partnr.'.'.($n+1))
+                            $this->_flatStructure($Model, $uid, $Part, $partnr.'.'.($n+1))
                         );
                     } else {
                         foreach ($Part->parts as $idx => $Part2){
                             $flatParts = Set::merge(
                                 $flatParts,
-                                $this->_flatParts($uid, $mixed, $Part2, $partnr.'.'.($idx+1))
+                                $this->_flatStructure($Model, $uid, $Part2, $partnr.'.'.($idx+1))
                             );
                         }
                     }
@@ -758,80 +824,75 @@ class ImapSource extends DataSource {
             }
         }
 
-        return $flatParts;
-    }
-
-    /**
-     * Get any attachments for the current message, images, documents etc
-     *
-     * @param <type> $Structure
-     * @param <type> $uid
-     * @param <type> $Model
-     * 
-     * @return <type>
-     */
-    protected function _getAttachments ($Structure, $uid, $Model, $level = 0) {
-        $flatParts = $this->_flatParts($uid, false);
-
-        foreach ($flatParts as $path => $Part) {
-            $attachment = array(
-                strtolower(Inflector::singularize($Model->alias) . '_id') => $this->_toId($uid),
-                'message_id' => $uid,
-                'is_attachment' => false,
-                'filename' => '',
-                'mime_type' => '',
-                'type' => strtolower($Part->subtype),
-                'name' => '',
-                'size' => 0,
-                'attachment' => ''
-            );
-
-            if ($Part->ifdparameters) {
-                foreach ($Part->dparameters as $Object) {
-                    if (strtolower($Object->attribute) === 'filename') {
-                        $attachment['is_attachment'] = true;
-                        $attachment['filename'] = $Object->value;
-                    }
+        // Filter mixed
+        if ($mainRun) {
+            foreach ($flatParts as $path => $Part) {
+                if (@$skip_next) {
+                    unset($flatParts[$path]);
+                    $skip_next = false;
+                }
+                if ($Part->mimeType === 'multipart/mixed') {
+                    unset($flatParts[$path]);
+                }
+                if ($Part->mimeType === 'multipart/alternative') {
+                    unset($flatParts[$path]);
+                }
+                if ($Part->mimeType === 'multipart/related') {
+                    unset($flatParts[$path]);
+                }
+                if ($Part->mimeType === 'message/rfc822') {
+                    $skip_next = true;
                 }
             }
-
-            if ($Part->ifparameters) {
-                foreach ($Part->parameters as $Object) {
-                    if (strtolower($Object->attribute) === 'name') {
-                        $attachment['is_attachment'] = true;
-                        $attachment['name'] = $Object->value;
-                    }
-                }
-            }
-
-            $attachment['attachment'] = imap_fetchbody($this->Stream, $uid, $path, FT_UID | FT_PEEK);
-
-            #$attachment['attachment'] = Common::abbr($attachment['attachment']);
-            if ($attachment['is_attachment']) {
-                if ($Part->encoding == 3) {
-                    $attachment['format'] = 'base64';
-                } elseif ($Part->encoding == 4) {
-                    // 4 = QUOTED-PRINTABLE
-                    $attachment['attachment'] = quoted_printable_decode($attachment['attachment']);
-                    //$attachment['format'] = 'base64';
-                } elseif ($Part->encoding == 0) {
-                    $attachment['format'] = '7BIT';
-                } elseif ($Part->encoding == 1) {
-                    $attachment['format'] = '8BIT';
-                } elseif ($Part->encoding == 2) {
-                    $attachment['format'] = 'BINARY';
-                } elseif ($Part->encoding == 5) {
-                    $attachment['format'] = 'OTHER';
-                }
-
-                $attachment['mime_type'] = $this->_getMimeType($Part);
-                $attachment['size']      = $Part->bytes;
-                
-                $attachments[] = $attachment;
+        }
+        
+        // Flatten more (remove childs)
+        if ($mainRun) {
+            foreach ($flatParts as $path => $Part) {
+                unset($Part->parts);
             }
         }
 
+        return $flatParts;
+    }
+
+    protected function _fetchAttachments ($flatStructure, $Model) {
+        $attachments = array();
+        foreach ($flatStructure as $path => $Part) {
+            if (!$Part->is_attachment) {
+                continue;
+            }
+            $attachment = array(
+                strtolower(Inflector::singularize($Model->alias) . '_id') => $this->_toId($Part->uid),
+                'message_id' => $Part->uid,
+                'is_attachment' => $Part->is_attachment,
+                'filename' => $Part->filename,
+                'mime_type' => $Part->mimeType,
+                'type' => strtolower($Part->subtype),
+                'datatype' => $Part->datatype,
+                'format' => $Part->format,
+                'name' => $Part->name,
+                'size' => $Part->bytes,
+                'attachment' => $this->_fetchPart($Part),
+            );
+        }
         return $attachments;
+    }
+
+    protected function _fetchPart ($Part) {
+        $data = imap_fetchbody($this->Stream, $Part->uid, $Part->path, FT_UID | FT_PEEK);
+        if ($Part->format === 'quoted-printable' && $data) {
+            $data = quoted_printable_decode($data);
+        }
+        return $data;
+    }
+
+    protected function _fetchFirstByMime ($flatStructure, $mime_type) {
+        foreach ($flatStructure as $path => $Part) {
+            if ($mime_type === $Part->mimeType) {
+                return $this->_fetchPart($Part);
+            }
+        }
     }
 
     /**
@@ -862,41 +923,6 @@ class ImapSource extends DataSource {
 
         $id = $uid;
         return $id;
-    }
-
-    protected function _getMimeType ($Structure) {
-        $primary_mime_type = array('TEXT', 'MULTIPART', 'MESSAGE', 'APPLICATION', 'AUDIO', 'IMAGE', 'VIDEO', 'OTHER');
-        if ($Structure->subtype) {
-            return $primary_mime_type[(int) $Structure->type] . '/' . $Structure->subtype;
-        }
-
-        return 'TEXT/PLAIN';
-    }
-
-    protected function _getPart ($uid, $mime_type, $Structure = null, $part_number = false) {
-        $prefix = null;
-        if (!$Structure) {
-            return false;
-        }
-
-        if ($mime_type == $this->_getMimeType($Structure)) {
-            $part_number = $part_number > 0 ? $part_number : 1;
-            return imap_fetchbody($this->Stream, $uid, $part_number, FT_UID | FT_PEEK);
-        }
-
-        /* multipart */
-        if ($Structure->type == 1) {
-            foreach ($Structure->parts as $index => $SubStructure) {
-                if ($part_number) {
-                    $prefix = $part_number . '.';
-                }
-
-                $data = $this->_getPart($uid, $mime_type, $SubStructure, $prefix . ($index + 1));
-                if ($data) {
-                    return quoted_printable_decode($data);
-                }
-            }
-        }
     }
 
     /**
