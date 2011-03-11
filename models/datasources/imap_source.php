@@ -674,6 +674,9 @@ class ImapSource extends DataSource {
                 $uid
             );
         }
+
+        $plain = $this->_fetchFirstByMime($flatStructure, 'text/plain');
+        $html  = $this->_fetchFirstByMime($flatStructure, 'text/html');
         
         $return[$Model->alias] = array(
             'id' => $this->_toId($uid),
@@ -692,8 +695,8 @@ class ImapSource extends DataSource {
             'subject' => htmlspecialchars(@$Mail->subject),
             'slug' => Inflector::slug(@$Mail->subject, '-'),
             'header' => @imap_fetchheader($this->Stream, $uid, FT_UID),
-            'body' => $this->_fetchFirstByMime($flatStructure, 'text/html'),
-            'plainmsg' => $this->_fetchFirstByMime($flatStructure, 'text/html'),
+            'body' => $html,
+            'plainmsg' => $plain ? $plain : $html,
             'size' => @$Mail->Size,
             
             'recent' => @$Mail->Recent === 'R' ? 1 : 0,
@@ -725,7 +728,7 @@ class ImapSource extends DataSource {
         return $return;
     }
 
-    protected function awesomePart($Part, $uid) {
+    protected function _awesomePart($Part, $uid) {
         if (!($Part->format = @$this->encodingTypes[$Part->type])) {
             $Part->format = $this->encodingTypes[0];
         }
@@ -744,7 +747,7 @@ class ImapSource extends DataSource {
         if ($Part->ifdparameters) {
             foreach ($Part->dparameters as $Object) {
                 if (strtolower($Object->attribute) === 'filename') {
-                    $Part->is_attachment = true;
+                    #$Part->is_attachment = true;
                     $Part->filename      = $Object->value;
                 }
             }
@@ -753,10 +756,14 @@ class ImapSource extends DataSource {
         if ($Part->ifparameters) {
             foreach ($Part->parameters as $Object) {
                 if (strtolower($Object->attribute) === 'name') {
-                    $Part->is_attachment = true;
+                    #$Part->is_attachment = true;
                     $Part->name          = $Object->value;
                 }
             }
+        }
+
+        if (false !== strpos($Part->path, '.')) {
+            $Part->is_attachment = true;
         }
 
         return $Part;
@@ -793,7 +800,7 @@ class ImapSource extends DataSource {
         } else {
             $Structure->path = $partnr;
         }
-        $flatParts[$Structure->path] = $this->awesomePart($Structure, $uid);
+        $flatParts[$Structure->path] = $this->_awesomePart($Structure, $uid);
         
         if (!empty($Structure->parts)) {
             foreach ($Structure->parts as $n => $Part) {
@@ -804,7 +811,7 @@ class ImapSource extends DataSource {
                 }
                 $Part->path = $partnr;
 
-                $flatParts[$Part->path] = $this->awesomePart($Part, $uid);
+                $flatParts[$Part->path] = $this->_awesomePart($Part, $uid);
 
                 if (!empty($Part->parts)) {
                     if ($Part->type == 1){
@@ -827,10 +834,6 @@ class ImapSource extends DataSource {
         // Filter mixed
         if ($mainRun) {
             foreach ($flatParts as $path => $Part) {
-                if (@$skip_next) {
-                    unset($flatParts[$path]);
-                    $skip_next = false;
-                }
                 if ($Part->mimeType === 'multipart/mixed') {
                     unset($flatParts[$path]);
                 }
@@ -841,11 +844,11 @@ class ImapSource extends DataSource {
                     unset($flatParts[$path]);
                 }
                 if ($Part->mimeType === 'message/rfc822') {
-                    $skip_next = true;
+                    unset($flatParts[$path]);
                 }
             }
         }
-        
+
         // Flatten more (remove childs)
         if ($mainRun) {
             foreach ($flatParts as $path => $Part) {
@@ -862,7 +865,7 @@ class ImapSource extends DataSource {
             if (!$Part->is_attachment) {
                 continue;
             }
-            $attachment = array(
+            $attachments[] = array(
                 strtolower(Inflector::singularize($Model->alias) . '_id') => $this->_toId($Part->uid),
                 'message_id' => $Part->uid,
                 'is_attachment' => $Part->is_attachment,
@@ -876,6 +879,7 @@ class ImapSource extends DataSource {
                 'attachment' => $this->_fetchPart($Part),
             );
         }
+
         return $attachments;
     }
 
