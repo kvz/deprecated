@@ -366,7 +366,7 @@ class ImapSource extends DataSource {
         $success = true;
         foreach ($uids as $uid) {
             if (!imap_delete($this->Stream, $uid, FT_UID)) {
-                $this->err('Unable to delete email with uid: %s', $uid);
+                $this->err($Model, 'Unable to delete email with uid: %s', $uid);
                 $success = false;
             }
         }
@@ -441,6 +441,7 @@ class ImapSource extends DataSource {
         }
 
         return $this->err(
+            $Model,
             'Unknown find type %s for query %s',
             $Model->findQueryType,
             $query
@@ -505,6 +506,7 @@ class ImapSource extends DataSource {
 
             if (!$this->thread) {
                 return $this->err(
+                    $Model,
                     'Unable to get imap_thread after %s retries. %s',
                     $retries,
                     imap_last_error()
@@ -512,6 +514,7 @@ class ImapSource extends DataSource {
             }
         } catch (Exception $Exception) {
             return $this->err(
+                $Model,
                 'Unable to get imap_thread after %s retries. %s',
                  $retries,
                 $Exception->getMessage() . ' ' . imap_last_error()
@@ -721,7 +724,7 @@ class ImapSource extends DataSource {
         if (!empty($this->config['auto_mark_as'])) {
             $marks = '\\' . join(' \\', $this->config['auto_mark_as']);
             if (!imap_setflag_full($this->Stream, $uid, $marks, ST_UID)) {
-                $this->err('Unable to mark email %s as %s', $uid, $marks);
+                $this->err($Model, 'Unable to mark email %s as %s', $uid, $marks);
             }
         }
 
@@ -788,7 +791,7 @@ class ImapSource extends DataSource {
             $mainRun  = true;
             $Structure = imap_fetchstructure($this->Stream, $uid, FT_UID);
             if (!property_exists($Structure, 'type')) {
-                return $this->err('No type in structure');
+                return $this->err($Model, 'No type in structure');
             }
         }
         $flatParts = array();
