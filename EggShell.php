@@ -125,11 +125,14 @@ class EggShell extends Base {
 		if (!is_dir($directory)) {
 			$this->exe('svn co %s %s %s', $arg, $repository, $directory);
 		} else {
-			$this->exe(
-				'cd %s && svn up %s',
-				$directory,
-				$arg
-			);
+			$cur = trim($this->exeContinue('cd %s && svn info |awk -F\': \' \'/^Revision/{print $2}\'', $directory));
+			if ($cur !== $options['svn-revision']) {
+				$this->exe(
+					'cd %s && svn up %s',
+					$directory,
+					$arg
+				);
+			}
 		}
 
 		return true;
