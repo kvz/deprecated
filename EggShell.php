@@ -86,6 +86,8 @@ class EggShell extends Base {
 			} else {
 				$this->exe('[ -d %s ] || ( cd %s && bunzip2 %s )', $dir, $src, $path);
 			}
+		} else if ($info['extension'] === 'tgz') {
+			$this->exe('[ -d %s ] || ( cd %s && tar -zxvf %s )', $dir, $src, $path);
 		} else if ($info['extension'] === 'gz') {
 			$info2 = pathinfo($dir);
 			if ($info2['extension'] === 'tar') {
