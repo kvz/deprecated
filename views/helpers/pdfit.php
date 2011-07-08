@@ -5,19 +5,19 @@
  */
 class PdfitHelper extends Helper {
 	protected $_options = array(
-        'title' => '',
-        'subtitle' => '',
-        'debug' => 0,
-        'dumphtml' => false,
-        'toc' => false,
-        'background' => false,
-        'serve' => false,
-        'tidy' => false,
-        'dir' => '',
-        'filemask' => '/tmp/document-:day-:uuid.:ext',
-        'set_time_limit' => 0,
-        'memory_limit' => '1624M',
-    );
+		'title' => '',
+		'subtitle' => '',
+		'debug' => 0,
+		'dumphtml' => false,
+		'toc' => false,
+		'background' => false,
+		'serve' => false,
+		'tidy' => false,
+		'dir' => '',
+		'filemask' => '/tmp/document-:day-:uuid.:ext',
+		'set_time_limit' => 0,
+		'memory_limit' => '1624M',
+	);
 	protected $_html;
 	protected $_served;
 	public	  $logs;
@@ -46,13 +46,13 @@ class PdfitHelper extends Helper {
 	}
 
 	public function setup ($options) {
-        $args = func_get_args();
-        if (count($args) === 2) {
-            $options = array(
-                $args[0] => $args[1],
-            );
-        }
-        
+		$args = func_get_args();
+		if (count($args) === 2) {
+			$options = array(
+				$args[0] => $args[1],
+			);
+		}
+
 		$this->_options = array_merge($this->_options, $options);
 		$this->_served = false;
 
@@ -75,7 +75,7 @@ class PdfitHelper extends Helper {
 //		header("Content-Type: application/force-download");
 //		header("Content-Type: application/octet-stream");
 //		header("Content-Type: application/download");
-        
+
 		header("Expires: 0");
 		header("Pragma: no-cache");
 		header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
@@ -158,21 +158,21 @@ class PdfitHelper extends Helper {
 
 	protected function _filepath ($ext = 'pdf', $method = '') {
 		return String::insert(
-            $this->_options['filemask'],
-            array(
-                'uuid' => String::uuid(),
-                'day' => date('Ymd'),
-                'ext' => $ext,
-                'method' => $method,
-            )
-        );
+			$this->_options['filemask'],
+			array(
+				'uuid' => String::uuid(),
+				'day' => date('Ymd'),
+				'ext' => $ext,
+				'method' => $method,
+			)
+		);
 	}
 
 	protected function _retrieve ($filepath) {
 		$this->debug('%s() called', __FUNCTION__);
 
 		if (substr($filepath, 0, 4) === 'http') {
-            $tmpfile = $this->_filepath('cache', __FUNCTION__);
+			$tmpfile = $this->_filepath('cache', __FUNCTION__);
 
 			if (!($buf = file_get_contents($filepath))) {
 				return $this->err('Unable to retrieve %s', $filepath);
@@ -198,18 +198,18 @@ class PdfitHelper extends Helper {
 		$pdfFilePath   = $this->_filepath('pdf', __FUNCTION__);
 		$bgPdfFilePath = $this->_filepath('bg.pdf', __FUNCTION__);
 
-        // Prereqs
-        if (!file_exists('/bin/wkhtmltopdf')) {
-            return $this->err(
-                'wkhtmltopdf is not installed. Check for instructions here: https://github.com/antialize/wkhtmltopdf'
-            );
-        }
+		// Prereqs
+		if (!file_exists('/bin/wkhtmltopdf')) {
+			return $this->err(
+				'wkhtmltopdf is not installed. Check for instructions here: https://github.com/antialize/wkhtmltopdf'
+			);
+		}
 
 		$pdfTk = '/usr/bin/pdftk';
 		if ($this->_options['background'] && !file_exists($pdfTk)) {
 			return $this->err(
-                'For backgrounds in wkhtmltopdf you need pdftk but it is not installed. Try: aptitude install pdftk'
-            );
+				'For backgrounds in wkhtmltopdf you need pdftk but it is not installed. Try: aptitude install pdftk'
+			);
 		}
 
 		# From: http://code.google.com/p/wkhtmltopdf/issues/detail?id=3
