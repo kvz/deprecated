@@ -198,10 +198,10 @@ class PdfitHelper extends Helper {
 		$pdfFilePath   = $this->_filepath('pdf', __FUNCTION__);
 		$bgPdfFilePath = $this->_filepath('bg.pdf', __FUNCTION__);
 
-		// Prereqs
-		if (!file_exists('/bin/wkhtmltopdf')) {
+		if (!file_exists('/usr/local/bin/wkhtmltopdf')) {
 			return $this->err(
-				'wkhtmltopdf is not installed. Check for instructions here: https://github.com/antialize/wkhtmltopdf'
+				'wkhtmltopdf is not installed. Try: %s/vendors/wkhtmltopdf/install.sh',
+				dirname(dirname(__DIR__))
 			);
 		}
 
@@ -211,11 +211,6 @@ class PdfitHelper extends Helper {
 				'For backgrounds in wkhtmltopdf you need pdftk but it is not installed. Try: aptitude install pdftk'
 			);
 		}
-
-		# From: http://code.google.com/p/wkhtmltopdf/issues/detail?id=3
-		$wkhDir = dirname(dirname(dirname(__FILE__))).'/vendors/wkhtmltopdf';
-		$wkhExe = $wkhDir . '/html2pdf.sh';
-
 
 		// save html
 		if (!file_put_contents($htmlFilePath, $this->_html)) {
@@ -240,19 +235,24 @@ class PdfitHelper extends Helper {
 			$opts[] = '--toc-no-dots';
 		}
 
-		$cmd = sprintf('bash %s %s %s '.join(' ', $opts).'', $wkhExe, $htmlFilePath, $pdfFilePath);
-		$o   = $this->exe($cmd);
+		$cmd = sprintf(
+			'/usr/local/bin/wkhtmltopdf %s %s %s',
+			join(' ', $opts),
+			$htmlFilePath, 
+			$pdfFilePath
+		);
+		$o = $this->exe($cmd);
 
-		if (!$o || !file_exists($pdfFilePath)) {
-			return $this->err('Unable to convert html to pdf using command "%s".', $cmd);
+		if (!file_exists($pdfFilePath)) {
+			return $this->err('Unable to convert html to pdf using command "%s". %s', $cmd, $o);
 		}
 
 		if ($this->_options['background']) {
 			$bgPath = $this->_retrieve($this->_options['background']);
 			$cmd    = sprintf('%s %s background %s output %s', $pdfTk, $pdfFilePath, $bgPath, $bgPdfFilePath);
-
-			if (!($o = $this->exe($cmd))) {
-				return $this->err('Error while running command "%s".', $cmd);
+			$o      = $this->exe($cmd);
+			if (!file_exists($bgPdfFilePath)) {
+				return $this->err('Error while running command "%s". %s', $cmd, $o);
 			}
 
 			rename($bgPdfFilePath, $pdfFilePath);
