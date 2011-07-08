@@ -214,7 +214,7 @@ class PdfitHelper extends Helper {
 
 		# From: http://code.google.com/p/wkhtmltopdf/issues/detail?id=3
 		$wkhDir = dirname(dirname(dirname(__FILE__))).'/vendors/wkhtmltopdf';
-		$wkhExe = $wkhDir.'/html2pdf.sh';
+		$wkhExe = $wkhDir . '/html2pdf.sh';
 
 
 		// save html
@@ -240,13 +240,21 @@ class PdfitHelper extends Helper {
 			$opts[] = '--toc-no-dots';
 		}
 
-		$o = $this->exe('bash %s %s %s '.join(' ', $opts).'', $wkhExe, $htmlFilePath, $pdfFilePath);
-		$this->debug($o);
+		$cmd = sprintf('bash %s %s %s '.join(' ', $opts).'', $wkhExe, $htmlFilePath, $pdfFilePath);
+		$o   = $this->exe($cmd);
+
+		if (!$o || !file_exists($pdfFilePath)) {
+			return $this->err('Unable to convert html to pdf using command "%s".', $cmd);
+		}
 
 		if ($this->_options['background']) {
 			$bgPath = $this->_retrieve($this->_options['background']);
-			$o = $this->exe('%s %s background %s output %s', $pdfTk, $pdfFilePath, $bgPath, $bgPdfFilePath);
-			$this->debug($o);
+			$cmd    = sprintf('%s %s background %s output %s', $pdfTk, $pdfFilePath, $bgPath, $bgPdfFilePath);
+
+			if (!($o = $this->exe($cmd))) {
+				return $this->err('Error while running command "%s".', $cmd);
+			}
+
 			rename($bgPdfFilePath, $pdfFilePath);
 		}
 
