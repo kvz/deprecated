@@ -163,7 +163,7 @@ class EggShell extends Base {
 
 		$this->exeContinue('cd %s && git am --abort', $directory);
 		$this->exeContinue('cd %s && git fetch origin', $directory);
-		$this->exeContinue('cd %s && git checkout %s', $directory, $options['git-checkout']);
+		$this->exe('cd %s && git checkout %s', $directory, $options['git-checkout']);
 		$this->exeContinue('cd %s && git reset --hard %', $directory, 'origin/' . $options['git-checkout']);
 		$this->exeContinue('cd %s && git clean -f', $directory);
 
