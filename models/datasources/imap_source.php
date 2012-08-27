@@ -481,7 +481,8 @@ class ImapSource extends DataSource {
 					$this->config['server'],
 					$this->config['port'],
 					@$this->config['ssl'] ? '/ssl' : '',
-					@$this->config['connect'] ? '/' . @$this->config['connect'] : ''
+					@$this->config['connect'] ? '/' . @$this->config['connect'] : '',
+					@$this->config['mailbox'] ?  @$this->config['mailbox'] : ''
 				);
 				break;
 
