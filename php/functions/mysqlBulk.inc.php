@@ -25,6 +25,8 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
 		$options['eat_away'] = false;
 	}
 	if (!isset($options['in_file'])) {
+		// AppArmor may prevent MySQL to read this file.
+		// Remember to check /etc/apparmor.d/usr.sbin.mysqld
 		$options['in_file'] = '/dev/shm/infile.txt';
 	}
 	if (!isset($options['link_identifier'])) {
