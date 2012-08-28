@@ -153,8 +153,7 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
 			}
 
 			if (!__exe("
-				LOAD DATA
-				CONCURRENT LOCAL INFILE '${in_file}'
+				LOAD DATA INFILE '${in_file}'
 				INTO TABLE ${table}
 				FIELDS TERMINATED BY ':::,'
 				LINES TERMINATED BY '^^^\\n'
