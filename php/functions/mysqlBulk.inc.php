@@ -60,7 +60,7 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
 	}
 
 	if (!function_exists('__exe')) {
-		function __exe($sql, $query_handler, $trigger_errors, $link_identifier = null) {
+		function __exe ($sql, $query_handler, $trigger_errors, $link_identifier = null) {
 			if ($link_identifier === null) {
 				$x = call_user_func($query_handler, $sql);
 			} else {
@@ -68,9 +68,11 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
 			}
 			if (!$x) {
 				if ($trigger_errors) {
-					trigger_error('Query failed.' .mysql_error() .
-						'[sql: '.$sql.']',
-						E_USER_ERROR);
+					trigger_error(sprintf(
+						'Query failed. %s [sql: %s]',
+						mysql_error($link_identifier),
+						$sql
+					), E_USER_ERROR);
 					return false;
 				}
 			}
@@ -94,7 +96,7 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
 								  "[^'|^\\\']*['|\\\'])*[^'|^\\\']" .
 								  "*[^'|^\\\']$)/", $sql);
 			$process = 'keys';
-			$data	= array();
+			$dat     = array();
 
 			foreach ($parts as $k=>$part) {
 				$tpart = strtoupper(trim($part));
