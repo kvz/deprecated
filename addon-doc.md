@@ -31,11 +31,13 @@ A list of all plans available can be found [here](http://addons.heroku.com/libra
     $ heroku addons:add librato
     -----> Adding librato to sharp-mountain-4005... done, v18 (free)
 
-Once Librato has been added a `ADDON_CONFIG_NAME` setting will be available in the app configuration and will contain the [[variable purpose, i.e. "canonical URL used to access the newly provisioned Librato service instance."]]. This can be confirmed using the `heroku config:get` command.
+Once Librato has been added a `LIBRATO_USER` and `LIBRATO_TOKEN`
+settings will be available in the app configuration and will contain the
+credentials needed to authenticate to the [Librato API][api-docs]. This can be confirmed using the `heroku config:get` command.
 
     :::term
-    $ heroku config:get ADDON_CONFIG_NAME
-    http://user:pass@instance.ip/resourceid
+    $ heroku config:get LIBRATO_USER
+    app123@heroku.com
 
 After installing Librato the application should be configured to fully integrate with the add-on.
 
@@ -48,13 +50,13 @@ After installing Librato the application should be configured to fully integrate
 After provisioning the add-on it’s necessary to locally replicate the config vars so your development environment can operate against the service.
 
 <div class="callout" markdown="1">
-Though less portable it’s also possible to set local environment variables using `export ADDON_CONFIG_NAME=value`.
+Though less portable it’s also possible to set local environment variables using `export LIBRATO_USER and LIBRATO_TOKEN=value`.
 </div>
 
-Use [Foreman](config-vars#local_setup) to reliably configure and run the process formation specified in your app’s [Procfile](procfile). Foreman reads configuration variables from an .env file. Use the following command to add the ADDON_CONFIG_NAME values retrieved from heroku config to `.env`.
+Use [Foreman](config-vars#local_setup) to reliably configure and run the process formation specified in your app’s [Procfile](procfile). Foreman reads configuration variables from an .env file. Use the following command to add the LIBRATO_USER and LIBRATO_TOKEN values retrieved from heroku config to `.env`.
 
     :::term
-    $ heroku config -s | grep ADDON_CONFIG_NAME >> .env
+    $ heroku config -s | grep LIBRATO_USER and LIBRATO_TOKEN >> .env
     $ more .env
 
 <p class="warning" markdown="1">
@@ -65,7 +67,7 @@ Credentials and other sensitive configuration values should not be committed to 
 
 [[If there is a local executable required (like for the memcache add-on) then include installation instructions. If not, omit entire section]]
 
-Librato can be installed for use in a local development  environment.  Typically this entails [[installing the software | creating another version of the service]] and pointing the ADDON_CONFIG_NAME to this [[local | remote]] service.
+Librato can be installed for use in a local development  environment.  Typically this entails [[installing the software | creating another version of the service]] and pointing the LIBRATO_USER and LIBRATO_TOKEN to this [[local | remote]] service.
 
 <table>
   <tr>
