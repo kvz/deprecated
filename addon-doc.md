@@ -1,12 +1,12 @@
-[ADDON_NAME](http://addons.heroku.com/ADDON_SLUG) is an [add-on](http://addons.heroku.com) for providing functionality X.
+[Librato](http://addons.heroku.com/ADDON_SLUG) is an [add-on](http://addons.heroku.com) for providing functionality X.
 
 Adding functionality X to an application provides benefits X, Y and Z. [[Sell the benefits here! Don't skimp - developers have many options these days.]]
 
-ADDON_NAME is accessible via an API and has supported client libraries for [[Java|Ruby|Python|Grails|Scala|Play!|Node.js|Clojure]]*.
+Librato is accessible via an API and has supported client libraries for [[Java|Ruby|Python|Grails|Scala|Play!|Node.js|Clojure]]*.
 
 ## Provisioning the add-on
 
-ADDON_NAME can be attached to a Heroku application via the  CLI:
+Librato can be attached to a Heroku application via the  CLI:
 
 <div class="callout" markdown="1">
 A list of all plans available can be found [here](http://addons.heroku.com/ADDON_SLUG).
@@ -16,13 +16,13 @@ A list of all plans available can be found [here](http://addons.heroku.com/ADDON
     $ heroku addons:add ADDON_SLUG
     -----> Adding ADDON_SLUG to sharp-mountain-4005... done, v18 (free)
 
-Once ADDON_NAME has been added a `ADDON_CONFIG_NAME` setting will be available in the app configuration and will contain the [[variable purpose, i.e. "canonical URL used to access the newly provisioned ADDON_NAME service instance."]]. This can be confirmed using the `heroku config:get` command.
+Once Librato has been added a `ADDON_CONFIG_NAME` setting will be available in the app configuration and will contain the [[variable purpose, i.e. "canonical URL used to access the newly provisioned Librato service instance."]]. This can be confirmed using the `heroku config:get` command.
 
     :::term
     $ heroku config:get ADDON_CONFIG_NAME
     http://user:pass@instance.ip/resourceid
 
-After installing ADDON_NAME the application should be configured to fully integrate with the add-on.
+After installing Librato the application should be configured to fully integrate with the add-on.
 
 ## Local setup
 
@@ -50,7 +50,7 @@ Credentials and other sensitive configuration values should not be committed to 
 
 [[If there is a local executable required (like for the memcache add-on) then include installation instructions. If not, omit entire section]]
 
-ADDON_NAME can be installed for use in a local development  environment.  Typically this entails [[installing the software | creating another version of the service]] and pointing the ADDON_CONFIG_NAME to this [[local | remote]] service.
+Librato can be installed for use in a local development  environment.  Typically this entails [[installing the software | creating another version of the service]] and pointing the ADDON_CONFIG_NAME to this [[local | remote]] service.
 
 <table>
   <tr>
@@ -79,7 +79,7 @@ ADDON_NAME can be installed for use in a local development  environment.  Typica
 
 [[Repeat this ##Rails 3.x sections for all other supported languages/frameworks including Java, Node.js, Python, Scala, Play!, Grails, Clojure. Heroku is a polyglot platform - don't box yourself into supporting a single language]]
 
-Ruby on Rails applications will need to add the following entry into their `Gemfile` specifying the ADDON_NAME client library.
+Ruby on Rails applications will need to add the following entry into their `Gemfile` specifying the Librato client library.
 
     :::ruby
     gem 'ADDON_SLUG'
@@ -101,13 +101,13 @@ Update application dependencies with bundler.
 
 ## Monitoring & Logging
 
-Stats and the current state of ADDON_NAME can be displayed via the CLI.
+Stats and the current state of Librato can be displayed via the CLI.
 
     :::term
     $ heroku ADDON_SLUG:command
     example output
 
-ADDON_NAME activity can be observed within the Heroku log-stream by [[describe add-on logging recognition, if any]].
+Librato activity can be observed within the Heroku log-stream by [[describe add-on logging recognition, if any]].
 
     :::term
     $ heroku logs -t | grep 'ADDON_SLUG pattern'
@@ -115,12 +115,12 @@ ADDON_NAME activity can be observed within the Heroku log-stream by [[describe a
 ## Dashboard
 
 <div class="callout" markdown="1">
-For more information on the features available within the ADDON_NAME dashboard please see the docs at [mysite.com/docs](mysite.com/docs).
+For more information on the features available within the Librato dashboard please see the docs at [mysite.com/docs](mysite.com/docs).
 </div>
 
-The ADDON_NAME dashboard allows you to [[describe dashboard features]].
+The Librato dashboard allows you to [[describe dashboard features]].
 
-![ADDON_NAME Dashboard](http://i.imgur.com/FkuUw.png "ADDON_NAME Dashboard")
+![Librato Dashboard](http://i.imgur.com/FkuUw.png "Librato Dashboard")
 
 The dashboard can be accessed via the CLI:
 
@@ -128,9 +128,9 @@ The dashboard can be accessed via the CLI:
     $ heroku addons:open ADDON_SLUG
     Opening ADDON_SLUG for sharp-mountain-4005…
 
-or by visiting the [Heroku apps web interface](http://heroku.com/myapps) and selecting the application in question. Select ADDON_NAME from the Add-ons menu.
+or by visiting the [Heroku apps web interface](http://heroku.com/myapps) and selecting the application in question. Select Librato from the Add-ons menu.
 
-![ADDON_NAME Add-ons Dropdown](http://f.cl.ly/items/1B090n1P0d3W0I0R172r/addons.png "ADDON_NAME Add-ons Dropdown")
+![Librato Add-ons Dropdown](http://f.cl.ly/items/1B090n1P0d3W0I0R172r/addons.png "Librato Add-ons Dropdown")
 
 ## Troubleshooting
 
@@ -152,7 +152,7 @@ Use the `heroku addons:upgrade` command to migrate to a new plan.
 
 ## Removing the add-on
 
-ADDON_NAME can be removed via the  CLI.
+Librato can be removed via the  CLI.
 
 <div class="warning" markdown="1">This will destroy all associated data and cannot be undone!</div>
 
@@ -160,8 +160,8 @@ ADDON_NAME can be removed via the  CLI.
     $ heroku addons:remove ADDON_SLUG
     -----> Removing ADDON_SLUG from sharp-mountain-4005... done, v20 (free)
 
-Before removing ADDON_NAME a data export can be performed by [[describe steps if export is available]].
+Before removing Librato a data export can be performed by [[describe steps if export is available]].
 
 ## Support
 
-All ADDON_NAME support and runtime issues should be submitted via on of the [Heroku Support channels](support-channels). Any non-support related issues or product feedback is welcome at [[your channels]].
+All Librato support and runtime issues should be submitted via on of the [Heroku Support channels](support-channels). Any non-support related issues or product feedback is welcome at [[your channels]].
