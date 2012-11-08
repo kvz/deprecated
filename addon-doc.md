@@ -1,4 +1,4 @@
-[Librato](http://addons.heroku.com/ADDON_SLUG) is an [add-on](http://addons.heroku.com) for providing functionality X.
+[Librato](http://addons.heroku.com/librato) is an [add-on](http://addons.heroku.com) for providing functionality X.
 
 Adding functionality X to an application provides benefits X, Y and Z. [[Sell the benefits here! Don't skimp - developers have many options these days.]]
 
@@ -9,12 +9,12 @@ Librato is accessible via an API and has supported client libraries for [[Java|R
 Librato can be attached to a Heroku application via the  CLI:
 
 <div class="callout" markdown="1">
-A list of all plans available can be found [here](http://addons.heroku.com/ADDON_SLUG).
+A list of all plans available can be found [here](http://addons.heroku.com/librato).
 </div>
 
     :::term
-    $ heroku addons:add ADDON_SLUG
-    -----> Adding ADDON_SLUG to sharp-mountain-4005... done, v18 (free)
+    $ heroku addons:add librato
+    -----> Adding librato to sharp-mountain-4005... done, v18 (free)
 
 Once Librato has been added a `ADDON_CONFIG_NAME` setting will be available in the app configuration and will contain the [[variable purpose, i.e. "canonical URL used to access the newly provisioned Librato service instance."]]. This can be confirmed using the `heroku config:get` command.
 
@@ -82,7 +82,7 @@ Librato can be installed for use in a local development  environment.  Typically
 Ruby on Rails applications will need to add the following entry into their `Gemfile` specifying the Librato client library.
 
     :::ruby
-    gem 'ADDON_SLUG'
+    gem 'librato'
 
 Update application dependencies with bundler.
 
@@ -104,13 +104,13 @@ Update application dependencies with bundler.
 Stats and the current state of Librato can be displayed via the CLI.
 
     :::term
-    $ heroku ADDON_SLUG:command
+    $ heroku librato:command
     example output
 
 Librato activity can be observed within the Heroku log-stream by [[describe add-on logging recognition, if any]].
 
     :::term
-    $ heroku logs -t | grep 'ADDON_SLUG pattern'
+    $ heroku logs -t | grep 'librato pattern'
 
 ## Dashboard
 
@@ -125,8 +125,8 @@ The Librato dashboard allows you to [[describe dashboard features]].
 The dashboard can be accessed via the CLI:
 
     :::term
-    $ heroku addons:open ADDON_SLUG
-    Opening ADDON_SLUG for sharp-mountain-4005…
+    $ heroku addons:open librato
+    Opening librato for sharp-mountain-4005…
 
 or by visiting the [Heroku apps web interface](http://heroku.com/myapps) and selecting the application in question. Select Librato from the Add-ons menu.
 
@@ -146,9 +146,9 @@ If [[feature X]] does not seem to be [[common issue Y]] then
 Use the `heroku addons:upgrade` command to migrate to a new plan.
 
     :::term
-    $ heroku addons:upgrade ADDON_SLUG:newplan
-    -----> Upgrading ADDON_SLUG:newplan to sharp-mountain-4005... done, v18 ($49/mo)
-           Your plan has been updated to: ADDON_SLUG:newplan
+    $ heroku addons:upgrade librato:newplan
+    -----> Upgrading librato:newplan to sharp-mountain-4005... done, v18 ($49/mo)
+           Your plan has been updated to: librato:newplan
 
 ## Removing the add-on
 
@@ -157,8 +157,8 @@ Librato can be removed via the  CLI.
 <div class="warning" markdown="1">This will destroy all associated data and cannot be undone!</div>
 
     :::term
-    $ heroku addons:remove ADDON_SLUG
-    -----> Removing ADDON_SLUG from sharp-mountain-4005... done, v20 (free)
+    $ heroku addons:remove librato
+    -----> Removing librato from sharp-mountain-4005... done, v20 (free)
 
 Before removing Librato a data export can be performed by [[describe steps if export is available]].
 
