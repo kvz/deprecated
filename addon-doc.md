@@ -1,8 +1,22 @@
-[Librato](http://addons.heroku.com/librato) is an [add-on](http://addons.heroku.com) for providing functionality X.
+[Librato](http://addons.heroku.com/librato) is an [add-on](http://addons.heroku.com) for collecting,
+understanding, and acting on the metrics that matter to you.
 
-Adding functionality X to an application provides benefits X, Y and Z. [[Sell the benefits here! Don't skimp - developers have many options these days.]]
+Librato is a complete solution for monitoring and analyzing the
+metrics that impact your business at all levels of the stack. We provide
+everything you need to visualize, analyze, and actively alert on the
+metrics that matter to you. With our drop-in support for [Rails
+3.x][rails-gem], [JVM-based applications][coda-backend], and
+[other languages][lang-bindings] you can have measurements streaming into our
+service in minutes. We take care of everything else! You can build custom charts/dashboards,
+annotate them with one-time events, and set threshold-based alerts. We
+support collaboration through multi-user access, private dashboard
+links, PNG chart snapshots, and seamless integration with popular
+third-party services like PagerDuty, Campfire, and HipChat.
 
-Librato is accessible via an API and has supported client libraries for [[Java|Ruby|Python|Grails|Scala|Play!|Node.js|Clojure]]*.
+Additionally Librato is first-and-foremost a platform whose complete capabilites are
+programatically accessible via a [RESTful API][api-docs] with bindings
+available for [a growing host of languages][lang-bindings] including
+Ruby, Python, Java, Go, Clojure, Node.js, etc.
 
 ## Provisioning the add-on
 
@@ -165,3 +179,9 @@ Before removing Librato a data export can be performed by [[describe steps if ex
 ## Support
 
 All Librato support and runtime issues should be submitted via on of the [Heroku Support channels](support-channels). Any non-support related issues or product feedback is welcome at [[your channels]].
+
+[api-docs]: http://dev.librato.com/v1/metrics
+[lang-bindings]: http://support.metrics.librato.com/knowledgebase/articles/122262-language-bindings
+[rails-gem]: https://github.com/librato/librato-rails
+[coda-metrics]: http://metrics.codahale.com/
+[coda-backend]: https://github.com/librato/metrics-librato
