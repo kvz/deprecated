@@ -154,18 +154,28 @@ Can also be written as:
 
 Symbols can be used interchangably with strings for metric names.
 
-## Monitoring & Logging
+### Troubleshooting with Rails 3.x
 
-Stats and the current state of Librato can be displayed via the CLI.
-
-    :::term
-    $ heroku librato:command
-    example output
-
-Librato activity can be observed within the Heroku log-stream by [[describe add-on logging recognition, if any]].
+The `librato-rails` gem supports multiple logging levels that
+are useful in diagnosing any issues with reporting metrics to
+Librato. These are controlled by the `LIBRATO_LOG_LEVEL`
+configuration.
 
     :::term
-    $ heroku logs -t | grep 'librato pattern'
+    $ heroku config:add LIBRATO_LOG_LEVEL=debug
+
+Set your log level to `debug` to log detailed information about the
+settings `librato-rails` is seeing at startup and when it is submitting
+metrics back to the Librato service.
+
+If you are having an issue with a specific metric, setting a log level of
+`trace` additionally logs the exact measurements being sent along with
+lots of other information about librato-rails as it executes.
+
+Neither of these modes are recommended long-term in production as they will add
+quite a bit of volume to your log stream and will slow operation somewhat.
+Note that submission I/O is non-blocking, submission times are total
+time - your process will continue to handle requests during submissions.
 
 ## Dashboard
 
