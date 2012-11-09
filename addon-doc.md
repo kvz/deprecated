@@ -189,8 +189,13 @@ or by visiting the [Heroku apps web interface](http://heroku.com/myapps) and sel
 
 ## Troubleshooting
 
-If [[feature X]] does not seem to be [[common issue Y]] then 
-[[add specific commands to look for symptoms of common issue Y]].
+It may take 2-3 minutes for the first results to show up in your Metrics
+account after you have deployed your app and the first request has been received.
+
+Note that if Heroku idles your application, measurements will not be sent
+until it receives another request and is restarted. If you see
+intermittent gaps in your measurements during periods of low traffic
+this is the most likely cause.
 
 ## Migrating between plans
 
@@ -215,7 +220,8 @@ Librato can be removed via the  CLI.
     $ heroku addons:remove librato
     -----> Removing librato from sharp-mountain-4005... done, v20 (free)
 
-Before removing Librato a data export can be performed by [[describe steps if export is available]].
+Before removing Librato data can be exported through the [Librato
+API][api-docs].
 
 ## Support
 
