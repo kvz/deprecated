@@ -39,82 +39,120 @@ credentials needed to authenticate to the [Librato API][api-docs]. This can be c
     $ heroku config:get LIBRATO_USER
     app123@heroku.com
 
-After installing Librato the application should be configured to fully integrate with the add-on.
-
-## Local setup
-
-### Environment setup
-
-[[If running against the add-on service during development is not applicable this section can be omitted]]
-
-After provisioning the add-on it’s necessary to locally replicate the config vars so your development environment can operate against the service.
-
-<div class="callout" markdown="1">
-Though less portable it’s also possible to set local environment variables using `export LIBRATO_USER and LIBRATO_TOKEN=value`.
-</div>
-
-Use [Foreman](config-vars#local_setup) to reliably configure and run the process formation specified in your app’s [Procfile](procfile). Foreman reads configuration variables from an .env file. Use the following command to add the LIBRATO_USER and LIBRATO_TOKEN values retrieved from heroku config to `.env`.
+After installing Librato you will need to explicitly set a value for `LIBRATO_SOURCE` in the app configuration.
+`LIBRATO_SOURCE` informs the Librato service that the metrics coming from each of your dynos belong to the
+same application.
 
     :::term
-    $ heroku config -s | grep LIBRATO_USER and LIBRATO_TOKEN >> .env
-    $ more .env
+    $ heroku config:add LIBRATO_SOURCE=myappname
 
-<p class="warning" markdown="1">
-Credentials and other sensitive configuration values should not be committed to source-control. In Git exclude the .env file with: `echo .env >> .gitignore`.
-</p>
-
-### Service setup
-
-[[If there is a local executable required (like for the memcache add-on) then include installation instructions. If not, omit entire section]]
-
-Librato can be installed for use in a local development  environment.  Typically this entails [[installing the software | creating another version of the service]] and pointing the LIBRATO_USER and LIBRATO_TOKEN to this [[local | remote]] service.
-
-<table>
-  <tr>
-    <th>If you have...</th>
-    <th>Install with...</th>
-  </tr>
-  <tr>
-    <td>Mac OS X</td>
-    <td style="text-align: left"><code>brew install X</code></td>
-  </tr>
-  <tr>
-    <td>Windows</td>
-    <td style="text-align: left">Link to some installer</td>
-  </tr>
-  <tr>
-    <td>Ubuntu Linux</td>
-    <td style="text-align: left"><code>apt-get install X</code></td>
-  </tr>
-  <tr>
-    <td>Other</td>
-    <td style="text-align: left">Link to some raw package</td>
-  </tr>
-</table>
+The value of `LIBRATO_SOURCE` must be composed of characters in the set
+`A-Za-z0-9.:-_` and no more than 255 characters long. You should use 
+a permanent name, as changing it in the future will cause
+your historical metrics to become disjoint.
 
 ## Using with Rails 3.x
-
-[[Repeat this ##Rails 3.x sections for all other supported languages/frameworks including Java, Node.js, Python, Scala, Play!, Grails, Clojure. Heroku is a polyglot platform - don't box yourself into supporting a single language]]
 
 Ruby on Rails applications will need to add the following entry into their `Gemfile` specifying the Librato client library.
 
     :::ruby
-    gem 'librato'
+    gem 'librato-rails'
 
 Update application dependencies with bundler.
 
     :::term
     $ bundle install
 
-[[Describe briefly how to use/integrate your service from Rails 3.x with code samples]]
+### Automatic Instrumentation
 
-## Using with Python/Django
+After installing the `librato-rails` gem and deploying your app you
+will see a number of metrics appear automatically in your Librato account.
+These are powered by [ActiveSupport::Notifications][ASN] and track
+request performance, sql queries, mail handling, etc.
 
-[[Repeat structure from Rails 3.x section]]
+Built-in performance metric names will start with either `rack` or `rails`,
+depending on the level they are being sampled from. For example:
+`rails.request.total` is the total number of requests rails has received
+each minute.
 
-## Using with Java, Node....
+### Custom Instrumentation
 
-[[Repeat structure from Rails 3.x section for each supported language]]
+The power of Librato really starts to shine when you start adding your
+own custom instrumentation to the mix. Tracking anything in your
+application that interests you is easy Librato. There are
+basically four instrumentation primitives available:
+
+#### increment
+
+Use for tracking a running total of something _across_ requests,
+examples:
+
+    # increment the 'sales_completed' metric by one
+    Librato.increment 'sales_completed'
+    
+    # increment by five
+    Librato.increment 'items_purchased', :by => 5
+    
+    # increment with a custom source
+    Librato.increment 'user.purchases', :source => user.id
+    
+Other things you might track this way: user signups, requests of a
+certain type or to a certain route, total jobs queued or processed,
+emails sent or received.
+
+Note that `increment` is primarily used for tracking the rate of
+occurrence of some event. Given this `increment` metrics are _continuous
+by default_ i.e. after being called on a metric once they will report on
+every interval, reporting zeros for any interval when increment was not
+called on the metric.
+
+Especially with custom sources you may want the opposite behavior -
+reporting a measurement only during intervals where `increment` was
+called on the metric:
+
+    # report a value for 'user.uploaded_file' only during non-zero
+intervals
+    Librato.increment 'user.uploaded_file', :source => user.id,
+:sporadic => true
+
+#### measure
+
+Use when you want to track an average value _per_-request. Examples:
+
+    Librato.measure 'user.social_graph.nodes', 212
+
+#### timing
+
+Like `Librato.measure` this is per-request, but specialized for timing
+information:
+
+    Librato.timing 'twitter.lookup.time', 21.2
+
+The block form auto-submits the time it took for its contents to execute
+as the measurement value:
+
+    Librato.timing 'twitter.lookup.time' do
+      @twitter = Twitter.lookup(user)
+    end
+
+#### group
+
+There is also a grouping helper, to make managing nested metrics easier.
+So this:
+
+    Librato.measure 'memcached.gets', 20
+    Librato.measure 'memcached.sets', 2
+    Librato.measure 'memcached.hits', 18
+    
+Can also be written as:
+
+    Librato.group 'memcached' do |g|
+      g.measure 'gets', 20
+      g.measure 'sets', 2
+      g.measure 'hits', 18
+    end
+
+Symbols can be used interchangably with strings for metric names.
 
 ## Monitoring & Logging
 
