@@ -225,7 +225,11 @@ API][api-docs].
 
 ## Support
 
-All Librato support and runtime issues should be submitted via on of the [Heroku Support channels](support-channels). Any non-support related issues or product feedback is welcome at [[your channels]].
+All Librato support and runtime issues should be submitted via one of the [Heroku Support channels](support-channels).
+Any non-support related issues or product feedback for Librato is welcome via
+[email][mailto:support@librato.com],
+[live chat][http://chat.librato.com],
+or the [support forum][http://support.metrics.librato.com].
 
 [api-docs]: http://dev.librato.com/v1/metrics
 [lang-bindings]: http://support.metrics.librato.com/knowledgebase/articles/122262-language-bindings
