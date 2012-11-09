@@ -199,9 +199,9 @@ this is the most likely cause.
 
 ## Migrating between plans
 
-<div class="note" markdown="1">Application owners should carefully manage the migration timing to ensure proper application function during the migration process.</div>
-
-[[Specific migration process or any migration tips 'n tricks]]
+As long as the plan you are migrating to includes enough allocated
+measurements for your usage, you can migrate between plans at any
+time without any interruption to your metrics.
 
 Use the `heroku addons:upgrade` command to migrate to a new plan.
 
