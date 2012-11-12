@@ -146,7 +146,7 @@ It may take 2-3 minutes for the first results to show up in your Metrics account
 
 Note that if Heroku idles your application, measurements will not be sent until it receives another request and is restarted. If you see intermittent gaps in your measurements during periods of low traffic this is the most likely cause.
 
-For troubleshooting instructions more specific to your particular platform, please see our polyglot documentation provided above. The documentation for each supported platform ends with a troubleshooting subsection titled in the form *Troubleshooting with <platform>*.
+For troubleshooting instructions more specific to your particular platform, please see our polyglot documentation provided above. The documentation for each supported platform ends with a troubleshooting subsection titled in the form *Troubleshooting with ...*.
 
 ## Migrating between plans
 
