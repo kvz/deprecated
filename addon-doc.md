@@ -177,17 +177,22 @@ quite a bit of volume to your log stream and will slow operation somewhat.
 Note that submission I/O is non-blocking, submission times are total
 time - your process will continue to handle requests during submissions.
 
-## Dashboard
+## Librato Interface
 
 <div class="callout" markdown="1">
-For more information on the features available within the Librato dashboard please see the docs at [mysite.com/docs](mysite.com/docs).
+For more information on the features available within the Librato interface
+please see the [Librato knowledgebase](http://support.metrics.librato.com/knowledgebase).
 </div>
 
-The Librato dashboard allows you to [[describe dashboard features]].
+The Librato interface allows you to build custom dashboards,
+set threhold-based alerts, rapidly detect and diagnose
+performance regressions in your production infrastructure, gain a
+deeper, shared understanding of your business across your team,
+and so much more!. 
 
 ![Librato Dashboard](http://i.imgur.com/FkuUw.png "Librato Dashboard")
 
-The dashboard can be accessed via the CLI:
+The interface can be accessed via the CLI:
 
     :::term
     $ heroku addons:open librato
@@ -197,7 +202,7 @@ or by visiting the [Heroku apps web interface](http://heroku.com/myapps) and sel
 
 ![Librato Add-ons Dropdown](http://f.cl.ly/items/1B090n1P0d3W0I0R172r/addons.png "Librato Add-ons Dropdown")
 
-## Troubleshooting
+## General Troubleshooting
 
 It may take 2-3 minutes for the first results to show up in your Metrics
 account after you have deployed your app and the first request has been received.
@@ -206,6 +211,11 @@ Note that if Heroku idles your application, measurements will not be sent
 until it receives another request and is restarted. If you see
 intermittent gaps in your measurements during periods of low traffic
 this is the most likely cause.
+
+For troubleshooting instructions more specific to your particular platform, please
+see our polyglot documentation provided above. The documentation for
+each supported platform ends with a troubleshooting subsection
+titled in the form *Troubleshooting with <platform>*.
 
 ## Migrating between plans
 
