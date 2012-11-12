@@ -1,23 +1,6 @@
-[Librato](http://addons.heroku.com/librato) is an [add-on](http://addons.heroku.com) for collecting,
-understanding, and acting on the metrics that matter to you.
+[Librato](http://addons.heroku.com/librato) is an [add-on](http://addons.heroku.com) for collecting, understanding, and acting on the metrics that matter to you.
 
-Librato is a complete solution for monitoring and analyzing the
-metrics that impact your business at all levels of the stack. It
-provides
-everything you need to visualize, analyze, and actively alert on the
-metrics that matter to you. With drop-in support for [Rails
-3.x][rails-gem], [JVM-based applications][coda-backend], and
-[other languages][lang-bindings] you'll have metrics streaming into
-Librato in minutes. From there you can build custom charts/dashboards,
-annotate them with one-time events, and set threshold-based alerts.
-Collaboration is supported through multi-user access, private dashboard
-links, PNG chart snapshots, and seamless integration with popular
-third-party services like PagerDuty, Campfire, and HipChat.
-
-Additionally Librato is first-and-foremost a platform whose complete capabilites are
-programatically accessible via a [RESTful API][api-docs] with bindings
-available for [a growing host of languages][lang-bindings] including
-Ruby, Python, Java, Go, Clojure, Node.js, etc.
+Librato is a complete solution for monitoring and analyzing the metrics that impact your business at all levels of the stack. It provides everything you need to visualize, analyze, and actively alert on the metrics that matter to you. With drop-in support for [Rails 3.x][rails-gem], [JVM-based applications][coda-backend], and [other languages][lang-bindings] you'll have metrics streaming into Librato in minutes. From there you can build custom charts/dashboards, annotate them with one-time events, and set threshold-based alerts.  Collaboration is supported through multi-user access, private dashboard links, PNG chart snapshots, and seamless integration with popular third-party services like PagerDuty, Campfire, and HipChat.  Additionally Librato is first-and-foremost a platform whose complete capabilites are programatically accessible via a [RESTful API][api-docs] with bindings available for [a growing host of languages][lang-bindings] including Ruby, Python, Java, Go, Clojure, Node.js, etc.
 
 ## Provisioning the add-on
 
@@ -31,61 +14,44 @@ A list of all plans available can be found [here](http://addons.heroku.com/libra
     $ heroku addons:add librato
     -----> Adding librato to sharp-mountain-4005... done, v18 (free)
 
-Once Librato has been added a `LIBRATO_USER` and `LIBRATO_TOKEN`
-settings will be available in the app configuration and will contain the
-credentials needed to authenticate to the [Librato API][api-docs]. This can be confirmed using the `heroku config:get` command.
+Once Librato has been added a `LIBRATO_USER` and `LIBRATO_TOKEN` settings will be available in the app configuration and will contain the credentials needed to authenticate to the [Librato API][api-docs]. This can be confirmed using the `heroku config:get` command.
 
     :::term
     $ heroku config:get LIBRATO_USER
     app123@heroku.com
 
-After installing Librato you will need to explicitly set a value for `LIBRATO_SOURCE` in the app configuration.
-`LIBRATO_SOURCE` informs the Librato service that the metrics coming from each of your dynos belong to the
-same application.
+After installing Librato you will need to explicitly set a value for `LIBRATO_SOURCE` in the app configuration. `LIBRATO_SOURCE` informs the Librato service that the metrics coming from each of your dynos belong to the same application.
 
     :::term
     $ heroku config:add LIBRATO_SOURCE=myappname
 
-The value of `LIBRATO_SOURCE` must be composed of characters in the set
-`A-Za-z0-9.:-_` and no more than 255 characters long. You should use 
-a permanent name, as changing it in the future will cause
-your historical metrics to become disjoint.
+The value of `LIBRATO_SOURCE` must be composed of characters in the set `A-Za-z0-9.:-_` and no more than 255 characters long. You should use a permanent name, as changing it in the future will cause your historical metrics to become disjoint.
 
 ## Using with Rails 3.x
 
-Ruby on Rails applications will need to add the following entry into their `Gemfile` specifying the Librato client library.
+Ruby on Rails applications first need to add the following entry into their `Gemfile` specifying the Librato client library.
 
     :::ruby
     gem 'librato-rails'
 
-Update application dependencies with bundler.
+And then update application dependencies with bundler.
 
     :::term
     $ bundle install
 
 ### Automatic Instrumentation
 
-After installing the `librato-rails` gem and deploying your app you
-will see a number of metrics appear automatically in your Librato account.
-These are powered by [ActiveSupport::Notifications][asn] and track
-request performance, sql queries, mail handling, etc.
+After installing the `librato-rails` gem and deploying your app you will see a number of metrics appear automatically in your Librato account.  These are powered by [ActiveSupport::Notifications][asn] and track request performance, sql queries, mail handling, etc.
 
-Built-in performance metric names will start with either `rack` or `rails`,
-depending on the level they are being sampled from. For example:
-`rails.request.total` is the total number of requests rails has received
-each minute.
+Built-in performance metric names will start with either `rack` or `rails`, depending on the level they are being sampled from. For example: `rails.request.total` is the total number of requests rails has received each minute.
 
 ### Custom Instrumentation
 
-The power of Librato really starts to shine when you start adding your
-own custom instrumentation to the mix. Tracking anything in your
-application that interests you is easy Librato. There are
-basically four instrumentation primitives available:
+The power of Librato really starts to shine when you start adding your own custom instrumentation to the mix. Tracking anything in your application that interests you is easy Librato. There are basically four instrumentation primitives available:
 
 #### increment
 
-Use for tracking a running total of something _across_ requests,
-examples:
+Use for tracking a running total of something _across_ requests, examples:
 
     # increment the 'sales_completed' metric by one
     Librato.increment 'sales_completed'
@@ -96,24 +62,14 @@ examples:
     # increment with a custom source
     Librato.increment 'user.purchases', :source => user.id
     
-Other things you might track this way: user signups, requests of a
-certain type or to a certain route, total jobs queued or processed,
-emails sent or received.
+Other things you might track this way: user signups, requests of a certain type or to a certain route, total jobs queued or processed, emails sent or received.
 
-Note that `increment` is primarily used for tracking the rate of
-occurrence of some event. Given this `increment` metrics are _continuous
-by default_ i.e. after being called on a metric once they will report on
-every interval, reporting zeros for any interval when increment was not
-called on the metric.
+Note that `increment` is primarily used for tracking the rate of occurrence of some event. Given this `increment` metrics are _continuous by default_ i.e. after being called on a metric once they will report on every interval, reporting zeros for any interval when increment was not called on the metric.
 
-Especially with custom sources you may want the opposite behavior -
-reporting a measurement only during intervals where `increment` was
-called on the metric:
+Especially with custom sources you may want the opposite behavior, i.e. reporting a measurement only during intervals where `increment` was called on the metric:
 
-    # report a value for 'user.uploaded_file' only during non-zero
-intervals
-    Librato.increment 'user.uploaded_file', :source => user.id,
-:sporadic => true
+    # report a value for 'user.uploaded_file' only during non-zero intervals
+    Librato.increment 'user.uploaded_file', :source => user.id, :sporadic => true
 
 #### measure
 
@@ -123,13 +79,11 @@ Use when you want to track an average value _per_-request. Examples:
 
 #### timing
 
-Like `Librato.measure` this is per-request, but specialized for timing
-information:
+Like `Librato.measure` this is per-request, but specialized for timing information:
 
     Librato.timing 'twitter.lookup.time', 21.2
 
-The block form auto-submits the time it took for its contents to execute
-as the measurement value:
+The block form auto-submits the time it took for its contents to execute as the measurement value:
 
     Librato.timing 'twitter.lookup.time' do
       @twitter = Twitter.lookup(user)
@@ -137,8 +91,7 @@ as the measurement value:
 
 #### group
 
-There is also a grouping helper, to make managing nested metrics easier.
-So this:
+There is also a grouping helper, to make managing nested metrics easier. So this:
 
     Librato.measure 'memcached.gets', 20
     Librato.measure 'memcached.sets', 2
@@ -156,39 +109,24 @@ Symbols can be used interchangably with strings for metric names.
 
 ### Troubleshooting with Rails 3.x
 
-The `librato-rails` gem supports multiple logging levels that
-are useful in diagnosing any issues with reporting metrics to
-Librato. These are controlled by the `LIBRATO_LOG_LEVEL`
-configuration.
+The `librato-rails` gem supports multiple logging levels that are useful in diagnosing any issues with reporting metrics to Librato. These are controlled by the `LIBRATO_LOG_LEVEL` configuration.
 
     :::term
     $ heroku config:add LIBRATO_LOG_LEVEL=debug
 
-Set your log level to `debug` to log detailed information about the
-settings `librato-rails` is seeing at startup and when it is submitting
-metrics back to the Librato service.
+Set your log level to `debug` to log detailed information about the settings `librato-rails` is seeing at startup and when it is submitting metrics back to the Librato service.
 
-If you are having an issue with a specific metric, setting a log level of
-`trace` additionally logs the exact measurements being sent along with
-lots of other information about librato-rails as it executes.
+If you are having an issue with a specific metric, setting a log level of `trace` additionally logs the exact measurements being sent along with lots of other information about librato-rails as it executes.
 
-Neither of these modes are recommended long-term in production as they will add
-quite a bit of volume to your log stream and will slow operation somewhat.
-Note that submission I/O is non-blocking, submission times are total
-time - your process will continue to handle requests during submissions.
+Neither of these modes are recommended long-term in production as they will add quite a bit of volume to your log stream and will slow operation somewhat.  Note that submission I/O is non-blocking, submission times are total time - your process will continue to handle requests during submissions.
 
 ## Librato Interface
 
 <div class="callout" markdown="1">
-For more information on the features available within the Librato interface
-please see the [Librato knowledgebase](http://support.metrics.librato.com/knowledgebase).
+For more information on the features available within the Librato interface please see the [Librato knowledgebase](http://support.metrics.librato.com/knowledgebase).
 </div>
 
-The Librato interface allows you to build custom dashboards,
-set threhold-based alerts, rapidly detect and diagnose
-performance regressions in your production infrastructure, gain a
-deeper, shared understanding of your business across your team,
-and so much more!. 
+The Librato interface allows you to build custom dashboards, set threhold-based alerts, rapidly detect and diagnose performance regressions in your production infrastructure, gain a deeper, shared understanding of your business across your team, and so much more!. 
 
 ![Librato Dashboard](http://i.imgur.com/FkuUw.png "Librato Dashboard")
 
@@ -204,24 +142,15 @@ or by visiting the [Heroku apps web interface](http://heroku.com/myapps) and sel
 
 ## General Troubleshooting
 
-It may take 2-3 minutes for the first results to show up in your Metrics
-account after you have deployed your app and the first request has been received.
+It may take 2-3 minutes for the first results to show up in your Metrics account after you have deployed your app and the first request has been received.
 
-Note that if Heroku idles your application, measurements will not be sent
-until it receives another request and is restarted. If you see
-intermittent gaps in your measurements during periods of low traffic
-this is the most likely cause.
+Note that if Heroku idles your application, measurements will not be sent until it receives another request and is restarted. If you see intermittent gaps in your measurements during periods of low traffic this is the most likely cause.
 
-For troubleshooting instructions more specific to your particular platform, please
-see our polyglot documentation provided above. The documentation for
-each supported platform ends with a troubleshooting subsection
-titled in the form *Troubleshooting with <platform>*.
+For troubleshooting instructions more specific to your particular platform, please see our polyglot documentation provided above. The documentation for each supported platform ends with a troubleshooting subsection titled in the form *Troubleshooting with <platform>*.
 
 ## Migrating between plans
 
-As long as the plan you are migrating to includes enough allocated
-measurements for your usage, you can migrate between plans at any
-time without any interruption to your metrics.
+As long as the plan you are migrating to includes enough allocated measurements for your usage, you can migrate between plans at any time without any interruption to your metrics.
 
 Use the `heroku addons:upgrade` command to migrate to a new plan.
 
@@ -245,11 +174,7 @@ API][api-docs].
 
 ## Support
 
-All Librato support and runtime issues should be submitted via one of the [Heroku Support channels](support-channels).
-Any non-support related issues or product feedback for Librato is welcome via
-[email][mailto:support@librato.com],
-[live chat][http://chat.librato.com],
-or the [support forum][http://support.metrics.librato.com].
+All Librato support and runtime issues should be submitted via one of the [Heroku Support channels](support-channels). Any non-support related issues or product feedback for Librato is welcome via [email][mailto:support@librato.com], [live chat][http://chat.librato.com], or the [support forum][http://support.metrics.librato.com].
 
 [api-docs]: http://dev.librato.com/v1/metrics
 [lang-bindings]: http://support.metrics.librato.com/knowledgebase/articles/122262-language-bindings
