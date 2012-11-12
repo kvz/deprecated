@@ -67,7 +67,7 @@ Update application dependencies with bundler.
 
 After installing the `librato-rails` gem and deploying your app you
 will see a number of metrics appear automatically in your Librato account.
-These are powered by [ActiveSupport::Notifications][ASN] and track
+These are powered by [ActiveSupport::Notifications][asn] and track
 request performance, sql queries, mail handling, etc.
 
 Built-in performance metric names will start with either `rack` or `rails`,
@@ -256,3 +256,4 @@ or the [support forum][http://support.metrics.librato.com].
 [rails-gem]: https://github.com/librato/librato-rails
 [coda-metrics]: http://metrics.codahale.com/
 [coda-backend]: https://github.com/librato/metrics-librato
+[asn]: http://api.rubyonrails.org/classes/ActiveSupport/Notifications.html
