@@ -128,7 +128,7 @@ For more information on the features available within the Librato interface plea
 
 The Librato interface allows you to build custom dashboards, set threhold-based alerts, rapidly detect and diagnose performance regressions in your production infrastructure, gain a deeper, shared understanding of your business across your team, and so much more!. 
 
-![Librato Dashboard](http://i.imgur.com/FkuUw.png "Librato Dashboard")
+PLACE PICTURE OF DASHBOARD HERE
 
 The interface can be accessed via the CLI:
 
@@ -138,7 +138,7 @@ The interface can be accessed via the CLI:
 
 or by visiting the [Heroku apps web interface](http://heroku.com/myapps) and selecting the application in question. Select Librato from the Add-ons menu.
 
-![Librato Add-ons Dropdown](http://f.cl.ly/items/1B090n1P0d3W0I0R172r/addons.png "Librato Add-ons Dropdown")
+PLACE PICTURE OF MENU HERE
 
 ## General Troubleshooting
 
