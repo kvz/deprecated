@@ -134,7 +134,7 @@ The interface can be accessed via the CLI:
 
     :::term
     $ heroku addons:open librato
-    Opening librato for sharp-mountain-4005…
+    Opening librato for sharp-mountain-4005...
 
 or by visiting the [Heroku apps web interface](http://heroku.com/myapps) and selecting the application in question. Select Librato from the Add-ons menu.
 
