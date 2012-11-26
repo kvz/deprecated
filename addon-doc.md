@@ -1,5 +1,7 @@
 [Librato](http://addons.heroku.com/librato) is an [add-on](http://addons.heroku.com) for collecting, understanding, and acting on the metrics that matter to you.
 
+![Librato Dashboard](https://librato_images.s3.amazonaws.com/heroku-docs/librato-rails-dashboard.png "Librato Dashboard")
+
 Librato is a complete solution for monitoring and analyzing the metrics that impact your business at all levels of the stack. It provides everything you need to visualize, analyze, and actively alert on the metrics that matter to you. With drop-in support for [Rails 3.x][rails-gem], [JVM-based applications][coda-backend], and [other languages][lang-bindings] you'll have metrics streaming into Librato in minutes. From there you can build custom charts/dashboards, annotate them with one-time events, and set threshold-based alerts.  Collaboration is supported through multi-user access, private dashboard links, PNG chart snapshots, and seamless integration with popular third-party services like PagerDuty, Campfire, and HipChat.  Additionally Librato is first-and-foremost a platform whose complete capabilites are programatically accessible via a [RESTful API][api-docs] with bindings available for [a growing host of languages][lang-bindings] including Ruby, Python, Java, Go, Clojure, Node.js, etc.
 
 ## Provisioning the add-on
