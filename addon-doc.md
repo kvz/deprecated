@@ -134,7 +134,7 @@ For more information on the features available within the Librato interface plea
 
 The Librato interface allows you to build custom dashboards, set threhold-based alerts, rapidly detect and diagnose performance regressions in your production infrastructure, gain a deeper, shared understanding of your business across your team, and so much more!. 
 
-PLACE PICTURE OF DASHBOARD HERE
+![Librato Dashboard](https://librato_images.s3.amazonaws.com/heroku-docs/librato-rails-dashboard.png "Librato Dashboard")
 
 The interface can be accessed via the CLI:
 
