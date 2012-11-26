@@ -144,7 +144,7 @@ The interface can be accessed via the CLI:
 
 or by visiting the [Heroku apps web interface](http://heroku.com/myapps) and selecting the application in question. Select Librato from the Add-ons menu.
 
-![Librato Add-ons Dropdown]( "https://librato_images.s3.amazonaws.com/heroku-docs/addon-menu.png Librato Add-ons Dropdown")
+![Librato Add-ons Dropdown](https://librato_images.s3.amazonaws.com/heroku-docs/addon-menu.png "Librato Add-ons Dropdown")
 
 ## General Troubleshooting
 
