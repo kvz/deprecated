@@ -34,10 +34,16 @@ Ruby on Rails applications first need to add the following entry into their `Gem
     :::ruby
     gem 'librato-rails'
 
-And then update application dependencies with bundler.
+Then update application dependencies with bundler.
 
     :::term
     $ bundle install
+
+Finally re-deploy your application.
+
+    :::term
+    $ git commit -a -m "add librato-rails instrumentation"
+    $ git push heroku master
 
 ### Automatic Instrumentation
 
