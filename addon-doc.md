@@ -31,7 +31,9 @@ The value of `LIBRATO_SOURCE` must be composed of characters in the set `A-Za-z0
 
 ## Using with Rails 3.x
 
-Ruby on Rails applications first need to add the following entry into their `Gemfile` specifying the Librato client library.
+Verify that the `LIBRATO_USER` and `LIBRATO_SOURCE` variables are set.
+
+Ruby on Rails applications need to add the following entry into their `Gemfile` specifying the Librato client library.
 
     :::ruby
     gem 'librato-rails'
@@ -49,7 +51,7 @@ Finally re-deploy your application.
 
 ### Automatic Instrumentation
 
-After installing the `librato-rails` gem and deploying your app you will see a number of metrics appear automatically in your Librato account.  These are powered by [ActiveSupport::Notifications][asn] and track request performance, sql queries, mail handling, etc.
+After setting `LIBRATO_SOURCE` in the app configuration, installing the `librato-rails` gem and deploying your app you will see a number of metrics appear automatically in your Librato account.  These are powered by [ActiveSupport::Notifications][asn] and track request performance, sql queries, mail handling, etc.
 
 Built-in performance metric names will start with either `rack` or `rails`, depending on the level they are being sampled from. For example: `rails.request.total` is the total number of requests rails has received each minute.
 
@@ -116,6 +118,11 @@ Can also be written as:
 Symbols can be used interchangably with strings for metric names.
 
 ### Troubleshooting with Rails 3.x
+
+Check the logs for messages such as this
+
+    :::term
+    [librato-rails] halting: source must be provided in configuration.
 
 The `librato-rails` gem supports multiple logging levels that are useful in diagnosing any issues with reporting metrics to Librato. These are controlled by the `LIBRATO_LOG_LEVEL` configuration.
 
