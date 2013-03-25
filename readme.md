@@ -1,3 +1,5 @@
+Unmaintained, please use [@ceeram](https://github.com/ceeram)'s [CakePdf](https://github.com/ceeram/CakePdf) instead.
+
 Like this plugin? Consider [a small donation](https://flattr.com/thing/68756/cakephp-rest-plugin)
 
 BSD-style license
