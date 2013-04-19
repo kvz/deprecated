@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/**
 # * Makes ssh:// links open in gnome-terminal from Firefox
 # *

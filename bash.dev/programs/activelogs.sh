@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/**
 # * Shows all active logs
 # *

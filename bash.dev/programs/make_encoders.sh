@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/**
 # * (NOT READY!) Will compile ffmpeg & mencoder with support for multi cores.
 # *

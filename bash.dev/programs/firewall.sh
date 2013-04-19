@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/*
 #*** Summary:
 #* A simple firewalling utility.  Use it to secure your internet server.

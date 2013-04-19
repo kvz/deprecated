@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/**
 # * Blocks/Unblocks a host
 # *

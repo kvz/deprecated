@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/**
 # * Will destroy your servers and ruin your career
 # * Or it will try to copy all important packages, settings, and files from

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/**
 # * (NOT READY!) Speeds up Ubuntu systems
 # *

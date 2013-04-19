@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # definitions
 EXT_GOOD=".+\.avi|.+\.nfo|.+\.srt|.+\.idx|.+\.vob|.+\.iso"

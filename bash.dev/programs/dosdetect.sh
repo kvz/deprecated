@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/**
 # * Detects if your machine is being DDoS-attacked
 # *

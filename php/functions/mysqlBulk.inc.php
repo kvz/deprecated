@@ -131,18 +131,18 @@ function mysqlBulk(&$data, $table, $method = 'transaction', $options = array()) 
 			// Inserts data only
 			// Use array instead of queries
 
-			$buf	= '';
-			foreach($data as $i=>$row) {
+			$buf = '';
+			foreach ($data as $i => $row) {
 				if ($method === 'loadsql_unsafe') {
 					$row = __sql2array($row, $trigger_errors);
 				}
-				$buf .= implode(':::,', $row)."^^^\n";
+				$buf .= join(':::,', $row) . "^^^\n";
 			}
 
-			$fields = implode(', ', array_keys($row));
+			$fields = join(', ', array_keys($row));
 
 			if (!@file_put_contents($in_file, $buf)) {
-				$trigger_errors && trigger_error('Cant write to buffer file: "'.$in_file.'"', E_USER_ERROR);
+				$trigger_errors && trigger_error('Cant write to buffer file: "' . $in_file . '"', E_USER_ERROR);
 				return false;
 			}
 

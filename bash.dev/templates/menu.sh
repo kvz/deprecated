@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/**
 # * Template for interactive menu's
 # * Will include all nescesary code to quickly deploy menu's.

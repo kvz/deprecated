@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/**
 # * (NOT READY!) Will extract the files from an .iso file
 # *

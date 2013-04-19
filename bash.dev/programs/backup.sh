@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/*
 #*** Summary:
 #* A simple backup utility. Use it to backup your internet server.

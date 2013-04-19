@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set +x
 #/**
 # * Takes source from ./bash.dev programs, recursively follows (function) includes,

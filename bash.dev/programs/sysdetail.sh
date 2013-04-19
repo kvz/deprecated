@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/**
 # * Displays detailed system information
 # * Like serial number, operation system, memory, etc.

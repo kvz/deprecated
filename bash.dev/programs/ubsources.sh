@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #/**
 # * Resets Ubuntu APT sources lists to enable
 # *
