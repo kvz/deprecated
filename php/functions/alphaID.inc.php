@@ -90,8 +90,9 @@
  */
 function alphaID($in, $to_num = false, $pad_up = false, $pass_key = null)
 {
-	$out =   '';
-	$index = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	$out   =   '';
+	$index = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	$base  = strlen($index);
 
 	if ($pass_key !== null) {
 		// Although this function's purpose is to just make the
@@ -115,16 +116,13 @@ function alphaID($in, $to_num = false, $pad_up = false, $pass_key = null)
 		$index = implode($i);
 	}
 
-	$base  = strlen($index);
-
 	if ($to_num) {
 		// Digital number  <<--  alphabet letter code
-		$in  = strrev($in);
 		$len = strlen($in) - 1;
 
-		for ($t = 0; $t <= $len; $t++) {
-			$bcpow = bcpow($base, $len - $t);
-			$out   = $out + strpos($index, substr($in, $t, 1)) * $bcpow;
+		for ($t = $len; $t >= 0; $t--) {
+			$bcp = bcpow($base, $len - $t);
+			$out = $out + strpos($index, substr($in, $t, 1)) * $bcp;
 		}
 
 		if (is_numeric($pad_up)) {
@@ -134,9 +132,6 @@ function alphaID($in, $to_num = false, $pad_up = false, $pass_key = null)
 				$out -= pow($base, $pad_up);
 			}
 		}
-
-		$out = sprintf('%F', $out);
-		$out = substr($out, 0, strpos($out, '.'));
 	} else {
 		// Digital number  -->>  alphabet letter code
 		if (is_numeric($pad_up)) {
@@ -147,14 +142,12 @@ function alphaID($in, $to_num = false, $pad_up = false, $pass_key = null)
 			}
 		}
 
-		for ($t = floor(log($in, $base)); $t >= 0; $t--) {
+		for ($t = ($in != 0 ? floor(log($in, $base)) : 0); $t >= 0; $t--) {
 			$bcp = bcpow($base, $t);
 			$a   = floor($in / $bcp) % $base;
 			$out = $out . substr($index, $a, 1);
 			$in  = $in - ($a * $bcp);
 		}
-
-		$out = strrev($out); // reverse
 	}
 
 	return $out;
