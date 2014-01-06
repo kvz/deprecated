@@ -75,12 +75,12 @@ for filePathSource in $(find ${DIR_SORC}/*/ -type f -name '*.sh'); do
 		let linesRemain=srcLines-depAt
 
 		# Reset destination file
-		echo "#!/bin/bash" |tee ${filePathDest} > /dev/null
+		echo "#!/usr/bin/env bash" |tee ${filePathDest} > /dev/null
 		[ -f ${filePathDest} ] || log "Unable to create file: '${filePathDest}'" "EMERG"
 		chmod a+x ${filePathDest}
 
 		# Add head of original source
-		cat ${filePathSource} |head -n ${depAt} |egrep -v '(# make::include|#!/bin/bash)' |tee -a ${filePathDest} > /dev/null
+		cat ${filePathSource} |head -n ${depAt} |egrep -v '(# make::include|#!/usr/bin/env)' |tee -a ${filePathDest} > /dev/null
 
 		for depPart in ${depTxt}; do
 			# Extract filename
